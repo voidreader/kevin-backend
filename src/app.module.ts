@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountModule } from './account/account.module';
 import { Account } from './account/entities/account.entity';
+import { Verification } from './account/entities/verification.entity';
+import { ProjectAuth } from './account/entities/projectAuth.entity';
 
 @Module({
   imports: [
@@ -20,7 +22,7 @@ import { Account } from './account/entities/account.entity';
       username: process.env.MYSQL_USER,
       password: process.env.MYSQL_PWD,
       database: process.env.MYSQL_DB_NAME,
-      entities: [Account],
+      entities: [Account, Verification, ProjectAuth],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
       logging: process.env.NODE_ENV !== 'prod',
     }),

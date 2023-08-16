@@ -13,6 +13,7 @@ import {
   CreateAccountOutputDto,
 } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { LoginInput, LoginOutput } from './dto/login.dto';
 
 @Controller('account')
 export class AccountController {
@@ -25,13 +26,18 @@ export class AccountController {
     return this.accountService.create(createAccountInputDto);
   }
 
+  @Post('login')
+  async login(@Body() loginInput: LoginInput): Promise<LoginOutput> {
+    return this.accountService.login(loginInput);
+  }
+
   @Get()
   findAll() {
     return this.accountService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.accountService.findOne(+id);
   }
 
