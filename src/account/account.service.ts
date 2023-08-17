@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateAccountInputDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account } from './entities/account.entity';
-import { Repository } from 'typeorm';
+import { Account } from '../database/produce_entity/account.entity';
+import { DataSource, Repository } from 'typeorm';
 import { Verification } from './entities/verification.entity';
 import { CoreOutput } from 'src/common/dto/output.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { ProjectAuth } from './entities/projectAuth.entity';
+import { PRODUCE_DATASOURCE } from 'src/common/common.const';
+import { JwtService } from 'src/jwt/jwt.service';
 
 @Injectable()
 export class AccountService {
@@ -17,6 +19,8 @@ export class AccountService {
     private readonly verifications: Repository<Verification>,
     @InjectRepository(ProjectAuth)
     private readonly projectAuthRepo: Repository<ProjectAuth>,
+    private readonly jwtService: JwtService,
+    @Inject(PRODUCE_DATASOURCE) private readonly produceDataSource: DataSource,
   ) {}
 
   // 계정 생성
@@ -78,20 +82,46 @@ export class AccountService {
 
     // const auths = await this.projectAuthRepo.find({ where: { account } });
     // console.log(auths);
-    console.log(account.projectAuths);
+    // console.log(account.projectAuths);
+
+    // 인증 토큰
+    const token = this.jwtService.sign(account.id);
 
     return {
       isSuccess: true,
+      token,
       account,
     };
-  }
+  } // ? 로그인 종료
+
+  // * 계정 인증
+  async verify(code: string) {
+    const verification = await this.verifications.findOne({
+      relations: {
+        account: true,
+      },
+    });
+
+    console.log(verification);
+  } // ? 계정 인증 종료
 
   findAll() {
     return `This action returns all account`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} account`;
+  //* ID 찾기
+  async findOne(id: number): Promise<LoginOutput> {
+    const account = await this.accounts.findOne({ where: { id } });
+
+    if (account) {
+      return { account, isSuccess: true };
+    } else {
+      return {
+        account: null,
+        isSuccess: false,
+        error: `Can't find the account`,
+      };
+    }
   }
 
   update(id: number, updateAccountDto: UpdateAccountDto) {

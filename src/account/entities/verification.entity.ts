@@ -1,7 +1,7 @@
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { Account } from './account.entity';
+import { Account } from '../../database/produce_entity/account.entity';
 
 @Entity()
 export class Verification extends CoreEntity {

@@ -31,6 +31,10 @@ export class AccountController {
     return this.accountService.login(loginInput);
   }
 
+  async verify(@Param('code') code: string) {
+    return this.accountService.verify(code);
+  }
+
   @Get()
   findAll() {
     return this.accountService.findAll();
