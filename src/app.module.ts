@@ -48,7 +48,7 @@ import { ProjectDetail } from './database/produce_entity/project-detail.entity';
       database: process.env.MYSQL_DB_NAME,
       entities: [Account, Verification, ProjectAuth, Project, ProjectDetail],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
-      logging: process.env.NODE_ENV !== 'prod',
+      logging: false,
     }),
 
     NoticeModule,

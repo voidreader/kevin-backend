@@ -15,7 +15,7 @@ export class ProjectService {
   async requestStoryList(account: Account) {
     // const rawData = await dataSource.query(`SELECT * FROM USERS`)
 
-    console.log(`mainDataSource : `, this.dataSource);
+    console.log(`mainDataSource : `, this.dataSource.options.entities);
     // console.log(`subDataSource : `, this.subDataSource);
 
     const projects = await this.dataSource
