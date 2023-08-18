@@ -15,18 +15,23 @@ export class ProjectService {
   async requestStoryList(account: Account) {
     // const rawData = await dataSource.query(`SELECT * FROM USERS`)
 
+    console.log(`requestStoryList : `, account);
     console.log(`mainDataSource : `, this.dataSource.options.entities);
     // console.log(`subDataSource : `, this.subDataSource);
 
     const projects = await this.dataSource
-      .createQueryBuilder()
+      .createQueryBuilder(Project, 'project')
       .select()
-      .from(Project, 'project')
-      .innerJoin(ProjectAuth, 'auths')
-      .where('project.project_id in auths.project_id')
+      .leftJoinAndSelect(
+        ProjectAuth,
+        'auths',
+        'auths.project_id = project.project_id',
+      )
       .andWhere('auths.accountId = :id', { id: account.id })
       .printSql()
       .getMany();
+
+    // const projects = await this.dataSource.createQueryBuilder()
 
     console.log(projects);
   }
