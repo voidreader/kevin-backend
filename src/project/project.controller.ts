@@ -14,6 +14,7 @@ import { CreateStoryDto } from './dto/create-story.dto';
 import { UpdateStoryDto } from './dto/update-story.dto';
 import { Account } from 'src/database/produce_entity/account.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { Request } from 'express';
 
 @Controller('story')
 export class ProjectController {
