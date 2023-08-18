@@ -31,8 +31,9 @@ export class AccountController {
     return this.accountService.login(loginInput);
   }
 
-  async verify(@Param('code') code: string) {
-    return this.accountService.verify(code);
+  @Post('verify')
+  async verify(@Param('code') code: string, @Param('email') email: string) {
+    return this.accountService.verify(email, code);
   }
 
   @Get()

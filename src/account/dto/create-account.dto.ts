@@ -5,6 +5,7 @@ import { CoreOutput } from 'src/common/dto/output.dto';
 export class CreateAccountInputDto extends PickType(Account, [
   'email',
   'password',
+  'organization',
 ]) {
   passwordConfirm: string;
 }

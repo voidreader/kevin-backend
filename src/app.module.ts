@@ -19,6 +19,7 @@ import { JwtMiddleware } from './jwt/jwt.middleware';
 import { ProjectModule } from './project/project.module';
 import { Project } from './database/produce_entity/project.entity';
 import { ProjectDetail } from './database/produce_entity/project-detail.entity';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -63,6 +64,8 @@ import { ProjectDetail } from './database/produce_entity/project-detail.entity';
     }),
 
     ProjectModule,
+
+    FileModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -95,14 +95,25 @@ export class AccountService {
   } // ? 로그인 종료
 
   // * 계정 인증
-  async verify(code: string) {
-    const verification = await this.verifications.findOne({
-      relations: {
-        account: true,
-      },
-    });
+  async verify(email: string, code: string) {
+    let account = await this.accounts.findOne({ where: { email } });
 
-    console.log(verification);
+    if (!account) {
+      return {
+        isSuccess: false,
+        error: 'Invalid email',
+      };
+    }
+
+    // 따로 인증코드 검증을 아직 실행하지 않음(2023.08)
+
+    account.verified = true;
+    account = await this.accounts.save(account);
+
+    return {
+      account,
+      isSuccess: true,
+    };
   } // ? 계정 인증 종료
 
   findAll() {
