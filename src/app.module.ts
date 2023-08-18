@@ -24,7 +24,8 @@ import { ProjectDetail } from './database/produce_entity/project-detail.entity';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.prod',
+      // envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.prod',
+      envFilePath: '.env.dev',
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
