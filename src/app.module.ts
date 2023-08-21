@@ -20,6 +20,7 @@ import { ProjectModule } from './project/project.module';
 import { Project } from './database/produce_entity/project.entity';
 import { ProjectDetail } from './database/produce_entity/project-detail.entity';
 import { FileModule } from './file/file.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -66,6 +67,8 @@ import { FileModule } from './file/file.module';
     ProjectModule,
 
     FileModule,
+
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],
