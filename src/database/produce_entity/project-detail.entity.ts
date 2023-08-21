@@ -2,14 +2,15 @@ import { IsEnum } from 'class-validator';
 import { Column, Entity, JoinColumn, ManyToOne, Unique } from 'typeorm';
 import { LangType, Project } from './project.entity';
 import { CoreEntity } from 'src/common/entities/core.entity';
+import { PickType } from '@nestjs/mapped-types';
 
-@Unique(['project', 'lang'])
 @Entity()
+@Unique(['project', 'lang'])
 export class ProjectDetail extends CoreEntity {
   @Column({ length: 10 })
   lang: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 120 })
   title: string;
   @Column({ nullable: true })
   summary: string;

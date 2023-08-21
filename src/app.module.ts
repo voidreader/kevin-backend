@@ -40,18 +40,18 @@ import { FileModule } from './file/file.module';
       logging: process.env.NODE_ENV !== 'prod',
     }),
 
-    TypeOrmModule.forRoot({
-      name: 'live-db',
-      type: 'mysql',
-      host: process.env.MYSQL_HOST,
-      port: +process.env.MYSQL_PORT,
-      username: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PWD,
-      database: process.env.MYSQL_DB_NAME,
-      entities: [Account, Verification, ProjectAuth, Project, ProjectDetail],
-      synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
-      logging: false,
-    }),
+    // TypeOrmModule.forRoot({
+    //   name: 'live-db',
+    //   type: 'mysql',
+    //   host: process.env.MYSQL_HOST,
+    //   port: +process.env.MYSQL_PORT,
+    //   username: process.env.MYSQL_USER,
+    //   password: process.env.MYSQL_PWD,
+    //   database: process.env.MYSQL_DB_NAME,
+    //   entities: [Account, Verification, ProjectAuth, Project, ProjectDetail],
+    //   synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
+    //   logging: false,
+    // }),
 
     NoticeModule,
 

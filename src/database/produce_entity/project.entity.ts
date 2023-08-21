@@ -39,6 +39,9 @@ export class Project {
   @Column({ default: LangType.KO, length: 10 })
   default_lang: string; // 대표 언어
 
+  @Column({ length: 120, nullable: true })
+  title: string;
+
   @Column({ default: 0 })
   sortkey: number; // 정렬 순서
 
@@ -50,12 +53,19 @@ export class Project {
   @Column({ nullable: true, unique: true })
   bundle_id: string; // 스토어 bundle id
 
+  @Column({ default: 0 })
+  prime_currency_text_id: number;
+
   @CreateDateColumn({ select: false })
   createdAt: Date;
 
   @UpdateDateColumn({ select: false })
   updatedAt: Date;
 
-  @OneToMany((type) => ProjectDetail, (projectDetail) => projectDetail.project)
+  @OneToMany(
+    (type) => ProjectDetail,
+    (projectDetail) => projectDetail.project,
+    { eager: true },
+  )
   projectDetails: ProjectDetail[];
 }

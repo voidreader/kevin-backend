@@ -8,10 +8,16 @@ import {
   Delete,
   Req,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
-import { CreateStoryDto } from './dto/create-story.dto';
-import { UpdateStoryDto } from './dto/update-story.dto';
+import {
+  CreateProjectInputDto,
+  ProjectOutputDto,
+  SingleProjectOutputDto,
+  UpdateProjectInputDto,
+} from './dto/project.dto';
+
 import { Account } from 'src/database/produce_entity/account.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Request } from 'express';
@@ -30,26 +36,46 @@ export class ProjectController {
   //   return this.storyService.findAll();
   // }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.projectService.findOne(+id);
+  @Get('/:id')
+  async findOne(@Param('id') id: string) {
+    return await this.projectService.findOne(+id);
+  }
+
+  @UseGuards(AuthGuard)
+  // * 스토리 목록 조회
+  @Get()
+  async getStoryList(@Req() request: Request): Promise<ProjectOutputDto> {
+    console.log(`#### requestStoryList`);
+    // console.log(request['account']);
+
+    return await this.projectService.getStoryList(request['account']);
   }
 
   @UseGuards(AuthGuard)
   @Post()
-  requestStoryList(@Req() request: Request) {
-    console.log(`#### requestStoryList`);
-    // console.log(request['account']);
-
-    this.projectService.requestStoryList(request['account']);
-
-    return { isSuccess: true };
+  // * 신규 스토리 생성
+  async createStory(
+    @Req() request,
+    @Body() createProjectInputDto: CreateProjectInputDto,
+  ) {
+    return await this.projectService.create(
+      request['account'],
+      createProjectInputDto,
+    );
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStoryDto: UpdateStoryDto) {
-    return this.projectService.update(+id, updateStoryDto);
+  @Put('/:project_id')
+  async update(
+    @Param('project_id') project_id: number,
+    @Body() inputDto: UpdateProjectInputDto,
+  ): Promise<SingleProjectOutputDto> {
+    return await this.projectService.update(project_id, inputDto);
   }
+
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateStoryDto: UpdateStoryDto) {
+  //   return this.projectService.update(+id, updateStoryDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
