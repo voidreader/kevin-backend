@@ -68,7 +68,7 @@ import { StandardInfo } from './common/entities/standard-info.entity';
 
     AccountModule,
 
-    DatabaseModule,
+    // DatabaseModule,
 
     JwtModule.forRoot({
       privateKey: process.env.SECRET_KEY,

@@ -18,14 +18,47 @@ import { error } from 'console';
 export class ProjectService {
   constructor(private readonly dataSource: DataSource) {}
 
+  // * 유저와 연계된 프로젝트 리스트 조회
+  async getAlternativeStoryList(account: Account) {
+    const result = {
+      projects: [],
+      isSuccess: false,
+    };
+
+    // 기본 쿼리
+    let query: string = `
+      SELECT a.project_id 
+      , a.default_lang 
+      , b.title 
+      , a.project_state 
+      , a.bubble_set_id 
+      , cbm.set_name bubble_set_name
+    FROM project a
+      , project_detail b
+      , pier.com_bubble_master cbm 
+  WHERE b.project_id = a.project_id 
+    AND b.lang = a.default_lang 
+    AND cbm.set_id = a.bubble_set_id     
+    `;
+
+    const orderBy = ` ORDER BY a.sortkey , a.project_id;`;
+    const authCondition = ` AND a.project_id IN (SELECT z.project_id FROM project_auth z WHERE z.accountId = ?)`;
+
+    if (account.role == UserRole.Admin) {
+      query += orderBy;
+    } else {
+      query += authCondition;
+      query += orderBy;
+    }
+
+    result.projects = await this.dataSource.query(query, [account.id]);
+    result.isSuccess = true;
+
+    return result;
+  }
+
   // * 권한에 따른 작품 리스트 조회
   async getStoryList(account: Account): Promise<ProjectOutputDto> {
-    // const rawData = await dataSource.query(`SELECT * FROM USERS`)
-
-    // console.log(`requestStoryList : `, account);
-    // console.log(`mainDataSource : `, this.dataSource.options.entities);
-    // console.log(`subDataSource : `, this.subDataSource);
-
     let projects: Project[];
 
     // * Admin과 일반 유저 분리

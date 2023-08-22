@@ -15,6 +15,14 @@ export enum ProjectType {
   VisualNovel = 'VisualNovel',
 }
 
+// * 프로젝트 상태
+export enum ProjectState {
+  Draft = 'Draft',
+  InReview = 'In Review',
+  PendingRelease = 'Pending Release',
+  Released = 'Released',
+}
+
 export enum LangType {
   KO = 'KO',
   EN = 'EN',
@@ -38,6 +46,14 @@ export class Project {
 
   @Column({ default: LangType.KO, length: 10 })
   default_lang: string; // 대표 언어
+
+  @Column({
+    type: 'enum',
+    enum: ProjectState,
+    default: ProjectState.Draft,
+  })
+  @IsEnum(ProjectState)
+  project_state: string;
 
   @Column({ length: 120, nullable: true })
   title: string;
