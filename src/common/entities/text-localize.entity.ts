@@ -1,13 +1,19 @@
-import { IntersectionType, OmitType } from '@nestjs/mapped-types';
+import { IntersectionType, OmitType, PartialType } from '@nestjs/mapped-types';
 import { CoreEntity } from './core.entity';
 import { DeployEntity } from './deploy.entity';
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 // * 로컬라이즈 텍스트
-export class textLocalize extends IntersectionType(
-  OmitType(CoreEntity, ['id']),
-  DeployEntity,
-) {
+@Entity()
+@Index(['isUpdated', 'lastDeployedAt'], { unique: false })
+export class TextLocalize extends DeployEntity {
   @PrimaryGeneratedColumn()
   text_id: number;
 

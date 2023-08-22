@@ -21,6 +21,8 @@ import { Project } from './database/produce_entity/project.entity';
 import { ProjectDetail } from './database/produce_entity/project-detail.entity';
 import { FileModule } from './file/file.module';
 import { CommonModule } from './common/common.module';
+import { TextLocalize } from './common/entities/text-localize.entity';
+import { StandardInfo } from './common/entities/standard-info.entity';
 
 @Module({
   imports: [
@@ -36,7 +38,15 @@ import { CommonModule } from './common/common.module';
       username: process.env.MYSQL_USER,
       password: process.env.MYSQL_PWD,
       database: process.env.MYSQL_DB_NAME,
-      entities: [Account, Verification, ProjectAuth, Project, ProjectDetail],
+      entities: [
+        Account,
+        Verification,
+        ProjectAuth,
+        Project,
+        ProjectDetail,
+        TextLocalize,
+        StandardInfo,
+      ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
       logging: process.env.NODE_ENV !== 'prod',
     }),
