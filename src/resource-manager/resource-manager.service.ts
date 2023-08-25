@@ -29,14 +29,52 @@ export class ResourceManagerService {
   }
 
   // * 프로젝트 배경 정보 업데이트
-  updateBackground(
+  async updateBackground(
+    file: Express.MulterS3.File,
     updateDto: UpdateBackgroundDto,
+    project_id: number,
   ): Promise<BackgroundsOutputDto> {
+    let currentDiscard: DiscardResource = null;
+    let incomingDiscard: DiscardResource = null;
     const updatedBG = this.repBackground.create(updateDto);
     updatedBG.isUpdated = true; // 업데이트 되었음을 처리
 
-    this.repBackground.update(updatedBG.id, updatedBG);
+    if (file) {
+      // 파일이 변경되었으면 값도 변경
 
+      // discard에 추가 (기존 이미지는 삭제 )
+      currentDiscard = this.repDiscard.create();
+      currentDiscard.key = updatedBG.image_key;
+      currentDiscard.url = updatedBG.image_url;
+
+      // 방금 업로드된 신규 파일
+      incomingDiscard = this.repDiscard.create();
+      incomingDiscard.key = file.key;
+      incomingDiscard.url = file.location;
+
+      updatedBG.image_key = file.key;
+      updatedBG.image_url = file.location;
+      updatedBG.bucket = file.bucket;
+    }
+
+    // 업데이트
+    try {
+      await this.repBackground.update(updatedBG.id, updatedBG);
+    } catch (error) {
+      // 업데이트 실패시에는 신규파일을 삭제
+      if (incomingDiscard) {
+        this.repDiscard.save(incomingDiscard);
+      }
+
+      return { isSuccess: false, error };
+    }
+
+    // 성공 시에는 기존 파일을 삭제 대상으로 입력한다.
+    if (currentDiscard) {
+      this.repDiscard.save(currentDiscard);
+    }
+
+    // 리턴
     return this.getBackgroundList(updateDto.project_id);
   }
 
@@ -110,4 +148,29 @@ export class ResourceManagerService {
 
     return this.getBackgroundList(project_id);
   } // ? END createMultiBackground
+
+  // * 이미지 Discard 처리
+  private saveDiscardImage(url: string, key: string) {
+    const discardItem = this.repDiscard.create();
+    discardItem.key = key;
+    discardItem.url = url;
+
+    this.repDiscard.save(discardItem);
+  }
+
+  // * 배경 리소스 삭제
+  async DeleteBackground(
+    project_id: number,
+    id: number,
+  ): Promise<BackgroundsOutputDto> {
+    const bg = await this.repBackground.findOne({ where: { id } });
+    if (!bg) {
+      return this.getBackgroundList(project_id);
+    }
+
+    this.saveDiscardImage(bg.image_url, bg.image_key);
+    await this.repBackground.delete(id);
+
+    return this.getBackgroundList(project_id);
+  }
 }
