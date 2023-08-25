@@ -10,4 +10,8 @@ export class FileService {
     console.log(file);
     return { filePath: file.location };
   }
+
+  uploadFiles(files: Array<Express.MulterS3.File>) {
+    console.log(files);
+  }
 }

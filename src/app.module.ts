@@ -23,6 +23,11 @@ import { FileModule } from './file/file.module';
 import { CommonModule } from './common/common.module';
 import { TextLocalize } from './common/entities/text-localize.entity';
 import { StandardInfo } from './common/entities/standard-info.entity';
+import { ResourceUploaderModule } from './resource-uploader/resource-uploader.module';
+import { ResourceManagerModule } from './resource-manager/resource-manager.module';
+import { Background } from './resource-manager/entities/background.entity';
+import { ResourceManagerService } from './resource-manager/resource-manager.service';
+import { DiscardResource } from './resource-manager/entities/discard-resource.entity';
 
 @Module({
   imports: [
@@ -46,6 +51,8 @@ import { StandardInfo } from './common/entities/standard-info.entity';
         ProjectDetail,
         TextLocalize,
         StandardInfo,
+        Background,
+        DiscardResource,
       ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
       logging: process.env.NODE_ENV !== 'prod',
@@ -79,6 +86,10 @@ import { StandardInfo } from './common/entities/standard-info.entity';
     FileModule,
 
     CommonModule,
+
+    ResourceUploaderModule,
+
+    ResourceManagerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
