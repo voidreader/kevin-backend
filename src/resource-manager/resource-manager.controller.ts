@@ -60,4 +60,5 @@ export class ResourceManagerController {
       return `invalid type`;
     }
   }
+    
 }
