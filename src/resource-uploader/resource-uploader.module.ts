@@ -9,6 +9,8 @@ import { ResourceManagerModule } from 'src/resource-manager/resource-manager.mod
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Background } from 'src/resource-manager/entities/background.entity';
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { Minicut } from 'src/resource-manager/entities/minicut.entity';
+import { ResourceLocalize } from 'src/resource-manager/entities/resource-localize.entity';
 
 @Module({
   imports: [
@@ -17,7 +19,12 @@ import { DiscardResource } from 'src/resource-manager/entities/discard-resource.
       useFactory: multerOptionFactory,
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Background, DiscardResource]),
+    TypeOrmModule.forFeature([
+      Background,
+      DiscardResource,
+      Minicut,
+      ResourceLocalize,
+    ]),
   ],
 
   providers: [ResourceUploaderService, ResourceManagerService],

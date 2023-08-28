@@ -28,6 +28,8 @@ import { ResourceManagerModule } from './resource-manager/resource-manager.modul
 import { Background } from './resource-manager/entities/background.entity';
 import { ResourceManagerService } from './resource-manager/resource-manager.service';
 import { DiscardResource } from './resource-manager/entities/discard-resource.entity';
+import { Minicut } from './resource-manager/entities/minicut.entity';
+import { ResourceLocalize } from './resource-manager/entities/resource-localize.entity';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { DiscardResource } from './resource-manager/entities/discard-resource.en
         TextLocalize,
         StandardInfo,
         Background,
+        Minicut,
+        ResourceLocalize,
         DiscardResource,
       ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..

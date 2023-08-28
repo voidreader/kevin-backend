@@ -7,10 +7,17 @@ import { DiscardResource } from './entities/discard-resource.entity';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { multerOptionFactory } from 'src/common/utils/multer.option';
+import { Minicut } from './entities/minicut.entity';
+import { ResourceLocalize } from './entities/resource-localize.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Background, DiscardResource]),
+    TypeOrmModule.forFeature([
+      Background,
+      DiscardResource,
+      Minicut,
+      ResourceLocalize,
+    ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],
       useFactory: multerOptionFactory,
