@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ResourceUploaderService } from './resource-uploader.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { RESOURCE_BG } from 'src/common/common.const';
 
 @Controller('resource-uploader')
 export class ResourceUploaderController {
@@ -23,6 +24,7 @@ export class ResourceUploaderController {
     @Param('type') type: string,
   ) {
     console.log(title);
+
     return this.service.uploadResource(file, title, project_id, type);
   }
 

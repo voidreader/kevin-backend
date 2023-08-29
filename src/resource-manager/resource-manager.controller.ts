@@ -16,6 +16,7 @@ import {
   UpdateBackgroundDto,
 } from './dto/resource-manager.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RESOURCE_BG, RESOURCE_MINICUT } from 'src/common/common.const';
 
 @Controller('resource-manager')
 export class ResourceManagerController {
@@ -23,14 +24,18 @@ export class ResourceManagerController {
     private readonly resourceManagerService: ResourceManagerService,
   ) {}
 
-  // 배경 리스트 조회
-  @Get(':project_id/bg')
+  // 리소스 리스트 조회 (기본)
+  @Get(':project_id/:type')
   getBackgroundList(
     @Param('project_id') project_id: number,
-  ): Promise<BackgroundsOutputDto> {
-    console.log(`getBackgroundList : `, project_id);
+    @Param('type') type: string,
+  ): Promise<any> {
+    // console.log(`getBackgroundList : `, project_id);
 
-    return this.resourceManagerService.getBackgroundList(project_id);
+    if (type == RESOURCE_BG)
+      return this.resourceManagerService.getBackgroundList(project_id);
+    else if (type == RESOURCE_MINICUT)
+      return this.resourceManagerService.getMinicutList(project_id);
   }
 
   // 배경 리소스 업데이트
@@ -54,11 +59,12 @@ export class ResourceManagerController {
     @Param('type') type: string,
     @Param('id') id: number,
   ) {
-    if (type == 'bg') {
+    if (type == RESOURCE_BG) {
       return this.resourceManagerService.DeleteBackground(project_id, id);
+    } else if (type == RESOURCE_MINICUT) {
+      return this.resourceManagerService.DeleteMinicut(project_id, id);
     } else {
       return `invalid type`;
     }
   }
-    
 }
