@@ -1,34 +1,89 @@
-import { Injectable } from '@nestjs/common';
-
+import { Get, Inject, Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
-import { Background } from './entities/background.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import {
-  BackgroundsOutputDto,
-  MinicutOutputDto,
-  UpdateBackgroundDto,
-  UpdateMinicutDto,
+  StaticImageOutputDto,
+  ThumbnailOutputDto,
+  UpdateStaticImageDto,
 } from './dto/resource-manager.dto';
 import { DiscardResource } from './entities/discard-resource.entity';
-import { Minicut } from './entities/minicut.entity';
-import { ResourceLocalize } from './entities/resource-localize.entity';
+import { ImageLocalization } from './entities/image-localization.entity';
+import { StoryStaticImage } from './entities/story-static-image.entity';
+
+import * as multerS3 from 'multer-s3';
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { Project } from 'src/database/produce_entity/project.entity';
+import { ConfigService } from '@nestjs/config';
+import { PublicExtension } from './entities/public-extension.entity';
 
 @Injectable()
 export class ResourceManagerService {
   constructor(
     private readonly dataSource: DataSource,
-    @InjectRepository(Background)
-    private readonly repBackground: Repository<Background>,
-    @InjectRepository(Minicut)
-    private readonly repMinicut: Repository<Minicut>,
-    @InjectRepository(ResourceLocalize)
-    private readonly repResourceLocalize: Repository<ResourceLocalize>,
+    @InjectRepository(StoryStaticImage)
+    private readonly repStaticImage: Repository<StoryStaticImage>,
+
+    @InjectRepository(ImageLocalization)
+    private readonly repImageLocalization: Repository<ImageLocalization>,
+    @InjectRepository(PublicExtension)
+    private readonly repPublicExtension: Repository<PublicExtension>,
+
+    @InjectRepository(Project)
+    private readonly repProject: Repository<Project>,
     @InjectRepository(DiscardResource)
     private readonly repDiscard: Repository<DiscardResource>,
+
+    private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
 
-  // * 이미지 Discard 처리
+  // * default 데이터 만들기
+  async createDefaultStaticResourceData(item: StoryStaticImage) {
+    const project = await this.repProject.findOne({
+      where: { project_id: item.project_id },
+    });
+    // const default_lang = (await project).default_lang;
+    const default_lang = project.default_lang;
+
+    // default localization
+    const defaultLocalization = this.repImageLocalization.create({
+      lang: default_lang,
+      public_name: item.image_name,
+      summary: '',
+    });
+
+    item.localizations.push(defaultLocalization);
+
+    const defaultExtension = this.repPublicExtension.create({
+      thumbnail_url: null,
+      thumbnail_key: null,
+      bucket: null,
+    });
+
+    item.extension = defaultExtension;
+
+    await this.repStaticImage.save(item);
+
+    // 썸네일은 나중에 해야지...
+    // const thumbnailS3 = new S3Client({
+    //   region: this.configService.get('AWS_REGION'),
+    //   credentials: {
+    //     accessKeyId: this.configService.get('AWS_KEY'),
+    //     secretAccessKey: this.configService.get('AWS_SECRET_KEY'),
+    //   },
+    // });
+
+    // const imageData = await thumbnailS3.send(
+    //   new GetObjectCommand({
+    //     Bucket: this.configService.get('AWS_BUCKET_NAME'),
+    //     Key: item.image_key,
+    //   }),
+    // );
+
+    // default extension
+  }
+
+  // * 이미지 Discard 처리 : S3에 업로드된 파일을 지울때 사용
   private saveDiscardImage(url: string, key: string) {
     const discardItem = this.repDiscard.create();
     discardItem.key = key;
@@ -37,62 +92,81 @@ export class ResourceManagerService {
     this.repDiscard.save(discardItem);
   }
 
-  // * 미니컷
+  // * Static 이미지 리스트 가져오기 (배경, 일러스트 미니컷)
+  async getStaticImageList(
+    project_id: number,
+    image_type: string,
+  ): Promise<StaticImageOutputDto> {
+    const list = await this.repStaticImage.find({
+      where: { project_id, image_type },
+    });
 
-  // * 프로젝트 미니컷 리스트
-  async getMinicutList(project_id: number): Promise<MinicutOutputDto> {
-    const minicuts = await this.repMinicut.find({
+    return { isSuccess: true, list };
+  } // ? END getStaticImageList
+
+  // 단일 리소스 생성
+  async createStaticImage(
+    file: Express.MulterS3.File,
+    image_name: string,
+    project_id: number,
+    image_type: string,
+  ): Promise<StaticImageOutputDto> {
+    const project = await this.repProject.findOne({
       where: { project_id },
     });
 
-    return { isSuccess: true, minicuts };
-  }
-
-  async createMinicut(
-    file: Express.MulterS3.File,
-    title: string,
-    project_id: number,
-  ): Promise<MinicutOutputDto> {
     const { location, key, bucket } = file;
-    const item = this.repMinicut.create({
+    const item = this.repStaticImage.create({
       project_id,
       image_url: location,
       image_key: key,
       bucket,
-      image_name: title,
+      image_name,
+      image_type,
     });
 
+    item.localizations = [];
+    item.localizations.push(
+      this.getDefaultLocalization(item, project.default_lang),
+    );
+
+    item.extension = this.getDefaultExtension();
+
     try {
-      await this.repMinicut.save(item);
+      await this.repStaticImage.save(item);
     } catch (error) {
       this.saveDiscardImage(location, key);
       return { isSuccess: false, error };
     }
 
-    return this.getMinicutList(project_id);
-  } // ? end create minicut
+    return this.getStaticImageList(project_id, image_type);
+  } // ? END createStaicImage
 
-  async createMultiMinicut(
+  async createMultiStaticImage(
     files: Array<Express.MulterS3.File>,
     project_id: number,
-  ): Promise<MinicutOutputDto> {
-    const minicuts: Minicut[] = [];
-    files.forEach((file) => {
-      const item = this.repMinicut.create();
-      item.project_id = project_id;
-      item.image_url = file.location;
-      item.image_key = file.key;
-      item.bucket = item.bucket;
-      item.image_name = path.basename(
-        file.originalname,
-        path.extname(file.originalname),
-      );
+    image_type: string,
+  ): Promise<StaticImageOutputDto> {
+    const list: StoryStaticImage[] = [];
 
-      minicuts.push(item);
+    files.forEach((file) => {
+      const item = this.repStaticImage.create({
+        project_id,
+        image_type,
+        image_url: file.location,
+        image_key: file.key,
+        bucket: file.bucket,
+        image_name: path.basename(
+          file.originalname,
+          path.extname(file.originalname),
+        ),
+      });
+
+      list.push(item);
     });
 
     try {
-      await this.repMinicut.save(minicuts);
+      if (list && list.length > 0) await this.repStaticImage.save(list);
     } catch (error) {
       files.forEach((file) => {
         this.saveDiscardImage(file.location, file.key);
@@ -101,37 +175,28 @@ export class ResourceManagerService {
       return { isSuccess: false, error };
     }
 
-    return this.getMinicutList(project_id);
-  } // ? END of createMultiMinicut
+    return this.getStaticImageList(project_id, image_type);
+  } // ? END createMultiStaticImage
 
-  // 미니컷 리소스 삭제
-  async DeleteMinicut(
-    project_id: number,
-    id: number,
-  ): Promise<MinicutOutputDto> {
-    const item = await this.repMinicut.findOne({ where: { id } });
-    if (!item) {
-      return this.getBackgroundList(project_id);
-    }
-
-    this.saveDiscardImage(item.image_url, item.image_key);
-    await this.repBackground.delete(id);
-
-    return this.getMinicutList(project_id);
-  }
-
-  async updateMinicut(
+  // * 스태틱 이미지 리소스 업데이트
+  async updateStaticImage(
     file: Express.MulterS3.File,
-    updateDto: UpdateMinicutDto,
-    project_id: number,
-  ): Promise<MinicutOutputDto> {
+    updateDto: UpdateStaticImageDto,
+  ): Promise<StaticImageOutputDto> {
+    console.log(`updateStaticImage START`);
+
     let currentDiscard: DiscardResource = null;
     let incomingDiscard: DiscardResource = null;
-    const item = this.repMinicut.create(updateDto);
+
+    const item = this.repStaticImage.create(updateDto);
     item.isUpdated = true; // 업데이트 되었음을 처리
 
-    // 파일이 있는 경우에 대한 처리
+    console.log(item.localizations);
+
     if (file) {
+      // 파일이 변경되었으면 값도 변경
+      console.log(`updateStaticImage has file..`);
+
       // discard에 추가 (기존 이미지는 삭제 )
       currentDiscard = this.repDiscard.create();
       currentDiscard.key = item.image_key;
@@ -149,69 +214,18 @@ export class ResourceManagerService {
 
     // 업데이트
     try {
-      await this.repMinicut.update(item.id, item);
+      console.log(`updateStaticImage UPDATE`);
+      // await this.repStaticImage.update(item.id, item);
+      // await this.repStaticImage.save(item);
+
+      await this.dataSource.manager.save(item);
     } catch (error) {
       // 업데이트 실패시에는 신규파일을 삭제
       if (incomingDiscard) {
         this.repDiscard.save(incomingDiscard);
       }
 
-      return { isSuccess: false, error };
-    }
-
-    // 리턴
-    return this.getMinicutList(updateDto.project_id);
-  } // ? END update Minicut
-
-  //////////////////////////////  미니컷 끝.
-
-  // * 프로젝트 배경 리스트 조회
-  async getBackgroundList(project_id: number): Promise<BackgroundsOutputDto> {
-    const backgrounds = await this.repBackground.find({
-      where: { project_id },
-    });
-
-    return { isSuccess: true, backgrounds };
-  }
-
-  // * 프로젝트 배경 정보 업데이트
-  async updateBackground(
-    file: Express.MulterS3.File,
-    updateDto: UpdateBackgroundDto,
-    project_id: number,
-  ): Promise<BackgroundsOutputDto> {
-    let currentDiscard: DiscardResource = null;
-    let incomingDiscard: DiscardResource = null;
-    const updatedBG = this.repBackground.create(updateDto);
-    updatedBG.isUpdated = true; // 업데이트 되었음을 처리
-
-    if (file) {
-      // 파일이 변경되었으면 값도 변경
-
-      // discard에 추가 (기존 이미지는 삭제 )
-      currentDiscard = this.repDiscard.create();
-      currentDiscard.key = updatedBG.image_key;
-      currentDiscard.url = updatedBG.image_url;
-
-      // 방금 업로드된 신규 파일
-      incomingDiscard = this.repDiscard.create();
-      incomingDiscard.key = file.key;
-      incomingDiscard.url = file.location;
-
-      updatedBG.image_key = file.key;
-      updatedBG.image_url = file.location;
-      updatedBG.bucket = file.bucket;
-    }
-
-    // 업데이트
-    try {
-      await this.repBackground.update(updatedBG.id, updatedBG);
-    } catch (error) {
-      // 업데이트 실패시에는 신규파일을 삭제
-      if (incomingDiscard) {
-        this.repDiscard.save(incomingDiscard);
-      }
-
+      console.log(error);
       return { isSuccess: false, error };
     }
 
@@ -221,93 +235,80 @@ export class ResourceManagerService {
     }
 
     // 리턴
-    return this.getBackgroundList(updateDto.project_id);
+    return this.getStaticImageList(updateDto.project_id, updateDto.image_type);
   }
 
-  // 배경 생성
-  async createBackground(
+  // * 스태틱 리소스 이미지 삭제
+  async DeleteStaticImage(id: number): Promise<StaticImageOutputDto> {
+    const item = await this.repStaticImage.findOne({ where: { id } });
+
+    const { project_id, image_type } = item;
+
+    if (!item) {
+      return this.getStaticImageList(project_id, image_type);
+    }
+
+    this.saveDiscardImage(item.image_url, item.image_key);
+    await this.repStaticImage.delete(id);
+
+    return this.getStaticImageList(project_id, image_type);
+  }
+
+  //
+  getDefaultExtension() {
+    return this.repPublicExtension.create({
+      thumbnail_url: null,
+      thumbnail_key: null,
+      bucket: null,
+    });
+  }
+
+  // Default Image Localization 생성
+  getDefaultLocalization(
+    item: StoryStaticImage,
+    default_lang: string,
+  ): ImageLocalization {
+    return this.repImageLocalization.create({
+      lang: default_lang,
+      public_name: item.image_name,
+      summary: '',
+    });
+  }
+
+  // Static Image Thumbnail 업데이트
+  async updateStaticThumbnail(
     file: Express.MulterS3.File,
-    title: string,
-    project_id: number,
-  ): Promise<BackgroundsOutputDto> {
+    id: number,
+  ): Promise<ThumbnailOutputDto> {
+    // 파일이 없는 경우.
+    if (!file) {
+      return { isSuccess: false, error: 'invalid file' };
+    }
+
+    const item = await this.repStaticImage.findOne({ where: { id } });
     const { location, key, bucket } = file;
 
-    const newBackground = this.repBackground.create();
-    newBackground.project_id = project_id;
-    newBackground.image_url = location;
-    newBackground.image_key = key;
-    newBackground.bucket = bucket;
-    newBackground.image_name = title;
+    // 소속된 리소스가 없는 경우.
+    if (!item) {
+      return { isSuccess: false, error: 'invalid resource id' };
+    }
+
+    // upload된 값 저장
+    item.extension.thumbnail_url = location;
+    item.extension.thumbnail_key = key;
+    item.extension.bucket = bucket;
 
     try {
-      await this.repBackground.save(newBackground);
+      await this.repStaticImage.save(item);
     } catch (error) {
-      const discardItem = this.repDiscard.create();
-      discardItem.key = newBackground.image_key;
-      discardItem.url = newBackground.image_url;
-      this.repDiscard.save(discardItem);
-      return { isSuccess: false, error };
+      console.log(error);
     }
 
-    return this.getBackgroundList(project_id);
-  } // ? END createBackground
-
-  // 멀티 배경 생성
-  async createMultiBackground(
-    files: Array<Express.MulterS3.File>,
-    project_id: number,
-  ): Promise<BackgroundsOutputDto> {
-    const backgrounds: Background[] = [];
-
-    files.forEach((item) => {
-      const newBG = this.repBackground.create();
-      newBG.project_id = project_id;
-      newBG.image_url = item.location;
-      newBG.image_key = item.key;
-      newBG.bucket = item.bucket;
-      newBG.image_name = path.basename(
-        item.originalname,
-        path.extname(item.originalname),
-      );
-
-      backgrounds.push(newBG);
-    });
-
-    try {
-      await this.repBackground.save(backgrounds);
-    } catch (error) {
-      const discards: DiscardResource[] = [];
-
-      // 실패시 discard 에 입력
-      files.forEach((item) => {
-        const discardItem = this.repDiscard.create();
-        discardItem.key = item.key;
-        discardItem.url = item.location;
-
-        discards.push(discardItem);
-      });
-
-      this.repDiscard.save(discards);
-
-      return { isSuccess: false, error };
-    }
-
-    return this.getBackgroundList(project_id);
-  } // ? END createMultiBackground
-
-  // * 배경 리소스 삭제
-  async DeleteBackground(
-    project_id: number,
-    id: number,
-  ): Promise<BackgroundsOutputDto> {
-    const bg = await this.repBackground.findOne({ where: { id } });
-    if (!bg) {
-      return this.getBackgroundList(project_id);
-    }
-
-    this.saveDiscardImage(bg.image_url, bg.image_key);
-    await this.repBackground.delete(id);
-
-    return this.getBackgroundList(project_id);
+    return {
+      isSuccess: true,
+      thumbnail_url: location,
+      thumbnail_key: key,
+      bucket,
+    };
   }
 }

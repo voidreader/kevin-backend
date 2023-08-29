@@ -25,11 +25,13 @@ import { TextLocalize } from './common/entities/text-localize.entity';
 import { StandardInfo } from './common/entities/standard-info.entity';
 import { ResourceUploaderModule } from './resource-uploader/resource-uploader.module';
 import { ResourceManagerModule } from './resource-manager/resource-manager.module';
-import { Background } from './resource-manager/entities/background.entity';
+
 import { ResourceManagerService } from './resource-manager/resource-manager.service';
 import { DiscardResource } from './resource-manager/entities/discard-resource.entity';
-import { Minicut } from './resource-manager/entities/minicut.entity';
-import { ResourceLocalize } from './resource-manager/entities/resource-localize.entity';
+
+import { ImageLocalization } from './resource-manager/entities/image-localization.entity';
+import { StoryStaticImage } from './resource-manager/entities/story-static-image.entity';
+import { PublicExtension } from './resource-manager/entities/public-extension.entity';
 
 @Module({
   imports: [
@@ -53,10 +55,10 @@ import { ResourceLocalize } from './resource-manager/entities/resource-localize.
         ProjectDetail,
         TextLocalize,
         StandardInfo,
-        Background,
-        Minicut,
-        ResourceLocalize,
         DiscardResource,
+        ImageLocalization,
+        StoryStaticImage,
+        PublicExtension,
       ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
       logging: process.env.NODE_ENV !== 'prod',

@@ -1,14 +1,26 @@
 import { CoreOutput } from 'src/common/dto/output.dto';
-import { Background } from '../entities/background.entity';
-import { OmitType, PartialType } from '@nestjs/mapped-types';
-import { Minicut } from '../entities/minicut.entity';
 
-export class BackgroundsOutputDto extends CoreOutput {
-  backgrounds?: Background[] = [];
-}
-export class MinicutOutputDto extends CoreOutput {
-  minicuts?: Minicut[] = [];
+import {
+  IntersectionType,
+  OmitType,
+  PartialType,
+  PickType,
+} from '@nestjs/mapped-types';
+import { StoryStaticImage } from '../entities/story-static-image.entity';
+import { PublicExtension } from '../entities/public-extension.entity';
+
+export class StaticImageOutputDto extends CoreOutput {
+  list?: StoryStaticImage[] = [];
 }
 
-export class UpdateBackgroundDto extends PartialType(Background) {}
-export class UpdateMinicutDto extends PartialType(Minicut) {}
+export class UpdateStaticImageDto extends PartialType(StoryStaticImage) {}
+
+export class ThumbnailOutputDto extends IntersectionType(
+  CoreOutput,
+  PartialType(
+    PickType(PublicExtension, ['thumbnail_url', 'thumbnail_key', 'bucket']),
+  ),
+) {}
+
+// export class UpdateBackgroundDto extends PartialType(Background) {}
+// export class UpdateMinicutDto extends PartialType(Minicut) {}

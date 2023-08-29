@@ -8,15 +8,17 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Put,
 } from '@nestjs/common';
 import { ResourceManagerService } from './resource-manager.service';
-import { Background } from './entities/background.entity';
-import {
-  BackgroundsOutputDto,
-  UpdateBackgroundDto,
-} from './dto/resource-manager.dto';
+
 import { FileInterceptor } from '@nestjs/platform-express';
-import { RESOURCE_BG, RESOURCE_MINICUT } from 'src/common/common.const';
+import {
+  RESOURCE_BG,
+  RESOURCE_ILLUST,
+  RESOURCE_MINICUT,
+} from 'src/common/common.const';
+import { UpdateStaticImageDto } from './dto/resource-manager.dto';
 
 @Controller('resource-manager')
 export class ResourceManagerController {
@@ -25,46 +27,48 @@ export class ResourceManagerController {
   ) {}
 
   // 리소스 리스트 조회 (기본)
-  @Get(':project_id/:type')
+  @Get(':project_id/:image_type')
   getBackgroundList(
     @Param('project_id') project_id: number,
-    @Param('type') type: string,
+    @Param('image_type') image_type: string,
   ): Promise<any> {
-    // console.log(`getBackgroundList : `, project_id);
-
-    if (type == RESOURCE_BG)
-      return this.resourceManagerService.getBackgroundList(project_id);
-    else if (type == RESOURCE_MINICUT)
-      return this.resourceManagerService.getMinicutList(project_id);
+    switch (image_type) {
+      case RESOURCE_BG:
+      case RESOURCE_MINICUT:
+      case RESOURCE_ILLUST:
+        return this.resourceManagerService.getStaticImageList(
+          project_id,
+          image_type,
+        );
+    }
   }
 
-  // 배경 리소스 업데이트
-  @Post('/update/:project_id/bg')
+  // Static 리소스 업데이트
+  @Patch('/static')
   @UseInterceptors(FileInterceptor('file'))
-  updateBackground(
+  updateStoryResource(
     @UploadedFile() file: Express.MulterS3.File,
-    @Body() updateDto: UpdateBackgroundDto,
-    @Param('project_id') project_id: number,
+    @Body() updateDto: UpdateStaticImageDto,
   ) {
-    return this.resourceManagerService.updateBackground(
-      file,
-      updateDto,
-      project_id,
-    );
+    console.log(`updateStoryResource :`, updateDto);
+
+    return this.resourceManagerService.updateStaticImage(file, updateDto);
   }
 
-  @Delete('/update/:project_id/:type/:id')
-  DeleteResource(
+  @Delete('/static/:id')
+  DeleteResource(@Param('id') id: number) {
+    this.resourceManagerService.DeleteStaticImage(id);
+  }
+
+  // Thumbnail 업로드
+  @Post(`/static-thumbnail/:project_id/:type/:id`)
+  @UseInterceptors(FileInterceptor('file'))
+  updateStaticThumbnail(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('id') id: number,
     @Param('project_id') project_id: number,
     @Param('type') type: string,
-    @Param('id') id: number,
   ) {
-    if (type == RESOURCE_BG) {
-      return this.resourceManagerService.DeleteBackground(project_id, id);
-    } else if (type == RESOURCE_MINICUT) {
-      return this.resourceManagerService.DeleteMinicut(project_id, id);
-    } else {
-      return `invalid type`;
-    }
+    return this.resourceManagerService.updateStaticThumbnail(file, id);
   }
 }

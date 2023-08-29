@@ -7,10 +7,11 @@ import { multerOptionFactory } from 'src/common/utils/multer.option';
 import { ResourceManagerService } from 'src/resource-manager/resource-manager.service';
 import { ResourceManagerModule } from 'src/resource-manager/resource-manager.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Background } from 'src/resource-manager/entities/background.entity';
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
-import { Minicut } from 'src/resource-manager/entities/minicut.entity';
-import { ResourceLocalize } from 'src/resource-manager/entities/resource-localize.entity';
+import { ImageLocalization } from 'src/resource-manager/entities/image-localization.entity';
+import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
+import { Project } from 'src/database/produce_entity/project.entity';
+import { PublicExtension } from 'src/resource-manager/entities/public-extension.entity';
 
 @Module({
   imports: [
@@ -20,10 +21,11 @@ import { ResourceLocalize } from 'src/resource-manager/entities/resource-localiz
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([
-      Background,
       DiscardResource,
-      Minicut,
-      ResourceLocalize,
+      ImageLocalization,
+      StoryStaticImage,
+      Project,
+      PublicExtension,
     ]),
   ],
 
