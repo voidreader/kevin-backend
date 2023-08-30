@@ -44,7 +44,7 @@ export class TextLocalize extends DeployEntity {
   @Column({ length: 150, default: '-' })
   memo: string;
 
-  @Column({ select: false, default: true })
+  @Column({ select: false, default: true, type: 'boolean' })
   isUpdated: boolean; // 컨텐츠 배포 이후 수정 발생 여부
 
   @Column({ select: false, nullable: true })

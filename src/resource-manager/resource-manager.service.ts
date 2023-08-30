@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import {
+  StaticImageDetailOutputDto,
   StaticImageOutputDto,
   ThumbnailOutputDto,
   UpdateStaticImageDto,
@@ -16,6 +17,14 @@ import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { ConfigService } from '@nestjs/config';
 import { PublicExtension } from './entities/public-extension.entity';
+import {
+  OLD_Q_COPY_LIST_BG,
+  OLD_Q_COPY_LIST_MINICUT,
+  OLD_Q_COPY_LIST_MINICUT_LANG,
+  OLD_Q_COPY_LIST_MINICUT_THUMBNAIL,
+} from 'src/common/origin-schema.query';
+import { RESOURCE_BG, RESOURCE_MINICUT } from 'src/common/common.const';
+import { of } from 'rxjs';
 
 @Injectable()
 export class ResourceManagerService {
@@ -36,6 +45,79 @@ export class ResourceManagerService {
 
     private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
+
+  // * 올드 데이터 카피, 컨버팅
+  async copyOriginStaticImageResource(project_id: number, type: string) {
+    let result: StoryStaticImage[];
+    const updateItems: StoryStaticImage[] = [];
+
+    if (type == RESOURCE_BG)
+      result = await this.dataSource.query(OLD_Q_COPY_LIST_BG, [project_id]);
+    else if (type == RESOURCE_MINICUT)
+      result = await this.dataSource.query(OLD_Q_COPY_LIST_MINICUT, [
+        project_id,
+      ]);
+    else {
+      return { isSuccess: false, error: 'Wrong type' };
+    }
+
+    console.log(`result origin data count : `, result.length);
+
+    for (const origin of result) {
+      console.log(`in for : `, origin);
+
+      // 공개된 미니컷에 대한 추가 처리
+      if (origin.is_public && origin.image_type == RESOURCE_MINICUT) {
+        console.log(`is public !!!!!!!!!!!!!!!!!`);
+
+        // localizations
+        origin.localizations = await this.dataSource.query(
+          OLD_Q_COPY_LIST_MINICUT_LANG,
+          [origin.id, origin.image_type],
+        );
+
+        const extensions = await this.dataSource.query(
+          OLD_Q_COPY_LIST_MINICUT_THUMBNAIL,
+          [origin.id],
+        );
+
+        origin.extension = extensions[0];
+      } else {
+        origin.extension = this.getDefaultExtension();
+        origin.localizations = [];
+        origin.localizations.push(this.getDefaultLocalization(origin, 'KO'));
+      }
+
+      updateItems.push(origin);
+    }
+
+    // result.forEach((origin) => {
+    //   // const item: StoryStaticImage = this.repStaticImage.create(origin);
+    //   // const item = items[0];
+
+    //   // console.log(`origin check : `, item);
+    //   origin.extension = this.getDefaultExtension();
+    //   origin.localizations = [];
+    //   origin.localizations.push(this.getDefaultLocalization(origin, 'KO'));
+    // });
+
+    try {
+      console.log('Start... Insert');
+
+      await this.repStaticImage.save(updateItems);
+    } catch (error) {
+      if (
+        error.driverError &&
+        error.driverError.code &&
+        error.driverError.sqlMessage
+      ) {
+        return { isSuccess: false, error: error.driverError.sqlMessage };
+      } else return { isSuccess: false, error };
+    }
+
+    // console.log(result);
+    return { isSuccess: true, total: result.length };
+  } // ? END copy.
 
   // * default 데이터 만들기
   async createDefaultStaticResourceData(item: StoryStaticImage) {
@@ -90,6 +172,19 @@ export class ResourceManagerService {
     discardItem.url = url;
 
     this.repDiscard.save(discardItem);
+  }
+
+  // * Static Image 리소스 상세정보
+  async getStaticResourceDetail(
+    id: number,
+  ): Promise<StaticImageDetailOutputDto> {
+    const item = await this.repStaticImage.findOne({ where: { id } });
+
+    if (!item) {
+      return { isSuccess: false, error: `Can't find the resource` };
+    }
+
+    return { isSuccess: true, detail: item };
   }
 
   // * Static 이미지 리스트 가져오기 (배경, 일러스트 미니컷)

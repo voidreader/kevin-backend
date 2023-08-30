@@ -29,7 +29,11 @@ export class ImageLocalization extends CoreEntity {
   @Column({ length: 500, default: '-' })
   summary: string;
 
-  @ManyToOne(() => StoryStaticImage, (staticImage) => staticImage.localizations)
+  @ManyToOne(
+    () => StoryStaticImage,
+    (staticImage) => staticImage.localizations,
+    { onDelete: 'CASCADE' },
+  )
   @JoinColumn([
     { name: 'resource_id', referencedColumnName: 'id' },
     { name: 'resource_type', referencedColumnName: 'image_type' },

@@ -13,6 +13,10 @@ export class StaticImageOutputDto extends CoreOutput {
   list?: StoryStaticImage[] = [];
 }
 
+export class StaticImageDetailOutputDto extends CoreOutput {
+  detail?: StoryStaticImage;
+}
+
 export class UpdateStaticImageDto extends PartialType(StoryStaticImage) {}
 
 export class ThumbnailOutputDto extends IntersectionType(

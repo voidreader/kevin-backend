@@ -29,10 +29,17 @@ export class CommonImageResourceEntity extends CoreDeployEntity {
 
   @Column({ default: 1 })
   game_scale: number;
+
+  @Column({ default: 0, type: 'float', comment: '위치 오프셋 X좌표' })
+  offset_x: number;
+
+  @Column({ default: 0, type: 'float', comment: '위치 오프셋 X좌표' })
+  offset_y: number;
+
   @Column({ default: 0 })
   sortkey: number;
 
-  @Column({ default: false })
+  @Column({ default: false, type: 'boolean' })
   is_public: boolean; // 공개 여부(앨범, 메모리 등)
 
   @Column({ nullable: true, length: 30 })
