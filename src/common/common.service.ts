@@ -36,4 +36,15 @@ export class CommonService {
       `);
     }
   }
+
+  // * 말풍선 세트 dropdown
+  getAvailableBubbleSet(lang: string = 'EN'): Promise<any> {
+    // 구 버전 데이터베이스 그대로 사용. 나중에 이관
+    return this.dataSource.query(`
+     SELECT a.set_id code
+          , a.set_name code_name
+        FROM pier.com_bubble_master a
+      WHERE a.bubble_type  = 'half'
+      ORDER BY a.set_id;`);
+  }
 }

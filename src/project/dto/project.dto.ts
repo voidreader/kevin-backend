@@ -19,8 +19,4 @@ export class SingleProjectOutputDto extends CoreOutput {
 }
 
 // 프로젝트 수정 DTO
-export class UpdateProjectInputDto extends IntersectionType(
-  PickType(Project, ['bubble_set_id', 'prime_currency_text_id']),
-) {
-  details: ProjectDetail[];
-}
+export class UpdateProjectInputDto extends PartialType(Project) {}

@@ -6,7 +6,7 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import * as https from 'https';
 import * as http from 'http';
 
-console.log(__dirname);
+console.log(`__dirname :: `, __dirname);
 
 const httpsOptions = {
   ca: fs.readFileSync(`./secret/ca-chain-bundle.pem`),

@@ -26,5 +26,8 @@ export class CommonController {
   }
 
   // 말풍선세트 dropdown
-  getBubbleSetDropdown() {}
+  @Get(`/etc/bubble`)
+  getBubbleSetDropdown(@Query('lang') lang: string = 'EN'): Promise<any> {
+    return this.commonService.getAvailableBubbleSet(lang);
+  }
 }

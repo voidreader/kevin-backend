@@ -82,7 +82,9 @@ export class ProjectService {
         .getMany();
     }
 
-    // const projects = await this.dataSource.createQueryBuilder()
+    projects.forEach((p) => {
+      p.title = this.getProjectDefaultTitle(p);
+    });
 
     return {
       isSuccess: true,
@@ -145,54 +147,19 @@ export class ProjectService {
     inputDto: UpdateProjectInputDto,
   ): Promise<SingleProjectOutputDto> {
     const repProject = this.dataSource.getRepository(Project);
-    const repProjectDetail = this.dataSource.getRepository(ProjectDetail);
-    const details: ProjectDetail[] = [];
+    let modifiedProject: Project;
 
-    const project = await repProject.findOneBy({ project_id: __project_id });
-
-    console.log(`## project : `, project);
-
-    // 프로젝트가 없으면
-    if (!project) {
-      return { isSuccess: false, error: 'Inavlid project param' };
+    try {
+      modifiedProject = await repProject.save(inputDto);
+    } catch (error) {
+      return { isSuccess: false, error };
     }
 
-    // 프로젝트 메인의 값 수정
-    project.bubble_set_id = inputDto.bubble_set_id;
-    project.prime_currency_text_id = inputDto.prime_currency_text_id;
-    // 상세정보는 eager:true로 같이 불러온다. (project.projectDetails)
+    const output = new SingleProjectOutputDto();
+    output.isSuccess = true;
+    output.project = modifiedProject;
 
-    // detail 처리
-    inputDto.details.forEach((detail) => {
-      if (detail.title) {
-        // console.log(detail.lang);
-
-        detail.project = project; // 프로젝트 연결해주고
-
-        const matchDetail = project.projectDetails.find(
-          (item) => item.lang === detail.lang,
-        );
-
-        console.log(`## matchDetail : `, matchDetail);
-
-        // 같은 lang 이 있으면 id 할당.
-        if (matchDetail) {
-          console.log(`find id!`);
-          detail.id = matchDetail.id;
-        }
-
-        details.push(detail); // push
-      }
-    });
-
-    console.log(`## save details : `, details);
-
-    // detail 저장
-    if (details.length > 0) repProjectDetail.save(details);
-
-    repProject.save(project);
-
-    return { project, isSuccess: true };
+    return output;
   } // ? end of update
 
   findAll() {
@@ -200,12 +167,19 @@ export class ProjectService {
   }
 
   // * 작품 상세 정보 조회
-  async findOne(id: number) {
+  async findOne(id: number): Promise<SingleProjectOutputDto> {
     const repProject = this.dataSource.getRepository(Project);
     const project = await repProject.findOneBy({ project_id: id });
-    console.log(project);
 
-    return project;
+    project.title = this.getProjectDefaultTitle(project);
+
+    const output = new SingleProjectOutputDto();
+    output.isSuccess = true;
+    output.project = project;
+
+    // console.log(project);
+
+    return output;
   } // ? end of findOne
 
   // update(id: number, updateStoryDto: UpdateStoryDto) {
@@ -214,5 +188,20 @@ export class ProjectService {
 
   remove(id: number) {
     return `This action removes a #${id} story`;
+  }
+
+  // 작품의 default title 구해오기.
+  getProjectDefaultTitle(project: Project): string {
+    let projectTitle: string = '';
+
+    if (project.projectDetails) {
+      project.projectDetails.forEach((item) => {
+        if (item.lang == project.default_lang) {
+          projectTitle = item.title;
+        }
+      });
+    }
+
+    return projectTitle;
   }
 }
