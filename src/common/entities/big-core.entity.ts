@@ -5,9 +5,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export class CoreEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class BigCoreEntity {
+  @PrimaryGeneratedColumn({ type: 'bigint' })
+  id: string;
 
   // 생성된 시간
   @CreateDateColumn({ select: false })

@@ -3,8 +3,8 @@ import { CoreEntity } from './core.entity';
 
 export class CoreDeployEntity extends CoreEntity {
   @Column({ select: false, default: true, type: 'boolean' })
-  isUpdated: boolean; // 컨텐츠 배포 이후 수정 발생 여부
+  is_updated: boolean; // 컨텐츠 배포 이후 수정 발생 여부
 
   @Column({ select: false, nullable: true })
-  lastDeployedAt: Date; // 마지막 배포 시간
+  last_deployed_at: Date; // 마지막 배포 시간
 }

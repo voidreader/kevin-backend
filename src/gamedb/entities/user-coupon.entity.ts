@@ -1,13 +1,22 @@
 import {
   Column,
   CreateDateColumn,
-  PrimaryGeneratedColumn,
+  Entity,
+  PrimaryColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
-export class CoreEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Entity({ database: 'game' })
+export class UserCoupon {
+  @PrimaryColumn()
+  userkey: number;
+
+  @PrimaryColumn()
+  coupon_id: number;
+
+  @PrimaryColumn({ length: 20 })
+  coupon_code: string;
 
   // 생성된 시간
   @CreateDateColumn({ select: false })

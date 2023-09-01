@@ -284,7 +284,7 @@ export class ResourceManagerService {
     let incomingDiscard: DiscardResource = null;
 
     const item = this.repStaticImage.create(updateDto);
-    item.isUpdated = true; // 업데이트 되었음을 처리
+    item.is_updated = true; // 업데이트 되었음을 처리
 
     console.log(item.localizations);
 

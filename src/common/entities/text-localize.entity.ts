@@ -12,7 +12,7 @@ import {
 
 // * 로컬라이즈 텍스트
 @Entity()
-@Index(['isUpdated', 'lastDeployedAt'], { unique: false })
+@Index(['is_updated', 'last_deployed_at'], { unique: false })
 export class TextLocalize extends DeployEntity {
   @PrimaryGeneratedColumn()
   text_id: number;
@@ -45,8 +45,8 @@ export class TextLocalize extends DeployEntity {
   memo: string;
 
   @Column({ select: false, default: true, type: 'boolean' })
-  isUpdated: boolean; // 컨텐츠 배포 이후 수정 발생 여부
+  is_updated: boolean; // 컨텐츠 배포 이후 수정 발생 여부
 
   @Column({ select: false, nullable: true })
-  lastDeployedAt: Date; // 마지막 배포 시간
+  last_deployed_at: Date; // 마지막 배포 시간
 }
