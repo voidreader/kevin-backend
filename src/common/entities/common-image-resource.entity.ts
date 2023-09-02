@@ -3,10 +3,13 @@ import { CoreDeployEntity } from './core-deploy.entity';
 import { IsEnum } from 'class-validator';
 
 // 정적 이미지 리소스 타입
-export enum ImageResourceType {
+export enum VisualResourceType {
   minicut = 'minicut',
   bg = 'bg',
   illust = 'illust',
+  live_object = 'live_object',
+  live_illust = 'live_illust',
+  live_bg = 'live_bg',
 }
 
 // * 일반 이미지 리소스 Entity
@@ -14,8 +17,8 @@ export class CommonImageResourceEntity extends CoreDeployEntity {
   @Column({ default: 0 })
   project_id: number; // 연결 프로젝트 ID
 
-  @Column({ type: 'enum', enum: ImageResourceType })
-  @IsEnum(ImageResourceType)
+  @Column({ type: 'enum', enum: VisualResourceType })
+  @IsEnum(VisualResourceType)
   image_type: string;
 
   @Column({ length: 30 })

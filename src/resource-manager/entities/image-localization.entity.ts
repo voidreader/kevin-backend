@@ -9,15 +9,15 @@ import {
   Unique,
 } from 'typeorm';
 
-import { ImageResourceType } from 'src/common/entities/common-image-resource.entity';
+import { VisualResourceType } from 'src/common/entities/common-image-resource.entity';
 import { StoryStaticImage } from './story-static-image.entity';
 
 // * 이미지 리소스 로컬라이징 정보
 
 @Entity()
 export class ImageLocalization extends CoreEntity {
-  @Column({ type: 'enum', enum: ImageResourceType })
-  @IsEnum(ImageResourceType)
+  @Column({ type: 'enum', enum: VisualResourceType })
+  @IsEnum(VisualResourceType)
   resource_type: string; // minicut, illust, live_object, live_illust 일단 4가지.
 
   @Column({ length: 10 })

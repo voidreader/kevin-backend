@@ -32,6 +32,7 @@ import { DiscardResource } from './resource-manager/entities/discard-resource.en
 import { ImageLocalization } from './resource-manager/entities/image-localization.entity';
 import { StoryStaticImage } from './resource-manager/entities/story-static-image.entity';
 import { PublicExtension } from './resource-manager/entities/public-extension.entity';
+import { LiveResource } from './resource-manager/entities/live-resource.entity';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { PublicExtension } from './resource-manager/entities/public-extension.en
         ImageLocalization,
         StoryStaticImage,
         PublicExtension,
+        LiveResource,
         __dirname + '/database/**/*.entity.*',
       ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
