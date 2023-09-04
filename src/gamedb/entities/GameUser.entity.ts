@@ -19,7 +19,7 @@ export enum osTypeEnum {
 @Entity({ database: 'game' })
 @Unique('user_unique_001', ['uid'])
 @Index(['device_id'])
-export class User {
+export class GameUser {
   @PrimaryGeneratedColumn()
   userkey: number;
 
@@ -35,7 +35,7 @@ export class User {
   @Column({ default: 30, comment: '주 재화 보유 수량' })
   prime_currency: number;
 
-  @Column({ length: 128, comment: 'Device 식별자' })
+  @Column({ length: 128, comment: 'Device 식별자', default: '-' })
   device_id: string; // 디바이스 ID
 
   @Column({ length: 128, unique: true, comment: '타사 연결 id' })

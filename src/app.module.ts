@@ -33,6 +33,8 @@ import { ImageLocalization } from './resource-manager/entities/image-localizatio
 import { StoryStaticImage } from './resource-manager/entities/story-static-image.entity';
 import { PublicExtension } from './resource-manager/entities/public-extension.entity';
 import { LiveResource } from './resource-manager/entities/live-resource.entity';
+import { MigrationModule } from './migration/migration.module';
+import { LiveResourceDetail } from './resource-manager/entities/live-resource-detail.entity';
 
 @Module({
   imports: [
@@ -58,6 +60,7 @@ import { LiveResource } from './resource-manager/entities/live-resource.entity';
         StoryStaticImage,
         PublicExtension,
         LiveResource,
+        LiveResourceDetail,
         __dirname + '/database/**/*.entity.*',
       ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
@@ -108,6 +111,8 @@ import { LiveResource } from './resource-manager/entities/live-resource.entity';
     ResourceUploaderModule,
 
     ResourceManagerModule,
+
+    MigrationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

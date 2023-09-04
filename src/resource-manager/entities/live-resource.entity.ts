@@ -1,7 +1,8 @@
 import { CoreDeployEntity } from 'src/common/entities/core-deploy.entity';
-import { Column, Entity, Unique } from 'typeorm';
+import { Column, Entity, OneToMany, Unique } from 'typeorm';
 import { IsEnum } from 'class-validator';
 import { VisualResourceType } from 'src/common/entities/common-image-resource.entity';
+import { LiveResourceDetail } from './live-resource-detail.entity';
 
 //* Live Objec,t Live Illust, Live BG 엔터티
 
@@ -45,4 +46,9 @@ export class LiveResource extends CoreDeployEntity {
   thumbnail_key: string;
   @Column({ length: 30, nullable: true })
   bucket: string;
+
+  @OneToMany(() => LiveResourceDetail, (detail) => detail.parent, {
+    eager: true,
+  })
+  details: LiveResourceDetail[];
 }
