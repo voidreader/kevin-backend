@@ -20,7 +20,9 @@ export class ItemLang extends CoreEntity {
   @Column({ nullable: true, length: 60 })
   item_name: string;
 
-  @ManyToOne((type) => Item, (item) => item.localizations)
+  @ManyToOne((type) => Item, (item) => item.localizations, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'item_id' })
   item: Item;
 }

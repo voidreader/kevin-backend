@@ -115,22 +115,21 @@ export class MigrationService {
         item.extension = extensions[0];
       }
 
-      try {
-        console.log(item);
-        await this.repItem.save(item);
-      } catch (error) {
-        return { isSuccess: false, error };
-      }
+      // try {
+      //   console.log(item);
+      //   await this.repItem.save(item);
+      // } catch (error) {
+      //   return { isSuccess: false, error };
+      // }
     } // ? end of for
 
     console.log('Save Start... items count : ', items.length);
 
-    // try {
-    //   await this.repItem.save(items);
-
-    // } catch (error) {
-    //   return { isSuccess: false, error };
-    // }
+    try {
+      await this.repItem.save(items);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
 
     return { isSuccess: true, total: items.length };
   } // ? end of copy item

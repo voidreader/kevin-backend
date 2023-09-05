@@ -18,10 +18,8 @@ import { StoryStaticImage } from 'src/resource-manager/entities/story-static-ima
 // * 아이템의 확장 정보 (판매 등의 정보)
 
 @Entity()
-@Index('IDX_item_parent', ['item'])
 export class ItemExtension extends CoreEntity {
   @Column({ length: 30, comment: '제품 판매 형태' })
-  @IsIn(['free', 'coupon', 'gameplay'])
   product_type: string;
 
   @Column({ default: 0 })
@@ -37,10 +35,6 @@ export class ItemExtension extends CoreEntity {
 
   @Column({ type: 'boolean', default: true })
   is_public: boolean;
-
-  @OneToOne((type) => Item, (item) => item.extension)
-  @JoinColumn({ name: 'item_id' })
-  item: Item;
 
   @Column({ comment: '연결되는 이미지 리소스 id', default: -1 })
   static_id: number;

@@ -63,7 +63,7 @@ export class Item extends CoreDeployEntity {
   })
   localizations: ItemLang[];
 
-  @OneToOne((type) => ItemExtension, (ext) => ext.item, {
+  @OneToOne((type) => ItemExtension, {
     eager: true,
     cascade: ['insert', 'remove', 'update'],
   })
