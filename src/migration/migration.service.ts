@@ -44,7 +44,7 @@ export class MigrationService {
         , pier.fn_get_design_info(a.icon_image_id, 'key') icon_key
         , pier.fn_get_design_info(a.resource_image_id, 'url') image_url
         , pier.fn_get_design_info(a.resource_image_id, 'key') image_key
-        , a.model_id AS resource_image_id 
+        , a.model_id AS resource_id 
         , a.currency
     FROM pier.com_currency a
     WHERE connected_project = ?;    
@@ -98,15 +98,15 @@ export class MigrationService {
       let extensions: ItemExtension[];
       extensions = await this.dataSource.query(
         `
-      SELECT a.product_type 
-     , a.price 
-     , a.sale_price 
-     , a.start_date as sale_start_date
-     , a.end_date AS sale_end_date
-     , a.is_public 
-     , a.connected_bg AS static_id
-  FROM pier.com_coin_product a
- WHERE a.currency = ?;
+          SELECT a.product_type 
+        , a.price 
+        , a.sale_price 
+        , a.start_date as sale_start_date
+        , a.end_date AS sale_end_date
+        , a.is_public 
+        , ifnull(a.connected_bg, -1) AS static_id
+      FROM pier.com_coin_product a
+    WHERE a.currency = ?;
       `,
         [item.currency],
       );
@@ -114,13 +114,23 @@ export class MigrationService {
       if (extensions.length > 0) {
         item.extension = extensions[0];
       }
+
+      try {
+        console.log(item);
+        await this.repItem.save(item);
+      } catch (error) {
+        return { isSuccess: false, error };
+      }
     } // ? end of for
 
-    try {
-      await this.repItem.save(items);
-    } catch (error) {
-      return { isSuccess: false, error };
-    }
+    console.log('Save Start... items count : ', items.length);
+
+    // try {
+    //   await this.repItem.save(items);
+
+    // } catch (error) {
+    //   return { isSuccess: false, error };
+    // }
 
     return { isSuccess: true, total: items.length };
   } // ? end of copy item

@@ -42,8 +42,6 @@ export class ItemExtension extends CoreEntity {
   @JoinColumn({ name: 'item_id' })
   item: Item;
 
-  // 연결되는 배경 이미지 등을 위한 관계 추가
-  @OneToOne(() => StoryStaticImage)
-  @JoinColumn({ name: 'static_id' })
-  connectedImage: StoryStaticImage;
+  @Column({ comment: '연결되는 이미지 리소스 id', default: -1 })
+  static_id: number;
 }

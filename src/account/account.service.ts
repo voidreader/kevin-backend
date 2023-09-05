@@ -108,7 +108,7 @@ export class AccountService {
     // 따로 인증코드 검증을 아직 실행하지 않음(2023.08)
 
     account.verified = true;
-    account = await this.accounts.save(account);
+    // account = await this.accounts.save(account);
 
     return {
       account,
