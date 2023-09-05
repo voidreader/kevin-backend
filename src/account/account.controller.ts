@@ -11,9 +11,11 @@ import { AccountService } from './account.service';
 import {
   CreateAccountInputDto,
   CreateAccountOutputDto,
+  VerifyInputDto,
 } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
+import { verify } from 'crypto';
 
 @Controller('account')
 export class AccountController {
@@ -32,8 +34,8 @@ export class AccountController {
   }
 
   @Post('verify')
-  async verify(@Param('code') code: string, @Param('email') email: string) {
-    return this.accountService.verify(email, code);
+  async verify(@Body() verifyInput: VerifyInputDto) {
+    return this.accountService.verify(verifyInput.email, verifyInput.code);
   }
 
   @Get()

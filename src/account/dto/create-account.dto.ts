@@ -10,6 +10,10 @@ export class CreateAccountInputDto extends PickType(Account, [
   passwordConfirm: string;
 }
 
+export class VerifyInputDto extends PickType(Account, ['email']) {
+  code: string;
+}
+
 export class CreateAccountOutputDto extends CoreOutput {
   account?: Account;
 }

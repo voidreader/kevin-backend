@@ -66,6 +66,25 @@ export class MigrationService {
       );
 
       const textRow = queryResult[0]; // textRow 가져와서.
+      item.localizations = [];
+      item.localizations.push(
+        this.repItemLang.create({
+          lang: 'KO',
+          item_name: textRow.KO,
+        }),
+      );
+      item.localizations.push(
+        this.repItemLang.create({
+          lang: 'EN',
+          item_name: textRow.EN,
+        }),
+      );
+      item.localizations.push(
+        this.repItemLang.create({
+          lang: 'JA',
+          item_name: textRow.JA,
+        }),
+      );
 
       // extension
     } // ? end of for
