@@ -20,4 +20,9 @@ export class MigrationController {
   async copyProfile(@Param('project_id') project_id: number) {
     return this.service.copyProfile(project_id);
   }
+
+  @Get('item/:project_id')
+  async copyItem(@Param('project_id') project_id: number) {
+    return this.service.copyItem(project_id);
+  }
 }

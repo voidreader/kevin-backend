@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ItemExtension } from 'src/database/produce_entity/item-extension.entity';
 import { ItemLang } from 'src/database/produce_entity/item-lang.entity';
 import { Item } from 'src/database/produce_entity/item.entity';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
@@ -7,6 +8,7 @@ import { Model } from 'src/database/produce_entity/model.entity';
 import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Profile } from 'src/database/produce_entity/profile.entity';
 import { GameUser } from 'src/gamedb/entities/game-user';
+import { text } from 'stream/consumers';
 import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
@@ -43,6 +45,7 @@ export class MigrationService {
         , pier.fn_get_design_info(a.resource_image_id, 'url') image_url
         , pier.fn_get_design_info(a.resource_image_id, 'key') image_key
         , a.model_id AS resource_image_id 
+        , a.currency
     FROM pier.com_currency a
     WHERE connected_project = ?;    
     `,
@@ -56,38 +59,70 @@ export class MigrationService {
             SELECT tl.*
         FROM pier.com_currency cc
           , text_localize tl 
-      WHERE cc.connected_project = 142
-        AND cc.origin_name  = '특별한 선물'
-        AND cc.model_id  = 530
+      WHERE cc.connected_project = ?
+        AND cc.currency = ?
         AND tl.text_id = cc.local_code
       
       `,
-        [project_id, item.origin_name, item.resource_id],
+        [project_id, item.currency],
       );
 
-      const textRow = queryResult[0]; // textRow 가져와서.
-      item.localizations = [];
-      item.localizations.push(
-        this.repItemLang.create({
-          lang: 'KO',
-          item_name: textRow.KO,
-        }),
-      );
-      item.localizations.push(
-        this.repItemLang.create({
-          lang: 'EN',
-          item_name: textRow.EN,
-        }),
-      );
-      item.localizations.push(
-        this.repItemLang.create({
-          lang: 'JA',
-          item_name: textRow.JA,
-        }),
-      );
+      if (queryResult.length > 0) {
+        const textRow = queryResult[0]; // textRow 가져와서.
+        // console.log(textRow);
+
+        // 3개 언어 무조건 넣어주기.
+        item.localizations = [];
+        item.localizations.push(
+          this.repItemLang.create({
+            lang: 'KO',
+            item_name: textRow.KO,
+          }),
+        );
+        item.localizations.push(
+          this.repItemLang.create({
+            lang: 'EN',
+            item_name: textRow.EN,
+          }),
+        );
+        item.localizations.push(
+          this.repItemLang.create({
+            lang: 'JA',
+            item_name: textRow.JA,
+          }),
+        );
+      }
 
       // extension
+      // com_coin_product..
+      let extensions: ItemExtension[];
+      extensions = await this.dataSource.query(
+        `
+      SELECT a.product_type 
+     , a.price 
+     , a.sale_price 
+     , a.start_date as sale_start_date
+     , a.end_date AS sale_end_date
+     , a.is_public 
+     , a.connected_bg AS static_id
+  FROM pier.com_coin_product a
+ WHERE a.currency = ?;
+      `,
+        [item.currency],
+      );
+
+      if (extensions.length > 0) {
+        item.extension = extensions[0];
+      }
     } // ? end of for
+
+    try {
+      await this.repItem.save(items);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    return { isSuccess: true, total: items.length };
   } // ? end of copy item
 
   // * 구 Profile, 능력치, 프로필 대사 등 Migration
