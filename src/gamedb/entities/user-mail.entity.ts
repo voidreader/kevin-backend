@@ -10,8 +10,8 @@ export class UserMail extends BigCoreEntity {
   @Column({ comment: '메일 유형' })
   mail_type: string;
 
-  @Column({ nullable: true, comment: '재화코드' })
-  currency: string;
+  @Column({ default: -1, comment: '지급되는 아이템 ID' })
+  item_id: number;
 
   @Column({ default: 0 })
   quantity: number;

@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { MigrationService } from './migration.service';
 
 @Controller('migration')
@@ -10,5 +10,14 @@ export class MigrationController {
   @Get('accountxxx')
   async CopyOldUser() {
     return this.service.copyOldUser();
+  }
+
+  @Get('model/:project_id')
+  async copyModels(@Param('project_id') project_id: number) {
+    return this.service.copyModels(project_id);
+  }
+  @Get('profile/:project_id')
+  async copyProfile(@Param('project_id') project_id: number) {
+    return this.service.copyProfile(project_id);
   }
 }

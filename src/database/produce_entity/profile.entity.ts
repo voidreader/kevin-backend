@@ -1,5 +1,7 @@
 import { CoreDeployEntity } from 'src/common/entities/core-deploy.entity';
-import { Column, Entity, Unique } from 'typeorm';
+import { Column, Entity, OneToMany, Unique } from 'typeorm';
+import { Ability } from './ability.entity';
+import { ProfileLine } from './profile-line.entity';
 
 // * 캐릭터 프로파일
 @Entity()
@@ -31,4 +33,16 @@ export class Profile extends CoreDeployEntity {
 
   @Column({ comment: '소개글 text_id', default: -1 })
   profile_introduce_id: number;
+
+  @OneToMany((type) => Ability, (ability) => ability.profile, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
+  abilities: Ability[];
+
+  @OneToMany((type) => ProfileLine, (line) => line.profile, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
+  lines: ProfileLine[];
 }

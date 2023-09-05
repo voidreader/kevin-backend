@@ -1,21 +1,30 @@
 import {
   Column,
   CreateDateColumn,
+  Entity,
+  Index,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
 } from 'typeorm';
+import { ModelSlave } from './model-slave.entity';
 
 // * Live2D & Spine 모델 Entity
 
+@Entity()
+@Index(['project_id'])
 export class Model {
   @PrimaryGeneratedColumn()
   model_id: number;
 
+  @Column()
   project_id: number;
 
+  @Column({ length: 30 })
   model_name: string;
 
+  @Column({ length: 20, default: 'live2d' })
   model_type: string;
 
   @Column({ default: 0, type: 'float', comment: '위치 오프셋 X좌표' })
@@ -29,6 +38,15 @@ export class Model {
 
   @Column({ default: 0 })
   sortkey: number;
+
+  @Column({
+    default: 'center',
+    comment: '캐릭터의 시선 방향 (left,right,center)',
+  })
+  direction: string;
+
+  @Column({ default: 0, comment: '캐릭터의 키(0,1,2,3) - 위치값 조정에 사용' })
+  tall_grade: number;
 
   @VersionColumn()
   model_ver: number;
@@ -46,4 +64,10 @@ export class Model {
 
   @Column({ select: false, nullable: true })
   last_deployed_at: Date; // 마지막 배포 시간
+
+  @OneToMany((type) => ModelSlave, (ms) => ms.model, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
+  slaves: ModelSlave[];
 }
