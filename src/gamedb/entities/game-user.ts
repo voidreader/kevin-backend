@@ -26,10 +26,15 @@ export class GameUser {
   @Column({ length: 4 })
   pincode: string;
 
-  @Column({ length: 20, unique: true, comment: 'pincode + userkey 조합' })
+  @Column({
+    length: 20,
+    unique: true,
+    comment: 'pincode + userkey 조합',
+    nullable: true,
+  })
   uid: string;
 
-  @Column({ length: 20, comment: '게임내 사용 닉네임' })
+  @Column({ length: 20, comment: '게임내 사용 닉네임', nullable: true })
   nickname: string;
 
   @Column({ default: 30, comment: '주 재화 보유 수량' })
