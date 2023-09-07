@@ -42,6 +42,9 @@ export class ProjectController {
     return await this.projectService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard)
+  // * 스토리 목록 조회
+  @Get()
   async getStoryList(@Req() request: Request): Promise<ProjectOutputDto> {
     console.log(`#### requestStoryList`);
     // console.log(request['account']);
@@ -49,9 +52,6 @@ export class ProjectController {
     return await this.projectService.getStoryList(request['account']);
   }
 
-  @UseGuards(AuthGuard)
-  // * 스토리 목록 조회
-  @Get()
   async getAlternativeStoryList(@Req() request: Request) {
     return await this.projectService.getAlternativeStoryList(
       request['account'],

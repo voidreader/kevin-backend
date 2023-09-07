@@ -8,10 +8,11 @@ import { PRODUCE_DATASOURCE } from 'src/common/common.const';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from 'src/database/produce_entity/account.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
+import { ProjectAuth } from 'src/account/entities/projectAuth.entity';
 
 @Module({
   //imports: [DatabaseModule],
-  imports: [],
+  imports: [TypeOrmModule.forFeature([Project, ProjectAuth])],
   controllers: [ProjectController],
   providers: [ProjectService],
 })

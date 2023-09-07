@@ -58,6 +58,8 @@ export class Project {
   @Column({ length: 120, nullable: true })
   title: string;
 
+  icon_url: string;
+
   @Column({ default: 0 })
   sortkey: number; // 정렬 순서
 
