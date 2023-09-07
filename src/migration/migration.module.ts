@@ -10,6 +10,7 @@ import { ItemExtension } from 'src/database/produce_entity/item-extension.entity
 import { ItemLang } from 'src/database/produce_entity/item-lang.entity';
 import { Model } from 'src/database/produce_entity/model.entity';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
+import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
       ItemLang,
       Model,
       ModelSlave,
+      LiveResource,
     ]),
   ],
   controllers: [MigrationController],

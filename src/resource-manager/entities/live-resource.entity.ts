@@ -4,7 +4,7 @@ import { IsEnum } from 'class-validator';
 import { VisualResourceType } from 'src/common/entities/common-image-resource.entity';
 import { LiveResourceDetail } from './live-resource-detail.entity';
 
-//* Live Objec,t Live Illust, Live BG 엔터티
+//* Live Object, Live Illust, Live BG 엔터티
 
 @Entity()
 @Unique(['project_id', 'live_type', 'live_name'])
@@ -49,6 +49,7 @@ export class LiveResource extends CoreDeployEntity {
 
   @OneToMany(() => LiveResourceDetail, (detail) => detail.parent, {
     eager: true,
+    cascade: ['insert', 'update'],
   })
   details: LiveResourceDetail[];
 }

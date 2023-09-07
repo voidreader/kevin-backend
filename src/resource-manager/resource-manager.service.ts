@@ -19,11 +19,18 @@ import { ConfigService } from '@nestjs/config';
 import { PublicExtension } from './entities/public-extension.entity';
 import {
   OLD_Q_COPY_LIST_BG,
+  OLD_Q_COPY_LIST_ILLUST,
+  OLD_Q_COPY_LIST_ILLUST_LANG,
+  OLD_Q_COPY_LIST_ILLUST_THUMBNAIL,
   OLD_Q_COPY_LIST_MINICUT,
   OLD_Q_COPY_LIST_MINICUT_LANG,
   OLD_Q_COPY_LIST_MINICUT_THUMBNAIL,
 } from 'src/common/origin-schema.query';
-import { RESOURCE_BG, RESOURCE_MINICUT } from 'src/common/common.const';
+import {
+  RESOURCE_BG,
+  RESOURCE_ILLUST,
+  RESOURCE_MINICUT,
+} from 'src/common/common.const';
 import { of } from 'rxjs';
 
 @Injectable()
@@ -57,6 +64,10 @@ export class ResourceManagerService {
       result = await this.dataSource.query(OLD_Q_COPY_LIST_MINICUT, [
         project_id,
       ]);
+    else if (type == RESOURCE_ILLUST)
+      result = await this.dataSource.query(OLD_Q_COPY_LIST_ILLUST, [
+        project_id,
+      ]);
     else {
       return { isSuccess: false, error: 'Wrong type' };
     }
@@ -67,19 +78,31 @@ export class ResourceManagerService {
       console.log(`in for : `, origin);
 
       // 공개된 미니컷에 대한 추가 처리
-      if (origin.is_public && origin.image_type == RESOURCE_MINICUT) {
+      if (
+        origin.is_public &&
+        (origin.image_type == RESOURCE_MINICUT ||
+          origin.image_type == RESOURCE_ILLUST)
+      ) {
         console.log(`is public !!!!!!!!!!!!!!!!!`);
 
-        // localizations
-        origin.localizations = await this.dataSource.query(
-          OLD_Q_COPY_LIST_MINICUT_LANG,
-          [origin.id, origin.image_type],
-        );
+        let Q_LANG = ``;
+        let Q_THUMB = ``;
 
-        const extensions = await this.dataSource.query(
-          OLD_Q_COPY_LIST_MINICUT_THUMBNAIL,
-          [origin.id],
-        );
+        if (origin.image_type == RESOURCE_MINICUT) {
+          Q_LANG = OLD_Q_COPY_LIST_MINICUT_LANG;
+          Q_THUMB = OLD_Q_COPY_LIST_MINICUT_THUMBNAIL;
+        } else if (origin.image_type == RESOURCE_ILLUST) {
+          Q_LANG = OLD_Q_COPY_LIST_ILLUST_LANG;
+          Q_THUMB = OLD_Q_COPY_LIST_ILLUST_THUMBNAIL;
+        }
+
+        // localizations
+        origin.localizations = await this.dataSource.query(Q_LANG, [
+          origin.id,
+          origin.image_type,
+        ]);
+
+        const extensions = await this.dataSource.query(Q_THUMB, [origin.id]);
 
         origin.extension = extensions[0];
       } else {

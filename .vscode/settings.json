@@ -1,3 +1,15 @@
 {
-  "cSpell.words": ["auths", "DATASOURCE", "Otome"]
+  "cSpell.words": [
+    "auths",
+    "carpestore",
+    "DATASOURCE",
+    "deviceid",
+    "gamebaseid",
+    "ifnull",
+    "MINICUT",
+    "Otome",
+    "pincode",
+    "thirdparty",
+    "tinyint"
+  ]
 }

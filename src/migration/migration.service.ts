@@ -8,6 +8,8 @@ import { Model } from 'src/database/produce_entity/model.entity';
 import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Profile } from 'src/database/produce_entity/profile.entity';
 import { GameUser } from 'src/gamedb/entities/game-user';
+import { LiveResourceDetail } from 'src/resource-manager/entities/live-resource-detail.entity';
+import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
 import { text } from 'stream/consumers';
 import { DataSource, Repository } from 'typeorm';
 
@@ -25,9 +27,11 @@ export class MigrationService {
     private readonly repItem: Repository<Item>,
     @InjectRepository(ItemLang)
     private readonly repItemLang: Repository<ItemLang>,
+    @InjectRepository(LiveResource)
+    private readonly repLiveResource: Repository<LiveResource>,
   ) {}
 
-  // * 구 currency, currentcy_item, 텍스트 정보 불러오기
+  // * 구 currency, currency_item, 텍스트 정보 불러오기
   async copyItem(project_id: number) {
     let items: Item[];
 
@@ -268,4 +272,54 @@ export class MigrationService {
 
     return { isSuccess: true, total: result.length };
   }
-}
+
+  // * 라이브 일러스트 카피
+  async copyLiveIllust(project_id: number) {
+    let result: LiveResource[];
+
+    result = await this.dataSource.query(`
+    SELECT a.live_illust_id as id
+        , a.project_id 
+        , 'live_illust' live_type
+        , a.live_illust_name live_name
+        , a.offset_x 
+        , a.offset_y 
+        , a.is_public 
+        , a.speaker 
+        , a.illust_ver resource_ver
+        , a.appear_episode 
+        , pier.fn_get_design_info(a.thumbnail_id, 'url') thumbnail_url
+        , pier.fn_get_design_info(a.thumbnail_id, 'key') thumbnail_key
+        , 'carpestore' bucket
+      FROM pier.list_live_illust a
+    WHERE a.project_id = ${project_id};
+    `);
+
+    for (const model of result) {
+      model.offset_x = Math.round(model.offset_x * 10) / 10;
+      model.offset_y = Math.round(model.offset_y * 10) / 10;
+
+      let details: LiveResourceDetail[];
+
+      details = await this.dataSource.query(`
+      SELECT a.file_url 
+        , a.file_key 
+        , a.file_name 
+        , 'carpestore' bucket
+        , a.motion_name 
+      FROM pier.list_live_illust_detail a
+    WHERE a.live_illust_id = ${model.id};
+      `);
+
+      model.details = details;
+    } // end for
+
+    try {
+      await this.repLiveResource.save(result);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    return { isSuccess: true, total: result.length };
+  }
+} // ? End of class

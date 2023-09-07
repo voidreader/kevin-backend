@@ -12,6 +12,11 @@ export class MigrationController {
     return this.service.copyOldUser();
   }
 
+  @Get('live-illust/:project_id')
+  async copyLiveIllust(@Param('project_id') project_id: number) {
+    return this.service.copyLiveIllust(project_id);
+  }
+
   @Get('model/:project_id')
   async copyModels(@Param('project_id') project_id: number) {
     return this.service.copyModels(project_id);

@@ -17,7 +17,6 @@ export enum osTypeEnum {
 }
 
 @Entity({ database: 'game' })
-@Unique('user_unique_001', ['uid'])
 @Index(['device_id'])
 export class GameUser {
   @PrimaryGeneratedColumn()
@@ -28,7 +27,7 @@ export class GameUser {
 
   @Column({
     length: 20,
-    unique: true,
+
     comment: 'pincode + userkey 조합',
     nullable: true,
   })
