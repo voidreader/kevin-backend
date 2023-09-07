@@ -203,6 +203,7 @@ export class ProjectService {
     const project = await repProject.findOneBy({ project_id: id });
 
     project.title = this.getProjectDefaultTitle(project);
+    project.icon_url = this.getProjectDefaultIcon(project);
 
     const output = new SingleProjectOutputDto();
     output.isSuccess = true;
