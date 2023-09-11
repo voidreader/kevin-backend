@@ -92,11 +92,18 @@ export class ProjectService {
       //   .orderBy('project.sortkey')
       //   .getMany();
     } else {
+      console.log(`User's Project list!!`);
+
       auths = await this.repProjectAuth.find({
-        relations: {
-          account: true,
+        relations: { account: true },
+        where: {
+          account: {
+            id: account.id,
+          },
         },
       });
+
+      console.log(auths);
 
       const projectAuthArray = [];
       auths.forEach((item) => projectAuthArray.push(item.project_id));
@@ -158,7 +165,7 @@ export class ProjectService {
       auth.project_id = newProject.project_id;
       auth.auth_kind = 'update';
 
-      repAuth.save(auth);
+      await repAuth.save(auth);
     } catch (error) {
       return {
         isSuccess: false,
