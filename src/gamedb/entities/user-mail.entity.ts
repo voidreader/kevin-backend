@@ -19,7 +19,7 @@ export class UserMail extends BigCoreEntity {
   @Column({ comment: '만료일' })
   expire_date: Date;
 
-  @Column()
+  @Column({ nullable: true })
   receive_date: Date;
 
   @Column({ default: 0 })

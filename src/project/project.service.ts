@@ -77,7 +77,7 @@ export class ProjectService {
     if (account.role == UserRole.Admin) {
       projects = await this.repProject.find({
         where: { project_type: ProjectType.Otome },
-        order: { sortkey: 'ASC' },
+        order: { project_id: 'DESC' },
       });
 
       // projects = await this.dataSource
@@ -104,12 +104,6 @@ export class ProjectService {
       projects = await this.repProject.findBy({
         project_id: In(projectAuthArray),
       });
-
-      // projects = await this.dataSource
-      //   .createQueryBuilder(Project, 'project')
-      //   .select()
-      //   .orderBy('project.sortkey')
-      //   .getMany();
     }
 
     projects.forEach((p) => {
@@ -121,7 +115,7 @@ export class ProjectService {
       isSuccess: true,
       projects,
     };
-  }
+  } // ? getStoryList END
 
   // * 작품 생성
   async create(
@@ -136,15 +130,18 @@ export class ProjectService {
     let newProject;
     // 신규 프로젝트 저장
     try {
-      newProject = await repProject.save(repProject.create(createStoryDto));
-
-      // detail save
+      newProject = repProject.create(createStoryDto);
+      // detail
       const newDetail = repProjectDetail.create();
       newDetail.lang = newProject.default_lang;
       newDetail.title = newProject.title;
       newDetail.project = newProject;
       newDetail.writer = account.organization;
-      repProjectDetail.save(newDetail);
+
+      newProject.projectDetails = [];
+      newProject.projectDetails.push(newDetail);
+
+      newProject = await repProject.save(newProject);
     } catch (error) {
       return {
         isSuccess: false,

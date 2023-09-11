@@ -63,7 +63,7 @@ export class Project {
   @Column({ default: 0 })
   sortkey: number; // 정렬 순서
 
-  @Column({ default: 0 })
+  @Column({ default: 50 })
   bubble_set_id: number; // 말풍선 세트 ID
 
   @Column({ nullable: true, unique: true })
@@ -83,7 +83,7 @@ export class Project {
   @OneToMany(
     (type) => ProjectDetail,
     (projectDetail) => projectDetail.project,
-    { eager: true },
+    { eager: true, cascade: ['insert', 'update'] },
   )
   projectDetails: ProjectDetail[];
 }
