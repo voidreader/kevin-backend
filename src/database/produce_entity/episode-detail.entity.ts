@@ -17,10 +17,10 @@ export class EpisodeDetail extends CoreEntity {
   @Column({ length: 10 })
   lang: string;
 
-  @Column({ nullable: true, length: 60 })
+  @Column({ nullable: true, length: 60, default: '-' })
   title: string;
 
-  @Column({ nullable: true, length: 400 })
+  @Column({ nullable: true, length: 400, default: '-' })
   summary: string;
 
   @ManyToOne((type) => Episode, (episode) => episode.details, {

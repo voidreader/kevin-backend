@@ -1,17 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
+import { Episode } from 'src/database/produce_entity/episode.entity';
 import { ItemExtension } from 'src/database/produce_entity/item-extension.entity';
 import { ItemLang } from 'src/database/produce_entity/item-lang.entity';
 import { Item } from 'src/database/produce_entity/item.entity';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
 import { Model } from 'src/database/produce_entity/model.entity';
+import { Nametag } from 'src/database/produce_entity/nametag.entity';
 import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Profile } from 'src/database/produce_entity/profile.entity';
+import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 import { GameUser } from 'src/gamedb/entities/game-user';
 import { LiveResourceDetail } from 'src/resource-manager/entities/live-resource-detail.entity';
 import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
-import { text } from 'stream/consumers';
+
 import { DataSource, Repository } from 'typeorm';
+import { Selection } from 'src/database/produce_entity/selection.entity';
+import { Script } from 'src/database/produce_entity/script.entity';
 
 @Injectable()
 export class MigrationService {
@@ -29,7 +35,159 @@ export class MigrationService {
     private readonly repItemLang: Repository<ItemLang>,
     @InjectRepository(LiveResource)
     private readonly repLiveResource: Repository<LiveResource>,
+    @InjectRepository(Nametag)
+    private readonly repNametag: Repository<Nametag>,
+    @InjectRepository(SoundResource)
+    private readonly repSoundResource: Repository<SoundResource>,
+    @InjectRepository(Episode)
+    private readonly repEpisode: Repository<Episode>,
+    @InjectRepository(Script)
+    private readonly repScript: Repository<Script>,
+    @InjectRepository(Selection)
+    private readonly repSelection: Repository<Selection>,
   ) {}
+
+  // * 에피소드 및 스크립트
+  async copyEpisodeScript(project_id: number) {
+    let totalEpisode: number = 0;
+    let totalScriptRow: number = 0;
+
+    const originEpisodes: Episode[] = await this.dataSource.query(
+      `
+    SELECT a.episode_id 
+        , a.project_id 
+        , a.episode_type 
+        , a.title
+        , 'draft' episode_status 
+        , a.ending_type 
+        , a.unlock_style 
+        , a.depend_episode 
+        , a.chapter_number 
+        , a.speaker 
+        , a.dlc_id 
+      FROM pier.list_episode a
+    WHERE a.project_id = ?;
+    `,
+      [project_id],
+    );
+
+    // * Episode 관련 로직 시작
+    for (const episode of originEpisodes) {
+      episode.details = await this.dataSource.query(
+        `
+      SELECT a.lang 
+          , a.title 
+          , a.summary 
+        FROM pier.list_episode_detail a
+      WHERE a.episode_id  = ?;
+      `,
+        [episode.episode_id],
+      );
+
+      // extension
+      const exts: EpisodeExtension[] = await this.dataSource.query(
+        `
+      SELECT pier.fn_get_design_info(a.popup_image_id, 'url') banner_url
+          , pier.fn_get_design_info(a.popup_image_id, 'key') banner_key
+          , 'carpestore' bucket
+        FROM pier.list_episode a
+      WHERE a.episode_id = ?
+        AND a.popup_image_id > 0;
+      `,
+        [episode.episode_id],
+      );
+
+      if (exts.length > 0) {
+        episode.extension = exts[0];
+      }
+    } // end for
+
+    // 에피소드 저장
+    try {
+      await this.repEpisode.save(originEpisodes);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    // 스크립트 진행
+    for (const episode of originEpisodes) {
+      const scripts: Script[] = await this.dataSource.query(
+        `
+      SELECT ls.*
+        FROM pier.list_script ls
+      WHERE ls.episode_id = ?;
+      `,
+        [episode.episode_id],
+      );
+
+      try {
+        await this.repScript.save(scripts);
+        totalScriptRow += scripts.length;
+      } catch (error) {
+        return { isSuccess: false, error };
+      }
+
+      console.log(`${episode.title} script is done!`);
+    }
+
+    const selections: Selection[] = await this.dataSource.query(
+      `
+    SELECT a.*
+      FROM pier.list_selection a
+    WHERE a.project_id = ?;
+    `,
+      [project_id],
+    );
+
+    try {
+      await this.repSelection.save(selections);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    // 리턴
+    return {
+      isSuccess: true,
+      totalEpisode: originEpisodes.length,
+      totalScriptRow,
+      selection: selections.length,
+    };
+  } // ? END copyEpisodeScript
+
+  ////////////////////////////////////////////////////
+
+  // * 사운드 리소스 마이그레이션
+  async copySoundResource(project_id: number) {
+    const originSounds = await this.dataSource.query(
+      `
+    SELECT ls.project_id 
+        , ls.sound_type 
+        , ls.sound_name 
+        , ls.sound_url 
+        , ls.sound_key 
+        , ls.bucket 
+        , ls.game_volume 
+        , ls.is_public 
+        , ls.speaker 
+    FROM pier.list_sound ls WHERE project_id = ?;
+    `,
+      [project_id],
+    );
+
+    const currentSounds = await this.repSoundResource.find({
+      where: { project_id },
+    });
+
+    try {
+      await this.repSoundResource.remove(currentSounds);
+
+      await this.repSoundResource.save(originSounds);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    return { isSuccess: true, total: originSounds.length };
+  }
 
   // * 구 currency, currency_item, 텍스트 정보 불러오기
   async copyItem(project_id: number) {
@@ -163,11 +321,11 @@ export class MigrationService {
     for (const profile of profiles) {
       profile.lines = await this.dataSource.query(
         `
-      SELECT a.ability_id AS profile_id
-          , a.line_id AS text_id
+      SELECT a.line_id AS text_id
           , pier.fn_get_motion_name_by_id(a.motion_id) motion_name
           , a.condition_type 
           , a.line_condition 
+          , a.sound_name
         FROM pier.com_profile_lines a
       WHERE a.ability_id = ?;`,
         [profile.id],
@@ -188,6 +346,30 @@ export class MigrationService {
       );
     }
 
+    // * nametag 복사
+    const originNametags = await this.dataSource.query(
+      `
+    SELECT a.project_id 
+        , a.speaker 
+        , a.main_color 
+        , a.sub_color 
+        , a.KO
+        , a.EN 
+        , a.JA 
+        , a.AR 
+        , '' AS "ID" 
+        , a.ES 
+        , a.MS 
+        , a.RU 
+        , a.ZH 
+        , a.SC 
+      FROM pier.list_nametag a
+    WHERE a.project_id = ?;`,
+      [project_id],
+    );
+
+    await this.repNametag.save(originNametags);
+
     try {
       await this.repProfile.save(profiles);
     } catch (error) {
@@ -196,6 +378,8 @@ export class MigrationService {
 
     return { isSuccess: true, total: profiles.length };
   } // ? END OF copyProfile
+
+  /////////////////////////////////////
 
   // list_model, slave, motion 가져오기
   async copyModels(project_id: number) {

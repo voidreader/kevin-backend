@@ -54,6 +54,13 @@ export class Item extends CoreDeployEntity {
   @Column({ default: -1, comment: '특정 리소스와 연결된 경우 리소스의 ID' })
   resource_id: number;
 
+  @Column({
+    type: 'boolean',
+    default: false,
+    comment: '메인 유료 재화인지 여부',
+  })
+  is_prime: boolean;
+
   @Column({ default: '-', comment: '구 데이터 currency 코드' })
   currency: string;
 

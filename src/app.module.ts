@@ -64,7 +64,7 @@ import { LiveResourceDetail } from './resource-manager/entities/live-resource-de
         __dirname + '/database/**/*.entity.*',
       ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
-      logging: process.env.NODE_ENV !== 'prod',
+      logging: false,
     }),
     TypeOrmModule.forRoot({
       name: 'game',

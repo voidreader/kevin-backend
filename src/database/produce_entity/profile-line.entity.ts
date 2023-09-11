@@ -27,6 +27,9 @@ export class ProfileLine extends CoreEntity {
   @Column({ nullable: true, length: 80 })
   line_condition: string;
 
+  @Column({ nullable: true, length: 30 })
+  sound_name: string;
+
   @ManyToOne((type) => Profile, (profile) => profile.lines)
   @JoinColumn({ name: 'profile_id' })
   profile: Profile;

@@ -69,7 +69,7 @@ export class Episode extends DeployableEntity {
   })
   unlock_style: UnlockStyleEnum;
 
-  @Column({ comment: '해금 조건', length: 120 })
+  @Column({ comment: '해금 조건', length: 120, nullable: true, default: null })
   unlock_by: string;
 
   @Column({ comment: '종속된 에피소드ID', default: -1 })

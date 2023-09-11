@@ -3,21 +3,24 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
+@Entity()
+@Index(['episode_id', 'selection_group', 'selection_no'])
 export class Selection {
-  @Column()
+  @PrimaryColumn()
   project_id: number;
 
-  @Column()
+  @PrimaryColumn()
   episode_id: number;
 
-  @Column({ default: 0, comment: '선택지 식별자 group' })
+  @PrimaryColumn({ default: 0, comment: '선택지 식별자 group' })
   selection_group: number;
 
-  @Column({ default: 0, comment: '선택지 식별자 no' })
+  @PrimaryColumn({ default: 0, comment: '선택지 식별자 no' })
   selection_no: number;
 
   @Column({ length: 200, nullable: true })
@@ -40,4 +43,12 @@ export class Selection {
   ZH: string;
   @Column({ length: 200, nullable: true })
   SC: string;
+
+  // 생성된 시간
+  @CreateDateColumn({ select: false })
+  created_at: Date;
+
+  // 업데이트된 시간
+  @UpdateDateColumn({ select: false })
+  updated_at: Date;
 }

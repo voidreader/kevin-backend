@@ -30,4 +30,13 @@ export class MigrationController {
   async copyItem(@Param('project_id') project_id: number) {
     return this.service.copyItem(project_id);
   }
+  @Get('sound/:project_id')
+  async copySound(@Param('project_id') project_id: number) {
+    return this.service.copySoundResource(project_id);
+  }
+
+  @Get('episode/:project_id')
+  async copyEpisode(@Param('project_id') project_id: number) {
+    return this.service.copyEpisodeScript(project_id);
+  }
 }
