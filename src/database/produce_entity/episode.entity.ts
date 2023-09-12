@@ -50,6 +50,8 @@ export class Episode extends DeployableEntity {
   @Column({ length: 60 })
   title: string;
 
+  indexed_title: string;
+
   @Column({ length: 30, comment: '에피소드 상태', default: 'draft' })
   episode_status: string;
 
@@ -87,7 +89,7 @@ export class Episode extends DeployableEntity {
   @OneToMany(
     (type) => EpisodeDetail,
     (episodeDetail) => episodeDetail.episode,
-    { eager: true },
+    { eager: true, cascade: ['insert', 'update'] },
   )
   details: EpisodeDetail[];
 

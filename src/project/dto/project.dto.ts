@@ -1,5 +1,6 @@
 import { IntersectionType, PartialType, PickType } from '@nestjs/mapped-types';
 import { CoreOutput } from 'src/common/dto/output.dto';
+import { Episode } from 'src/database/produce_entity/episode.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 
@@ -20,3 +21,7 @@ export class SingleProjectOutputDto extends CoreOutput {
 
 // 프로젝트 수정 DTO
 export class UpdateProjectInputDto extends PartialType(Project) {}
+
+export class EpisodeListOutputDto extends CoreOutput {
+  episodes?: Episode[];
+}

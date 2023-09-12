@@ -7,7 +7,7 @@ import {
 } from './dto/project.dto';
 
 import { PRODUCE_DATASOURCE } from 'src/common/common.const';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, LessThan, MoreThan, Repository } from 'typeorm';
 import { Account, UserRole } from 'src/database/produce_entity/account.entity';
 import {
   Project,
@@ -17,6 +17,8 @@ import { ProjectAuth } from 'src/account/entities/projectAuth.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { error } from 'console';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Episode } from 'src/database/produce_entity/episode.entity';
+import { Script } from 'vm';
 
 @Injectable()
 export class ProjectService {
@@ -25,7 +27,63 @@ export class ProjectService {
     @InjectRepository(Project) private readonly repProject: Repository<Project>,
     @InjectRepository(ProjectAuth)
     private readonly repProjectAuth: Repository<ProjectAuth>,
+    @InjectRepository(Episode)
+    private readonly repEpisode: Repository<Episode>,
+    @InjectRepository(Script)
+    private readonly repScript: Repository<Script>,
   ) {}
+
+  // * 스토리 에피소드 리스트 조회
+  async getEpisodeList(project_id: number) {
+    const organized: Episode[] = [];
+
+    const chapters: Episode[] = [];
+    const endings: Episode[] = [];
+    const sides: Episode[] = [];
+
+    const episodes: Episode[] = await this.repEpisode.find({
+      where: { project_id, dlc_id: LessThan(0) },
+      order: {
+        episode_type: 'ASC',
+        chapter_number: 'ASC',
+      },
+    });
+
+    // 순서 재조정 진행.
+    episodes.forEach((episode) => {
+      if (episode.episode_type == 'chapter') {
+        episode.indexed_title = `[${episode.chapter_number}] ${episode.title}`;
+
+        chapters.push(episode);
+      } else if (episode.episode_type == 'ending') {
+        episode.indexed_title = `[Ending] ${episode.title}`;
+        endings.push(episode);
+      } else {
+        episode.indexed_title = `[Special] ${episode.title}`;
+        sides.push(episode);
+      }
+    });
+
+    // chapter와 귀속된 엔딩을 더해준다.
+    chapters.forEach((chapter) => {
+      organized.push(chapter);
+
+      endings.forEach((ending) => {
+        if (ending.depend_episode == chapter.episode_id) organized.push(ending);
+      });
+    });
+
+    // 귀속되지 않은 엔딩을 넣어주기.
+    endings.forEach((ending) => {
+      if (!organized.includes(ending)) organized.push(ending);
+    });
+
+    sides.forEach((side) => {
+      organized.push(side);
+    });
+
+    return { isSuccess: true, episodes: organized };
+  }
 
   // * 유저와 연계된 프로젝트 리스트 조회
   async getAlternativeStoryList(account: Account) {

@@ -13,6 +13,7 @@ import {
 import { ProjectService } from './project.service';
 import {
   CreateProjectInputDto,
+  EpisodeListOutputDto,
   ProjectOutputDto,
   SingleProjectOutputDto,
   UpdateProjectInputDto,
@@ -87,5 +88,12 @@ export class ProjectController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.projectService.remove(+id);
+  }
+
+  @Get(`/:project_id/episode`)
+  async getEpisodeList(
+    @Param('project_id') project_id: number,
+  ): Promise<EpisodeListOutputDto> {
+    return this.projectService.getEpisodeList(project_id);
   }
 }
