@@ -16,10 +16,14 @@ export class ProjectDetail extends CoreEntity {
   summary: string;
   @Column({ nullable: true, length: 80 })
   writer: string;
-  @Column({ nullable: true })
+
+  @Column({ nullable: true, length: 160 })
   icon_url: string; // 대표 아이콘 URL, KEY
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 120 })
   icon_key: string;
+  @Column({ nullable: true, length: 40 })
+  icon_bucket: string;
+
   @Column({ nullable: true })
   original: string; // 원작
   @Column({ nullable: true })

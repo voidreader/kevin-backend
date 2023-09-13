@@ -9,6 +9,8 @@ import {
   Req,
   UseGuards,
   Put,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import {
@@ -22,6 +24,8 @@ import {
 import { Account } from 'src/database/produce_entity/account.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 
 @Controller('story')
 export class ProjectController {
@@ -80,10 +84,15 @@ export class ProjectController {
     return await this.projectService.update(project_id, inputDto);
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateStoryDto: UpdateStoryDto) {
-  //   return this.projectService.update(+id, updateStoryDto);
-  // }
+  @Patch(`/icon-upload/:project_id`)
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadProjectIcon(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Body('detail') detail: ProjectDetail,
+  ) {
+    return this.projectService.uploadProjectIcon(file, detail);
+  } //? end uploadProjectIcon
 
   @Delete(':id')
   remove(@Param('id') id: string) {

@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   CreateProjectInputDto,
+  EpisodeListOutputDto,
   ProjectOutputDto,
   SingleProjectOutputDto,
+  UpdateEpisodeSortingInputDto,
   UpdateProjectInputDto,
 } from './dto/project.dto';
 
@@ -25,6 +27,8 @@ export class ProjectService {
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(Project) private readonly repProject: Repository<Project>,
+    @InjectRepository(ProjectDetail)
+    private readonly repProjectDetail: Repository<ProjectDetail>,
     @InjectRepository(ProjectAuth)
     private readonly repProjectAuth: Repository<ProjectAuth>,
     @InjectRepository(Episode)
@@ -32,6 +36,53 @@ export class ProjectService {
     @InjectRepository(Script)
     private readonly repScript: Repository<Script>,
   ) {}
+
+  // * 단일 에피소드 업데이트
+  async updateSingleEpisode(episode: Episode) {}
+
+  // * 유저의 언어별 프로젝트 아이콘 업로드
+  async uploadProjectIcon(file: Express.MulterS3.File, detail: ProjectDetail) {
+    let newDetail = this.repProjectDetail.create(detail);
+
+    if (file) {
+      const { location, key, bucket } = file;
+
+      detail.icon_url = location;
+      detail.icon_key = key;
+      detail.icon_bucket = bucket;
+    }
+
+    try {
+      newDetail = await this.repProjectDetail.save(detail);
+      return { isSuccess: true, lang: detail.lang, detail: newDetail };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? END uploadProjectIcon
+
+  // * 에피소드 재정렬
+  async updateEpisodeSorting(
+    inputDto: UpdateEpisodeSortingInputDto,
+  ): Promise<EpisodeListOutputDto> {
+    let newOrder = 1;
+
+    // chapter 들의 number 재부여
+    inputDto.episodes.forEach((episode) => {
+      if (episode.episode_type == 'chapter') {
+        episode.chapter_number = newOrder++;
+      }
+    });
+
+    try {
+      const episodes = await this.repEpisode.save(inputDto.episodes);
+      return { isSuccess: true, episodes };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        error,
+      };
+    }
+  } // ? 재정렬 종료
 
   // * 스토리 에피소드 리스트 조회
   async getEpisodeList(project_id: number) {

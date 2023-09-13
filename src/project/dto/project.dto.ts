@@ -25,3 +25,7 @@ export class UpdateProjectInputDto extends PartialType(Project) {}
 export class EpisodeListOutputDto extends CoreOutput {
   episodes?: Episode[];
 }
+
+export class UpdateEpisodeSortingInputDto {
+  episodes: Episode[];
+}
