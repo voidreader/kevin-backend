@@ -20,8 +20,8 @@ export class UserSelectionProgress {
   @PrimaryColumn()
   episode_id: number;
 
-  @PrimaryColumn({ length: 10 })
-  target_scene_id: string;
+  @PrimaryColumn()
+  target_scene_id: number;
 
   @Column({ length: 240 })
   selection_data: string;

@@ -21,8 +21,8 @@ export class UserDlc {
   @Column()
   episode_id: number;
 
-  @Column({ nullable: true, length: 10 })
-  scene_id: string;
+  @Column({ nullable: true })
+  scene_id: number;
 
   @Column({ type: 'bigint', default: 0 })
   script_no: string;

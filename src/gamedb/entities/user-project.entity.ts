@@ -18,8 +18,8 @@ export class UserProject {
   @Column()
   episode_id: number;
 
-  @Column({ nullable: true, length: 10, default: null })
-  scene_id: string;
+  @Column({ nullable: true, default: null })
+  scene_id: number;
 
   @Column({ type: 'bigint', default: 0 })
   script_no: string;

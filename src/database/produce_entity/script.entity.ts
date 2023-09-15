@@ -13,8 +13,8 @@ export class Script {
   @Column()
   episode_id: number;
 
-  @Column({ default: '', length: 10, comment: '사건ID', nullable: true })
-  scene_id: string;
+  @Column({ default: null, comment: '사건ID', nullable: true })
+  scene_id: number;
 
   @Column({ default: '', length: 20, comment: 'template code' })
   template: string;
@@ -26,12 +26,11 @@ export class Script {
   script_data: string;
 
   @Column({
-    default: '',
-    length: 30,
+    default: null,
     comment: '이동할 사건ID 혹은 에피소드ID',
     nullable: true,
   })
-  target_scene_id: string;
+  target_scene_id: number;
 
   @Column({ default: '', length: 300, comment: '필요조건', nullable: true })
   requisite: string;
