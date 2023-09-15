@@ -207,6 +207,8 @@ export class ProjectService {
         isSuccess: true,
         lang: newDetail.lang,
         icon_url: newDetail.icon_url,
+        icon_key: newDetail.icon_key,
+        icon_bucket: newDetail.icon_bucket,
       };
     } catch (error) {
       return { isSuccess: false, error };
