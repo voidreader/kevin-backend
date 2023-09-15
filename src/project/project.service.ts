@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  CreateEpisodeDto,
   CreateProjectInputDto,
   EpisodeListOutputDto,
   ProjectOutputDto,
@@ -19,8 +20,14 @@ import { ProjectAuth } from 'src/account/entities/projectAuth.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { error } from 'console';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Episode } from 'src/database/produce_entity/episode.entity';
+import {
+  Episode,
+  EpisodeTypeEnum,
+} from 'src/database/produce_entity/episode.entity';
 import { Script } from 'vm';
+import { EpisodeDetail } from 'src/database/produce_entity/episode-detail.entity';
+import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
+import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
 
 @Injectable()
 export class ProjectService {
@@ -33,28 +40,174 @@ export class ProjectService {
     private readonly repProjectAuth: Repository<ProjectAuth>,
     @InjectRepository(Episode)
     private readonly repEpisode: Repository<Episode>,
+    @InjectRepository(EpisodeExtension)
+    private readonly repEpisodeExtension: Repository<EpisodeExtension>,
+    @InjectRepository(EpisodeDetail)
+    private readonly repEpisodeDetail: Repository<EpisodeDetail>,
     @InjectRepository(Script)
     private readonly repScript: Repository<Script>,
+    @InjectRepository(DiscardResource)
+    private readonly repDiscard: Repository<DiscardResource>,
   ) {}
 
+  // * 신규 에피소드 생성
+  async createNewEpisode(
+    project_id: number,
+    inputDto: CreateEpisodeDto,
+  ): Promise<EpisodeListOutputDto> {
+    // 프로젝트 정보 체크
+    const project = await this.repProject.findOne({ where: { project_id } });
+
+    if (!project) {
+      return { isSuccess: false, error: 'Invalid Project ID' };
+    }
+
+    const episode = this.repEpisode.create({
+      episode_type: inputDto.episode_type,
+      title: inputDto.title,
+      project_id,
+    });
+
+    // chapter number 부여 필요.
+
+    const episodeDetail = this.repEpisodeDetail.create({
+      lang: project.default_lang,
+      title: inputDto.title,
+      summary: '',
+    });
+
+    if (!episode.details) episode.details = [];
+    episode.details.push(episodeDetail);
+    episode.extension = this.repEpisodeExtension.create();
+
+    // chapter_number 부여  (chapter의 경우만)
+    if (inputDto.episode_type == EpisodeTypeEnum.chapter) {
+      const chapters = await this.repEpisode.find({
+        where: {
+          episode_type: EpisodeTypeEnum.chapter,
+          dlc_id: inputDto.dlc_id,
+          project_id,
+        },
+      });
+
+      let maxChapnumber = 0;
+      chapters.forEach((chapter) => {
+        if (chapter.chapter_number > maxChapnumber)
+          maxChapnumber = chapter.chapter_number;
+      });
+
+      episode.chapter_number = maxChapnumber + 1;
+    }
+
+    try {
+      await this.repEpisode.save(episode);
+      return this.getEpisodeList(project_id);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? 에피소드 생성 종료
+
   // * 단일 에피소드 업데이트
-  async updateSingleEpisode(episode: Episode) {}
+  async updateSingleEpisode(episode: Episode) {
+    console.log(`extension check : `, episode.extension);
+    console.log(`detail check : `, episode.details);
+
+    try {
+      const savedEpisode = await this.repEpisode.save(episode);
+
+      return { isSuccess: true, episode: savedEpisode };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? END updateSingleEpisode
+
+  // 이미지 삭제 대상으로 변경
+  private saveDiscardImage(url: string, key: string) {
+    const discardItem = this.repDiscard.create();
+    discardItem.key = key;
+    discardItem.url = url;
+
+    this.repDiscard.save(discardItem);
+  }
+
+  // * 에피소드 배너 교체 및 업로드
+  async uploadEpisodeBanner(file: Express.MulterS3.File, episode_id: number) {
+    const episode = await this.repEpisode.findOne({ where: { episode_id } });
+
+    console.log(`uploadEpisodeBanner START : `, episode);
+
+    if (!episode.extension) {
+      episode.extension = this.repEpisodeExtension.create();
+    }
+
+    // * 이미지 업로드된 이미지가 있는 경우
+    if (episode.extension.banner_url && episode.extension.banner_url != '') {
+      console.log('previous episode banner discard');
+
+      this.saveDiscardImage(
+        episode.extension.banner_url,
+        episode.extension.banner_key,
+      );
+    }
+
+    if (file) {
+      console.log('New file added!');
+      const { location, key, bucket } = file;
+
+      episode.extension.banner_url = location;
+      episode.extension.banner_key = key;
+      episode.extension.bucket = bucket;
+    }
+
+    console.log('Save Start');
+
+    try {
+      const savedEpisode = await this.repEpisode.save(episode);
+      return { isSuccess: true, episode: savedEpisode };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? end upload episode banner
 
   // * 유저의 언어별 프로젝트 아이콘 업로드
-  async uploadProjectIcon(file: Express.MulterS3.File, detail: ProjectDetail) {
-    let newDetail = this.repProjectDetail.create(detail);
+  async uploadProjectIcon(
+    file: Express.MulterS3.File,
+    project_id: number,
+    lang: string,
+  ) {
+    let newDetail = await this.repProjectDetail.findOne({
+      where: { lang, project: { project_id } },
+    });
+
+    if (!newDetail) {
+      console.log(`new detail create`);
+
+      const project = await this.repProject.findOne({ where: { project_id } });
+
+      newDetail = this.repProjectDetail.create({
+        lang,
+        project,
+      });
+    }
 
     if (file) {
       const { location, key, bucket } = file;
 
-      detail.icon_url = location;
-      detail.icon_key = key;
-      detail.icon_bucket = bucket;
+      newDetail.icon_url = location;
+      newDetail.icon_key = key;
+      newDetail.icon_bucket = bucket;
     }
 
     try {
-      newDetail = await this.repProjectDetail.save(detail);
-      return { isSuccess: true, lang: detail.lang, detail: newDetail };
+      const result = await this.repProjectDetail.save(newDetail);
+
+      console.log(result);
+
+      return {
+        isSuccess: true,
+        lang: newDetail.lang,
+        icon_url: newDetail.icon_url,
+      };
     } catch (error) {
       return { isSuccess: false, error };
     }

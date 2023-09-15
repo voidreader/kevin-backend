@@ -44,7 +44,7 @@ export class Episode extends DeployableEntity {
   project_id: number;
 
   @Column({ type: 'enum', enum: EpisodeTypeEnum })
-  @IsEnum(EpisodeTypeEnum)
+  // @IsEnum(EpisodeTypeEnum)
   episode_type: EpisodeTypeEnum;
 
   @Column({ length: 60 })
@@ -80,7 +80,12 @@ export class Episode extends DeployableEntity {
   @Column({ default: 0, comment: '에피소드 순번' })
   chapter_number: number;
 
-  @Column({ length: 30, nullable: true, comment: '연결 등장인물' })
+  @Column({
+    length: 30,
+    nullable: true,
+    comment: '연결 등장인물',
+    default: null,
+  })
   speaker: string;
 
   @Column({ comment: '연결된 DLC ID', default: -1 })

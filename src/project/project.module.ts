@@ -15,6 +15,9 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { multerOptionFactory } from 'src/common/utils/multer.option';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
+import { EpisodeDetail } from 'src/database/produce_entity/episode-detail.entity';
+import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
+import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
 
 @Module({
   //imports: [DatabaseModule],
@@ -25,6 +28,9 @@ import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity
       Episode,
       Script,
       ProjectDetail,
+      EpisodeDetail,
+      EpisodeExtension,
+      DiscardResource,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

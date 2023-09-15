@@ -32,7 +32,11 @@ export const multerOptionFactory = (
         // 파일 이름이 중복되는 것을 방지하기 위해 파일이름_날짜.확장자 형식으로 설정합니다.
         // console.log(`multer create : `, _req);
         const options: resourceUploadOptions = _req['params'];
+
+        if (!options.type) options.type = 'com';
+
         console.log(options);
+
         done(
           null,
           `assets/${options.project_id}/${

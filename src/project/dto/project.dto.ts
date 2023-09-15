@@ -1,6 +1,9 @@
 import { IntersectionType, PartialType, PickType } from '@nestjs/mapped-types';
 import { CoreOutput } from 'src/common/dto/output.dto';
-import { Episode } from 'src/database/produce_entity/episode.entity';
+import {
+  Episode,
+  EpisodeTypeEnum,
+} from 'src/database/produce_entity/episode.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 
@@ -19,8 +22,20 @@ export class SingleProjectOutputDto extends CoreOutput {
   project?: Project;
 }
 
-// 프로젝트 수정 DTO
+// 프로젝트 수정용
 export class UpdateProjectInputDto extends PartialType(Project) {}
+
+// 신규 에피소드 생성
+export class CreateEpisodeDto {
+  episode_type: EpisodeTypeEnum;
+  title: string;
+  dlc_id: number = -1;
+}
+
+export class UpdateEpisodeDto {
+  file: Express.MulterS3.File;
+  episode: Episode;
+}
 
 export class EpisodeListOutputDto extends CoreOutput {
   episodes?: Episode[];

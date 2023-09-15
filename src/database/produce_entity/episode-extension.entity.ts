@@ -1,5 +1,6 @@
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Column, Entity } from 'typeorm';
+import { Episode } from './episode.entity';
 
 @Entity()
 export class EpisodeExtension extends CoreEntity {

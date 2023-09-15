@@ -14,10 +14,13 @@ import {
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import {
+  CreateEpisodeDto,
   CreateProjectInputDto,
   EpisodeListOutputDto,
   ProjectOutputDto,
   SingleProjectOutputDto,
+  UpdateEpisodeDto,
+  UpdateEpisodeSortingInputDto,
   UpdateProjectInputDto,
 } from './dto/project.dto';
 
@@ -26,6 +29,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
+import { Episode } from 'src/database/produce_entity/episode.entity';
 
 @Controller('story')
 export class ProjectController {
@@ -84,14 +88,15 @@ export class ProjectController {
     return await this.projectService.update(project_id, inputDto);
   }
 
-  @Patch(`/icon-upload/:project_id`)
+  @Patch(`/icon-upload/:project_id/:lang`)
   @UseInterceptors(FileInterceptor('file'))
+  // * 프로젝트 언어별 아이콘 업로드
   async uploadProjectIcon(
     @UploadedFile() file: Express.MulterS3.File,
     @Param('project_id') project_id: number,
-    @Body('detail') detail: ProjectDetail,
+    @Param('lang') lang: string,
   ) {
-    return this.projectService.uploadProjectIcon(file, detail);
+    return this.projectService.uploadProjectIcon(file, project_id, lang);
   } //? end uploadProjectIcon
 
   @Delete(':id')
@@ -100,9 +105,48 @@ export class ProjectController {
   }
 
   @Get(`/:project_id/episode`)
+  // * 프로젝트 에피소드 리스트 조회
   async getEpisodeList(
     @Param('project_id') project_id: number,
   ): Promise<EpisodeListOutputDto> {
     return this.projectService.getEpisodeList(project_id);
+  }
+
+  // * 단일 에피소드 정보 업데이트
+  @Put(`/:project_id/episode`)
+  updateSingleEpisode(
+    @Param('project_id') project_id: number,
+    @Body() episode: Episode,
+  ) {
+    return this.projectService.updateSingleEpisode(episode);
+  }
+
+  // * 단일 에피소드 정보 배너 업로드
+  @Patch(`/:project_id/episode/:episode_id/banner`)
+  @UseInterceptors(FileInterceptor('file'))
+  uploadEpisodeBanner(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('episode_id') episode_id: number,
+  ) {
+    return this.projectService.uploadEpisodeBanner(file, episode_id);
+    // return this.projectService.updateSingleEpisode(file, episode);
+  }
+
+  // * 신규 에피소드 생성
+  @Post(`/:project_id/episode`)
+  createNewEpisode(
+    @Param('project_id') project_id,
+    @Body() inputDto: CreateEpisodeDto,
+  ): Promise<EpisodeListOutputDto> {
+    return this.projectService.createNewEpisode(project_id, inputDto);
+  }
+
+  @Patch(`/:project_id/episode/sort`)
+  // * 에피소드 리스트의 재정렬
+  updateEpisodeSorting(
+    @Body() inputDto: UpdateEpisodeSortingInputDto,
+  ): Promise<EpisodeListOutputDto> {
+    return this.updateEpisodeSorting(inputDto);
   }
 }
