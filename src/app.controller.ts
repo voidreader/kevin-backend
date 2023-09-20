@@ -3,7 +3,9 @@ import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) {
+    console.log(`NODE ENV CHECK :: `, process.env.NODE_ENV);
+  }
 
   @Get()
   getHello(): string {

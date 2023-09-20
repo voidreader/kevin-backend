@@ -37,6 +37,18 @@ export class Package {
   @Index()
   project_id: number;
 
+  @Column({ length: 120, nullable: true, comment: '개인정보처리방침 URL' })
+  privacy_url: string;
+
+  @Column({ length: 120, nullable: true, comment: '이용약관 URL' })
+  terms_url: string;
+
+  @Column({ length: 120, nullable: true, comment: '저작권 URL' })
+  copyright_url: string;
+
+  @Column({ default: 1, comment: '로컬라이징 텍스트 버전' })
+  text_version: number;
+
   // 생성된 시간
   @CreateDateColumn({ select: false })
   created_at: Date;
@@ -45,6 +57,9 @@ export class Package {
   @UpdateDateColumn({ select: false })
   updated_at: Date;
 
-  @OneToMany((t) => PackageClient, (pc) => pc.package)
+  @OneToMany((t) => PackageClient, (pc) => pc.package, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
   clients: PackageClient[];
 }

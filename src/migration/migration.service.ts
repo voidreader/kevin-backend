@@ -18,6 +18,8 @@ import { LiveResource } from 'src/resource-manager/entities/live-resource.entity
 import { DataSource, Repository } from 'typeorm';
 import { Selection } from 'src/database/produce_entity/selection.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
+import { Package } from 'src/database/produce_entity/package.entity';
+import { PackageClient } from 'src/database/produce_entity/package-client.entity';
 
 @Injectable()
 export class MigrationService {
@@ -45,7 +47,38 @@ export class MigrationService {
     private readonly repScript: Repository<Script>,
     @InjectRepository(Selection)
     private readonly repSelection: Repository<Selection>,
+
+    @InjectRepository(Package)
+    private readonly repPackage: Repository<Package>,
+    @InjectRepository(PackageClient)
+    private readonly repPackageClient: Repository<PackageClient>,
   ) {}
+
+  // * 전체 패키지
+  async copyPackages() {
+    const packages: Package[] = await this.dataSource.query(`
+    SELECT a.*
+      FROM pier.com_package_master a
+    ;
+    `);
+
+    for (const pack of packages) {
+      const slaves: PackageClient[] = await this.dataSource.query(`
+      SELECT * 
+          FROM pier.com_package_client a
+        WHERE a.package_id = '${pack.package_id}';
+      `);
+
+      pack.clients = slaves;
+    }
+
+    try {
+      await this.repPackage.save(packages);
+      return { isSuccess: true, totalPackage: packages.length };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? END copyPackages
 
   // * 에피소드 및 스크립트
   async copyEpisodeScript(project_id: number) {

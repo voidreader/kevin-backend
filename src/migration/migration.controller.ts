@@ -39,4 +39,9 @@ export class MigrationController {
   async copyEpisode(@Param('project_id') project_id: number) {
     return this.service.copyEpisodeScript(project_id);
   }
+
+  @Get('packages')
+  async copyPackages() {
+    return this.service.copyPackages();
+  }
 }

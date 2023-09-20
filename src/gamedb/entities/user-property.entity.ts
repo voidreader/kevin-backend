@@ -26,7 +26,11 @@ export class UserProperty extends CoreEntity {
   @Column({ default: 1 })
   current_quantity: number;
 
-  @Column({ default: '9999-12-31', comment: '만료 일시' })
+  @Column({
+    type: 'datetime',
+    default: '9999-12-31 00:00:00',
+    comment: '만료 일시',
+  })
   expire_date: Date;
 
   @Column({ type: 'boolean', default: false, comment: '유료 재화 여부' })

@@ -16,6 +16,8 @@ import { SoundResource } from 'src/database/produce_entity/sound-resource.entity
 import { Episode } from 'src/database/produce_entity/episode.entity';
 import { Selection } from 'src/database/produce_entity/selection.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
+import { Package } from 'src/database/produce_entity/package.entity';
+import { PackageClient } from 'src/database/produce_entity/package-client.entity';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { Script } from 'src/database/produce_entity/script.entity';
       Episode,
       Selection,
       Script,
+      Package,
+      PackageClient,
     ]),
   ],
   controllers: [MigrationController],

@@ -30,7 +30,7 @@ export class Script {
     comment: '이동할 사건ID 혹은 에피소드ID',
     nullable: true,
   })
-  target_scene_id: number;
+  target_scene_id: string;
 
   @Column({ default: '', length: 300, comment: '필요조건', nullable: true })
   requisite: string;
