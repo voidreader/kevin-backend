@@ -39,7 +39,7 @@ export class Loading extends CoreDeployEntity {
   })
   episodes: LoadingEpisode[];
 
-  @ManyToOne((type) => LoadingDetail, (l) => l.loading, {
+  @OneToMany((type) => LoadingDetail, (l) => l.loading, {
     eager: true,
     cascade: true,
   })

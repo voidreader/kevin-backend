@@ -21,6 +21,9 @@ import { PackageClient } from 'src/database/produce_entity/package-client.entity
 import { Product } from 'src/database/produce_entity/product.entity';
 import { ProductDetail } from 'src/database/produce_entity/product-detail.entity';
 import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
+import { Loading } from 'src/database/produce_entity/loading.entity';
+import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
+import { Dress } from 'src/database/produce_entity/dress.entity';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
       Product,
       ProductDetail,
       ProductLang,
+      Loading,
+      Emoticon,
+      Dress,
     ]),
   ],
   controllers: [MigrationController],

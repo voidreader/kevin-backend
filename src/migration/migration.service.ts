@@ -24,6 +24,8 @@ import { Product } from 'src/database/produce_entity/product.entity';
 import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
 import { ProductDetail } from 'src/database/produce_entity/product-detail.entity';
 import { Loading } from 'src/database/produce_entity/loading.entity';
+import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
+import { Dress } from 'src/database/produce_entity/dress.entity';
 
 @Injectable()
 export class MigrationService {
@@ -58,11 +60,68 @@ export class MigrationService {
 
     @InjectRepository(Product)
     private readonly repProduct: Repository<Product>,
-    @InjectRepository(ProductLang)
-    private readonly repProductLang: Repository<ProductLang>,
-    @InjectRepository(ProductDetail)
-    private readonly repProductDetail: Repository<ProductDetail>,
+    @InjectRepository(Loading)
+    private readonly repLoading: Repository<Loading>,
+    @InjectRepository(Emoticon)
+    private readonly repEmoticon: Repository<Emoticon>,
+    @InjectRepository(Dress)
+    private readonly repDress: Repository<Dress>,
   ) {}
+
+  // * 의상
+  async copyDress(project_id: number) {
+    const rows: Dress[] = await this.dataSource.query(`
+    SELECT ldm.dressmodel_name speaker
+          , ldm.project_id 
+          , ld.dress_name
+          , ld.model_id
+          , ld.is_default
+        FROM pier.list_dress_model ldm 
+          , pier.list_dress ld 
+      WHERE ldm.project_id  = ${project_id}
+        AND ld.dressmodel_id  = ldm.dressmodel_id 
+      ORDER BY ldm.dressmodel_name, ld.dress_name  
+      ;
+    `);
+
+    try {
+      await this.repDress.save(rows);
+
+      return { isSuccess: true, total: rows.length };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? end copyDress
+
+  // * 이모티콘 migration
+  async copyEmoticon(project_id: number) {
+    const rows: Emoticon[] = await this.dataSource.query(`
+    SELECT a.emoticon_master_id id
+        , a.emoticon_owner speaker
+        , a.project_id 
+      FROM pier.list_emoticon_master a
+    WHERE a.project_id = ${project_id};
+    `);
+
+    for (const row of rows) {
+      row.slaves = await this.dataSource.query(`
+      SELECT a.image_name 
+          , a.image_url 
+          , a.image_key 
+          , 'carpestore' image_bucket
+        FROM pier.list_emoticon_slave a
+      WHERE a.emoticon_master_id  = ${row.id};
+      `);
+    } // end for
+
+    try {
+      await this.repEmoticon.save(rows);
+
+      return { isSuccess: true, total: rows.length };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? end copyEmoticon
 
   // * 인앱 상품 Migration
   async copyProduct(project_id: number) {
@@ -141,9 +200,11 @@ export class MigrationService {
     }
   } // ? END copyPackages
 
+  // * 에피소드 로딩
   async copyEpisodeLoading(project_id: number) {
     const loadings: Loading[] = await this.dataSource.query(`
-    SELECT a.project_id 
+    SELECT a.loading_id id 
+        , a.project_id 
         , a.loading_name 
         , 1 is_public
         , pier.fn_get_design_info(a.image_id, 'url') image_url
@@ -151,8 +212,36 @@ export class MigrationService {
         , 'carpestore/assets' bucket
       FROM pier.list_loading a
     WHERE a.project_id = ${project_id};
-
     `);
+
+    console.log(`loading count : `, loadings.length);
+
+    for (const loading of loadings) {
+      loading.details = await this.dataSource.query(`
+      SELECT a.lang 
+          , a.loading_text 
+        FROM pier.list_loading_detail a
+      WHERE a.loading_id = ${loading.id};
+      `);
+
+      loading.episodes = await this.dataSource.query(`
+      SELECT a.episode_id 
+          , a.is_use 
+        FROM pier.list_loading_appear  a
+      WHERE a.loading_id = ${loading.id};
+       `);
+
+      console.log(
+        `${loading.id} has ${loading.details.length} details and ${loading.episodes.length} episodes`,
+      );
+    } // end for
+
+    try {
+      await this.repLoading.save(loadings);
+      return { isSuccess: true, totalLoading: loadings.length };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
   } // ? End of copy Episode Loading
 
   // * 에피소드 및 스크립트

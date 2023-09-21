@@ -14,7 +14,6 @@ import {
 import { Loading } from './loading.entity';
 
 @Entity()
-@Unique(['loading', 'lang'])
 export class LoadingDetail extends CoreEntity {
   @Column({ length: 20 })
   lang: string;

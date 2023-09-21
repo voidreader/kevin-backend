@@ -45,6 +45,19 @@ export class MigrationController {
     return this.service.copyProduct(project_id);
   }
 
+  @Get('loading/:project_id')
+  async copyEpisodeLoading(@Param('project_id') project_id: number) {
+    return this.service.copyEpisodeLoading(project_id);
+  }
+  @Get('emoticon/:project_id')
+  async copyEmoticon(@Param('project_id') project_id: number) {
+    return this.service.copyEmoticon(project_id);
+  }
+  @Get('dress/:project_id')
+  async copyDress(@Param('project_id') project_id: number) {
+    return this.service.copyDress(project_id);
+  }
+
   @Get('packages')
   async copyPackages() {
     return this.service.copyPackages();
