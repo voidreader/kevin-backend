@@ -4,10 +4,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
   VersionColumn,
 } from 'typeorm';
@@ -20,6 +22,8 @@ export enum ProductTypeEnum {
   premium_pass = 'premium_pass',
 }
 
+@Entity()
+@Index(['project_id', 'is_public', 'from_date', 'to_date'])
 export class Product extends DeployableEntity {
   @PrimaryGeneratedColumn()
   master_id: number;
@@ -58,7 +62,15 @@ export class Product extends DeployableEntity {
   @Column()
   project_id: number;
 
+  @OneToMany((type) => ProductLang, (productLang) => productLang.product, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
   langs: ProductLang[];
 
+  @OneToMany((type) => ProductDetail, (detail) => detail.product, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
   details: ProductDetail[];
 }

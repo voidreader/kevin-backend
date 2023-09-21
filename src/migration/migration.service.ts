@@ -20,6 +20,10 @@ import { Selection } from 'src/database/produce_entity/selection.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
 import { Package } from 'src/database/produce_entity/package.entity';
 import { PackageClient } from 'src/database/produce_entity/package-client.entity';
+import { Product } from 'src/database/produce_entity/product.entity';
+import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
+import { ProductDetail } from 'src/database/produce_entity/product-detail.entity';
+import { Loading } from 'src/database/produce_entity/loading.entity';
 
 @Injectable()
 export class MigrationService {
@@ -47,12 +51,69 @@ export class MigrationService {
     private readonly repScript: Repository<Script>,
     @InjectRepository(Selection)
     private readonly repSelection: Repository<Selection>,
-
     @InjectRepository(Package)
     private readonly repPackage: Repository<Package>,
     @InjectRepository(PackageClient)
     private readonly repPackageClient: Repository<PackageClient>,
+
+    @InjectRepository(Product)
+    private readonly repProduct: Repository<Product>,
+    @InjectRepository(ProductLang)
+    private readonly repProductLang: Repository<ProductLang>,
+    @InjectRepository(ProductDetail)
+    private readonly repProductDetail: Repository<ProductDetail>,
   ) {}
+
+  // * 인앱 상품 Migration
+  async copyProduct(project_id: number) {
+    const products: Product[] = await this.dataSource.query(`
+    SELECT a.product_master_id master_id
+      , a.product_id 
+      , a.name product_name
+      , a.product_type 
+      , a.from_date 
+      , a.to_date 
+      , '' exception_cuture
+      , a.package project_id
+      , a.is_public 
+      , '' bonus_name 
+      , a.max_count 
+    FROM pier.list_product_master a
+  WHERE a.package = ${project_id};
+    `);
+
+    for (const product of products) {
+      product.langs = await this.dataSource.query(`
+      SELECT a.lang 
+          , a.title 
+          , pier.fn_get_design_info(a.banner_id, 'url') banner_url
+          , pier.fn_get_design_info(a.banner_id, 'key') banner_key
+          , 'carpestore/assets' bucket
+        FROM pier.list_product_lang a
+        WHERE a.master_id = ${product.master_id};
+      `);
+
+      product.details = await this.dataSource.query(`
+       SELECT a.is_main 
+            , a.quantity 
+            , a.first_purchase 
+            , i.id item_id
+          FROM pier.list_product_detail a
+            , produce.item i 
+        WHERE a.master_id = ${product.master_id}
+          AND i.currency = a.currency 
+        ;
+       `);
+    } // end for
+
+    try {
+      await this.repProduct.save(products);
+
+      return { isSuccess: true, totalProduct: products.length };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  } // ? END OF copy product
 
   // * 전체 패키지
   async copyPackages() {
@@ -79,6 +140,20 @@ export class MigrationService {
       return { isSuccess: false, error };
     }
   } // ? END copyPackages
+
+  async copyEpisodeLoading(project_id: number) {
+    const loadings: Loading[] = await this.dataSource.query(`
+    SELECT a.project_id 
+        , a.loading_name 
+        , 1 is_public
+        , pier.fn_get_design_info(a.image_id, 'url') image_url
+        , pier.fn_get_design_info(a.image_id, 'key') image_key
+        , 'carpestore/assets' bucket
+      FROM pier.list_loading a
+    WHERE a.project_id = ${project_id};
+
+    `);
+  } // ? End of copy Episode Loading
 
   // * 에피소드 및 스크립트
   async copyEpisodeScript(project_id: number) {

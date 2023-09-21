@@ -40,6 +40,11 @@ export class MigrationController {
     return this.service.copyEpisodeScript(project_id);
   }
 
+  @Get('product/:project_id')
+  async copyProduct(@Param('project_id') project_id: number) {
+    return this.service.copyProduct(project_id);
+  }
+
   @Get('packages')
   async copyPackages() {
     return this.service.copyPackages();

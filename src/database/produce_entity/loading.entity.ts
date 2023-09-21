@@ -20,8 +20,6 @@ export class Loading extends CoreDeployEntity {
   @Column({ default: 0 })
   project_id: number;
 
-  @Column({ length: 30 })
-  image_name: string;
   @Column({ length: 160 })
   image_url: string;
   @Column({ length: 120 })
@@ -35,9 +33,15 @@ export class Loading extends CoreDeployEntity {
   @Column({ default: false, type: 'boolean' })
   is_public: boolean;
 
-  @OneToMany((type) => LoadingEpisode, (l) => l.loading)
+  @OneToMany((type) => LoadingEpisode, (l) => l.loading, {
+    eager: true,
+    cascade: true,
+  })
   episodes: LoadingEpisode[];
 
-  @ManyToOne((type) => LoadingDetail, (l) => l.loading)
+  @ManyToOne((type) => LoadingDetail, (l) => l.loading, {
+    eager: true,
+    cascade: true,
+  })
   details: LoadingDetail[];
 }

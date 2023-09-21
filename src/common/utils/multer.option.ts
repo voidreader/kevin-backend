@@ -28,7 +28,7 @@ export const multerOptionFactory = (
       acl: 'public-read',
       key(_req: Express.Request, file, done) {
         const ext = path.extname(file.originalname); // 파일의 확장자 추출
-        const basename = path.basename(file.originalname, ext); // 파일 이름
+        // const basename = path.basename(file.originalname, ext); // 파일 이름
         // 파일 이름이 중복되는 것을 방지하기 위해 파일이름_날짜.확장자 형식으로 설정합니다.
         // console.log(`multer create : `, _req);
         const options: resourceUploadOptions = _req['params'];
@@ -39,9 +39,9 @@ export const multerOptionFactory = (
 
         done(
           null,
-          `assets/${options.project_id}/${
-            options.type
-          }/${basename}_${Date.now()}${ext}`,
+          `assets/${options.project_id}/${options.type}/${Math.floor(
+            Math.random() * 1001,
+          )}_${Date.now()}${ext}`,
         );
       },
     }),
