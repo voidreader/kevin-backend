@@ -17,6 +17,11 @@ export class MigrationController {
     return this.service.copyLiveIllust(project_id);
   }
 
+  @Get('live-object/:project_id')
+  async copyLiveObject(@Param('project_id') project_id: number) {
+    return this.service.copyLiveObject(project_id);
+  }
+
   @Get('model/:project_id')
   async copyModels(@Param('project_id') project_id: number) {
     return this.service.copyModels(project_id);

@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   Unique,
@@ -27,6 +28,7 @@ export class Dress {
   speaker: string;
 
   @Column({ comment: '연결 모델 ID' })
+  @Index()
   model_id: number;
 
   @Column({ comment: '기본 의상 여부', type: 'boolean' })

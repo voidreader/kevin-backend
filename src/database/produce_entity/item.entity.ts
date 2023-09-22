@@ -64,6 +64,11 @@ export class Item extends CoreDeployEntity {
   @Column({ default: '-', comment: '구 데이터 currency 코드' })
   currency: string;
 
+  @Column({ comment: '연결된 능력 ID', default: 0 })
+  ability_id: number;
+  @Column({ comment: '능력 증감 수치', default: 0 })
+  ability_value: number;
+
   @OneToMany((type) => ItemLang, (itemLang) => itemLang.item, {
     eager: true,
     cascade: ['insert', 'update'],

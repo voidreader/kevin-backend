@@ -3,12 +3,15 @@ import { Column, Entity, OneToMany, Unique } from 'typeorm';
 import { IsEnum } from 'class-validator';
 import { VisualResourceType } from 'src/common/entities/common-image-resource.entity';
 import { LiveResourceDetail } from './live-resource-detail.entity';
+import { LiveLocalization } from 'src/database/produce_entity/live-localization.entity';
 
 //* Live Object, Live Illust, Live BG 엔터티
 
 @Entity()
 @Unique(['project_id', 'live_type', 'live_name'])
 export class LiveResource extends CoreDeployEntity {
+  origin_id: number; // migration id
+
   @Column({ default: 0 })
   project_id: number; // 연결 프로젝트 ID
 
@@ -47,9 +50,15 @@ export class LiveResource extends CoreDeployEntity {
   @Column({ length: 30, nullable: true })
   bucket: string;
 
-  @OneToMany(() => LiveResourceDetail, (detail) => detail.parent, {
+  @OneToMany((t) => LiveResourceDetail, (detail) => detail.parent, {
     eager: true,
     cascade: ['insert', 'update'],
   })
   details: LiveResourceDetail[];
+
+  @OneToMany((t) => LiveLocalization, (local) => local.live, {
+    eager: true,
+    cascade: ['insert', 'update'],
+  })
+  localizations: LiveLocalization[];
 }

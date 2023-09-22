@@ -474,12 +474,13 @@ export class MigrationService {
         item.extension = extensions[0];
       }
 
-      // try {
-      //   console.log(item);
-      //   await this.repItem.save(item);
-      // } catch (error) {
-      //   return { isSuccess: false, error };
-      // }
+      // item.abilities = await this.dataSource.query(`
+      // SELECT cca.ability_id
+      //       , cca.add_value
+      //     FROM pier.com_currency_ability cca
+      //   WHERE cca.currency = '${item.currency}'
+      //   ;
+      // `);
     } // ? end of for
 
     console.log('Save Start... items count : ', items.length);
@@ -693,6 +694,19 @@ export class MigrationService {
       `);
 
       model.details = details;
+
+      console.log(`live details : `, model.details.length);
+
+      model.localizations = await this.dataSource.query(`
+      SELECT 'live_illust' resource_type
+        , lang 
+        , ifnull(public_name, '-') public_name
+        , ifnull(summary, '-') summary
+      FROM pier.list_illust_lang a
+    WHERE a.illust_id = ${model.id} AND a.illust_type = 'live2d';
+      `);
+
+      console.log(`live langs : `, model.localizations.length);
     } // end for
 
     try {
@@ -702,5 +716,64 @@ export class MigrationService {
     }
 
     return { isSuccess: true, total: result.length };
-  }
+  } // ? END copy live illust
+
+  // * 라이브 오브젝트 카피
+  async copyLiveObject(project_id: number) {
+    let result: LiveResource[];
+
+    result = await this.dataSource.query(`
+    SELECT a.live_object_id as origin_id
+        , a.project_id 
+        , 'live_object' live_type
+        , a.live_object_name live_name
+        , a.offset_x 
+        , a.offset_y 
+        , a.is_public 
+        , a.speaker 
+        , a.object_ver resource_ver
+        , a.appear_episode 
+        , pier.fn_get_design_info(a.thumbnail_id, 'url') thumbnail_url
+        , pier.fn_get_design_info(a.thumbnail_id, 'key') thumbnail_key
+        , 'carpestore' bucket
+      FROM pier.list_live_object a
+    WHERE a.project_id = ${project_id};
+    `);
+
+    for (const model of result) {
+      model.offset_x = Math.round(model.offset_x * 10) / 10;
+      model.offset_y = Math.round(model.offset_y * 10) / 10;
+
+      let details: LiveResourceDetail[];
+
+      details = await this.dataSource.query(`
+      SELECT a.file_url 
+          , a.file_key 
+          , a.file_name 
+          , 'carpestore' bucket
+          , a.motion_name 
+        FROM pier.list_live_object_detail a
+      WHERE a.live_object_id = ${model.origin_id};
+      `);
+
+      model.details = details;
+
+      model.localizations = await this.dataSource.query(`
+      SELECT 'live_object' resource_type
+      , lang 
+      , ifnull(public_name, '-') public_name
+      , ifnull(summary, '-') summary
+    FROM pier.list_minicut_lang a
+  WHERE a.minicut_id = ${model.origin_id} AND a.minicut_type = 'live2d';
+      `);
+    } // end for
+
+    try {
+      await this.repLiveResource.save(result);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    return { isSuccess: true, total: result.length };
+  } // ? END copy live object
 } // ? End of class
