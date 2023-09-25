@@ -163,7 +163,7 @@ export class ProjectService {
 
     try {
       const savedEpisode = await this.repEpisode.save(episode);
-      return { isSuccess: true, episode: savedEpisode };
+      return { isSuccess: true, extension: episode.extension };
     } catch (error) {
       return { isSuccess: false, error };
     }

@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   OneToOne,
@@ -17,6 +18,7 @@ import { ItemExtension } from './item-extension.entity';
 // * 아이템 마스터 entity
 
 @Entity()
+@Index(['item_type', 'resource_id'])
 export class Item extends CoreDeployEntity {
   @Column({ length: 30, comment: '관리 이름' })
   origin_name: string;

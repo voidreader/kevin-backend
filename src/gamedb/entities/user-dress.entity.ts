@@ -8,6 +8,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+// * 유저의 의상 소유 및 세팅 정보
+
 @Entity({ database: 'game' })
 export class UserDress extends CoreEntity {
   // ???
@@ -19,11 +21,8 @@ export class UserDress extends CoreEntity {
   project_id: number;
 
   @PrimaryColumn()
-  speaker: string;
+  dress_id: number;
 
-  @Column({ length: 30, comment: '의상 이름' })
-  dress_name: string;
-
-  @Column({ comment: '연결 모델 ID' })
-  model_id: number;
+  @Column({ type: 'boolean', default: false })
+  is_main: boolean;
 }

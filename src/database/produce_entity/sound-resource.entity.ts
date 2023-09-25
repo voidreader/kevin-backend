@@ -1,6 +1,6 @@
 import { IsEnum, Max, Min } from 'class-validator';
 import { CoreDeployEntity } from 'src/common/entities/core-deploy.entity';
-import { Column, Entity, Unique } from 'typeorm';
+import { Column, Entity, Index, Unique } from 'typeorm';
 
 export enum SoundResourceType {
   voice = 'voice',
@@ -10,6 +10,7 @@ export enum SoundResourceType {
 
 @Entity()
 @Unique(['project_id', 'sound_name'])
+@Index(['project_id', 'sound_type', 'sound_name'])
 export class SoundResource extends CoreDeployEntity {
   @Column({ default: 0 })
   project_id: number; // 연결 프로젝트 ID

@@ -29,6 +29,7 @@ export class Script {
     default: null,
     comment: '이동할 사건ID 혹은 에피소드ID',
     nullable: true,
+    length: 20,
   })
   target_scene_id: string;
 

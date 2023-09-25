@@ -268,8 +268,11 @@ export class MigrationService {
       [project_id],
     );
 
+    console.log(`total episode : `, originEpisodes.length);
+
     // * Episode 관련 로직 시작
     for (const episode of originEpisodes) {
+      console.log(episode.title);
       episode.details = await this.dataSource.query(
         `
       SELECT a.lang 
@@ -310,9 +313,36 @@ export class MigrationService {
     for (const episode of originEpisodes) {
       const scripts: Script[] = await this.dataSource.query(
         `
-      SELECT ls.*
-        FROM pier.list_script ls
-      WHERE ls.episode_id = ?;
+        SELECT a.script_no 
+        , a.project_id 
+        , a.episode_id 
+        , CASE WHEN a.scene_id IS NULL THEN NULL
+               WHEN a.scene_id = '' THEN NULL
+               ELSE a.scene_id END scene_id 
+        , a.template 
+        , a.speaker 
+        , a.script_data 
+        , a.requisite 
+        , a.character_expression 
+        , a.emoticon_expression 
+        , a.in_effect 
+        , a.out_effect 
+        , a.bubble_size 
+        , a.bubble_pos 
+        , a.bubble_hold 
+        , a.bubble_reverse 
+        , a.emoticon_size 
+        , a.voice 
+        , a.autoplay_row
+        , a.sound_effect 
+        , a.lang 
+        , a.control 
+        , a.selection_group 
+        , a.selection_no 
+        , a.dev_comment 
+        , a.target_scene_id 
+     FROM pier.list_script a
+    WHERE a.episode_id = ?;
       `,
         [episode.episode_id],
       );
