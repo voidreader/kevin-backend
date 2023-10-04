@@ -37,11 +37,15 @@ export class CommonController {
     @Param('project_id') project_id: number,
     @Param('type') data_type: string,
     @Param('dlc_id') dlc_id: number = -1,
-  ): Promise<any> {
+  ) {
     if (data_type == 'model') {
       return this.commonService.getProjectModelDowndown(project_id);
     } else if (data_type == 'episode') {
       return this.commonService.getProjectEpisodeDropdown(project_id, dlc_id);
+    } else if (data_type == 'character') {
+      return this.commonService.getProjectCharacterDropdown(project_id);
+    } else if (data_type == 'coupon') {
+      return [];
     }
   }
 }

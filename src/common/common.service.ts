@@ -56,6 +56,17 @@ export class CommonService {
     `);
   }
 
+  // * 프로젝트 캐릭터 dropdown
+  getProjectCharacterDropdown(project_id: number): Promise<any> {
+    return this.dataSource.query(`
+    SELECT c.speaker code
+        , c.speaker code_name
+    FROM produce.character c
+    WHERE c.project_id = ${project_id}
+    ORDER BY c.speaker;
+    `);
+  }
+
   // * 프로젝트 에피소드 dropdown (DLC 제외)
   getProjectEpisodeDropdown(project_id: number, dlc_id: number): Promise<any> {
     return this.dataSource.query(`
