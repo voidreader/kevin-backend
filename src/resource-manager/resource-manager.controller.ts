@@ -18,7 +18,11 @@ import {
   RESOURCE_ILLUST,
   RESOURCE_MINICUT,
 } from 'src/common/common.const';
-import { UpdateStaticImageDto } from './dto/resource-manager.dto';
+import {
+  BackgroundImageUpdateDto,
+  StaticImageDetailOutputDto,
+  UpdateStaticImageDto,
+} from './dto/resource-manager.dto';
 
 @Controller('resource-manager')
 export class ResourceManagerController {
@@ -52,17 +56,38 @@ export class ResourceManagerController {
     return this.resourceManagerService.getStaticResourceDetail(id);
   }
 
-  // Static 리소스 업데이트
-  @Patch('/static')
-  @UseInterceptors(FileInterceptor('file'))
-  updateStoryResource(
-    @UploadedFile() file: Express.MulterS3.File,
-    @Body('update') updateDto: UpdateStaticImageDto,
-  ) {
-    console.log(`updateStoryResource :`, updateDto);
+  // static 이미지 리소스 정보 수정
+  @Put('/static/:project_id/:type/:id')
+  updateStaticImageInfo(
+    @Param('project_id') project_id: number,
+    @Param('type') type: string,
+    @Param('id') id: number,
+    @Body('update') updateStaticImageDto: UpdateStaticImageDto,
+  ): Promise<StaticImageDetailOutputDto> {
+    console.log(updateStaticImageDto);
 
-    return this.resourceManagerService.updateStaticImage(file, updateDto);
-  }
+    if (type == 'bg') {
+      return this.resourceManagerService.updateBackgroundImageInfo(
+        id,
+        updateStaticImageDto,
+      );
+    } else {
+      return this.resourceManagerService.updateStaticImageInfo(
+        id,
+        updateStaticImageDto,
+      );
+    }
+  } // ? END updateStaticImageResource
+
+  // Static 이미지 리소스 이미지 수정
+  @Patch('/static/:project_id/:type/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  updateStaticImage(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.updateStaticImage(file, id);
+  } // ? END updateStaticImage
 
   @Delete('/static/:id')
   DeleteResource(@Param('id') id: number) {

@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import {
+  BackgroundImageUpdateDto,
   StaticImageDetailOutputDto,
   StaticImageOutputDto,
   ThumbnailOutputDto,
@@ -53,7 +54,51 @@ export class ResourceManagerService {
     private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
 
-  // * 올드 데이터 카피, 컨버팅
+  // * 배경을 제외한 스태틱 이미지 리소스 수정 2023.10.04
+  async updateStaticImageInfo(
+    id: number,
+    updateStaticImageDto: UpdateStaticImageDto,
+  ): Promise<StaticImageDetailOutputDto> {
+    let image: StoryStaticImage =
+      this.repStaticImage.create(updateStaticImageDto);
+
+    image.is_updated = true;
+    console.log(`update image : `, image);
+
+    try {
+      image = await this.repStaticImage.save(image);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    return { isSuccess: true, detail: image };
+  } // ? END updateStaticImageInfo
+
+  // * 배경 리소스 일반 정보 수정 2023.10.04
+  async updateBackgroundImageInfo(
+    id: number,
+    updateStaticImageDto: UpdateStaticImageDto,
+  ): Promise<StaticImageDetailOutputDto> {
+    const { image_name, game_scale, is_updated } = updateStaticImageDto;
+
+    try {
+      await this.repStaticImage.update(id, {
+        image_name,
+        game_scale,
+        is_updated,
+      });
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+
+    const refresh = await this.repStaticImage.findOneBy({
+      id,
+    });
+
+    return { isSuccess: true, detail: refresh };
+  } // ? updateBackgroundImage
+
+  // * 올드 데이터 카피, 컨버팅 (마이그레이션으로 이동 필요)
   async copyOriginStaticImageResource(project_id: number, type: string) {
     let result: StoryStaticImage[];
     const updateItems: StoryStaticImage[] = [];
@@ -299,62 +344,48 @@ export class ResourceManagerService {
   // * 스태틱 이미지 리소스 업데이트
   async updateStaticImage(
     file: Express.MulterS3.File,
-    updateDto: UpdateStaticImageDto,
+    id: number,
   ): Promise<StaticImageOutputDto> {
     console.log(`updateStaticImage START`);
 
-    let currentDiscard: DiscardResource = null;
     let incomingDiscard: DiscardResource = null;
 
-    const item = this.repStaticImage.create(updateDto);
-    item.is_updated = true; // 업데이트 되었음을 처리
-
-    console.log(item.localizations);
-
-    if (file) {
-      // 파일이 변경되었으면 값도 변경
-      console.log(`updateStaticImage has file..`);
-
-      // discard에 추가 (기존 이미지는 삭제 )
-      currentDiscard = this.repDiscard.create();
-      currentDiscard.key = item.image_key;
-      currentDiscard.url = item.image_url;
-
-      // 방금 업로드된 신규 파일
-      incomingDiscard = this.repDiscard.create();
-      incomingDiscard.key = file.key;
-      incomingDiscard.url = file.location;
-
-      item.image_key = file.key;
-      item.image_url = file.location;
-      item.bucket = file.bucket;
+    if (!file) {
+      return { isSuccess: false, error: 'Invalid File' };
     }
 
-    // 업데이트
+    // 파일 정보
+    const { location, key, bucket } = file;
+
+    // 원래 이미지 찾기.
+    const target: StoryStaticImage = await this.repStaticImage.findOneBy({
+      id,
+    });
+
+    if (!target) {
+      return { isSuccess: false, error: 'Invalid Resource ID' };
+    }
+
+    // 업데이트 파라매터
+    const updateParam = {
+      image_url: location,
+      image_key: key,
+      bucket,
+    };
+
+    // update
     try {
-      console.log(`updateStaticImage UPDATE`);
-      // await this.repStaticImage.update(item.id, item);
-      // await this.repStaticImage.save(item);
-
-      await this.dataSource.manager.save(item);
+      await this.repStaticImage.update(id, updateParam);
     } catch (error) {
-      // 업데이트 실패시에는 신규파일을 삭제
-      if (incomingDiscard) {
-        this.repDiscard.save(incomingDiscard);
-      }
-
-      console.log(error);
+      this.saveDiscardImage(location, key);
       return { isSuccess: false, error };
     }
 
-    // 성공 시에는 기존 파일을 삭제 대상으로 입력한다.
-    if (currentDiscard) {
-      this.repDiscard.save(currentDiscard);
-    }
+    // 기존 이미지 discard 처리
+    this.saveDiscardImage(target.image_url, target.image_key);
 
-    // 리턴
-    return this.getStaticImageList(updateDto.project_id, updateDto.image_type);
-  }
+    return { isSuccess: true, ...updateParam };
+  } // ? END updateStaticImage
 
   // * 스태틱 리소스 이미지 삭제
   async DeleteStaticImage(id: number): Promise<StaticImageOutputDto> {

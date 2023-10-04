@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CommonService } from './common.service';
 import { StandardInfo } from './entities/standard-info.entity';
+import { get } from 'http';
 
 @Controller('common')
 export class CommonController {
@@ -29,5 +30,18 @@ export class CommonController {
   @Get(`/etc/bubble`)
   getBubbleSetDropdown(@Query('lang') lang: string = 'EN'): Promise<any> {
     return this.commonService.getAvailableBubbleSet(lang);
+  }
+
+  @Get(`/project/:project_id/:type/:dlc_id`)
+  getProjectDropdown(
+    @Param('project_id') project_id: number,
+    @Param('type') data_type: string,
+    @Param('dlc_id') dlc_id: number = -1,
+  ): Promise<any> {
+    if (data_type == 'model') {
+      return this.commonService.getProjectModelDowndown(project_id);
+    } else if (data_type == 'episode') {
+      return this.commonService.getProjectEpisodeDropdown(project_id, dlc_id);
+    }
   }
 }

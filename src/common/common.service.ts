@@ -26,15 +26,12 @@ export class CommonService {
     standard_class: string,
     lang: string = 'EN',
   ): Promise<any> {
-    if (standard_class == 'prime_currency') {
-      // 유료 재화 목록
-      return this.dataSource.query(`
-      SELECT si.code 
-          , produce.fn_get_localize_text(si.text_id, '${lang}') code_name
-      FROM produce.standard_info si
-      WHERE si.standard_class = '${standard_class}';
-      `);
-    }
+    return this.dataSource.query(`
+    SELECT si.code 
+        , produce.fn_get_localize_text(si.text_id, '${lang}') code_name
+    FROM produce.standard_info si
+    WHERE si.standard_class = '${standard_class}';
+    `);
   }
 
   // * 말풍선 세트 dropdown
@@ -46,5 +43,30 @@ export class CommonService {
         FROM pier.com_bubble_master a
       WHERE a.bubble_type  = 'half'
       ORDER BY a.set_id;`);
+  }
+
+  // * 프로젝트 모델 dropdown
+  getProjectModelDowndown(project_id: number): Promise<any> {
+    return this.dataSource.query(`
+    SELECT m.model_id code
+        , m.model_name code_name
+      FROM produce.model m
+    WHERE m.project_id = ${project_id}
+    ORDER BY m.model_name;
+    `);
+  }
+
+  // * 프로젝트 에피소드 dropdown (DLC 제외)
+  getProjectEpisodeDropdown(project_id: number, dlc_id: number): Promise<any> {
+    return this.dataSource.query(`
+    SELECT e.episode_id code
+        , CASE WHEN e.episode_type ='ending' THEN concat('Ending. ', e.title)
+                WHEN e.episode_type ='side' THEN concat('Special. ', e.title)
+                ELSE concat('Chapter ', e.chapter_number, '. ', e.title) END code_name
+      FROM produce.episode e
+    WHERE e.project_id = ${project_id}
+      AND e.dlc_id = ${dlc_id}
+    ORDER BY e.dlc_id, e.episode_type , e.chapter_number;
+    `);
   }
 }
