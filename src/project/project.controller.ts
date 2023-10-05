@@ -152,9 +152,11 @@ export class ProjectController {
 
   @Patch(`/:project_id/episode/sort`)
   // * 에피소드 리스트의 재정렬
-  updateEpisodeSorting(
-    @Body() inputDto: UpdateEpisodeSortingInputDto,
-  ): Promise<EpisodeListOutputDto> {
-    return this.updateEpisodeSorting(inputDto);
+  updateEpisodeSorting(@Body() inputDto: UpdateEpisodeSortingInputDto) {
+    console.log(`>>> updateEpisodeSorting Called `, inputDto);
+
+    return this.projectService.updateEpisodeSorting(inputDto);
+    // return 'ok';
+    // return this.updateEpisodeSorting(inputDto);
   }
 }
