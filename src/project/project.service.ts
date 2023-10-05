@@ -107,6 +107,19 @@ export class ProjectService {
     }
   } // ? 에피소드 생성 종료
 
+  // * 에피소드 삭제
+  async deleteEpisoe(
+    project_id: number,
+    episode_id: number,
+  ): Promise<EpisodeListOutputDto> {
+    try {
+      await this.repEpisode.delete(episode_id);
+      return this.getEpisodeList(project_id);
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  }
+
   // * 단일 에피소드 업데이트
   async updateSingleEpisode(episode: Episode) {
     console.log(`extension check : `, episode.extension);

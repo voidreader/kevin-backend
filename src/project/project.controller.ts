@@ -142,6 +142,14 @@ export class ProjectController {
     return this.projectService.createNewEpisode(project_id, inputDto);
   }
 
+  @Delete(`/:project_id/episode/:episode_id`)
+  deleteEpisode(
+    @Param('episode_id') episode_id: number,
+    @Param('project_id') project_id: number,
+  ): Promise<EpisodeListOutputDto> {
+    return this.projectService.deleteEpisoe(project_id, episode_id);
+  }
+
   @Patch(`/:project_id/episode/sort`)
   // * 에피소드 리스트의 재정렬
   updateEpisodeSorting(
