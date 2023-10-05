@@ -34,6 +34,19 @@ export class Profile extends CoreDeployEntity {
   @Column({ comment: '소개글 text_id', default: -1 })
   profile_introduce_id: number;
 
+  @Column({
+    type: 'boolean',
+    comment: '메인캐릭터 여부. 프로필 생성과 연계',
+    default: false,
+  })
+  is_main: boolean;
+
+  @Column({ type: 'boolean', comment: '스탠딩 사용 여부', default: false })
+  use_standing: boolean;
+
+  @Column({ type: 'boolean', comment: '이모티콘 사용 여부', default: false })
+  use_emoticon: boolean;
+
   @OneToMany((type) => Ability, (ability) => ability.profile, {
     eager: true,
     cascade: ['insert', 'update'],

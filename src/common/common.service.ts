@@ -59,11 +59,11 @@ export class CommonService {
   // * 프로젝트 캐릭터 dropdown
   getProjectCharacterDropdown(project_id: number): Promise<any> {
     return this.dataSource.query(`
-    SELECT c.speaker code
-        , c.speaker code_name
-    FROM produce.character c
-    WHERE c.project_id = ${project_id}
-    ORDER BY c.speaker;
+    SELECT p.speaker code
+        , p.speaker code_name
+      FROM profile p 
+      WHERE p.is_main > 0
+      AND p.project_id = ${project_id};
     `);
   }
 
