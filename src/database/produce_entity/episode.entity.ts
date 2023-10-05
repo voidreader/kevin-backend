@@ -29,8 +29,9 @@ export enum EndingTypeEnum {
 // 에피소드 해금 스타일
 export enum UnlockStyleEnum {
   episode = 'episode',
-  event = 'event',
+  scene = 'scene',
   none = 'none',
+  coupon = 'coupon',
 }
 
 @Entity()
@@ -71,8 +72,8 @@ export class Episode extends DeployableEntity {
   })
   unlock_style: UnlockStyleEnum;
 
-  @Column({ comment: '해금 조건', length: 120, nullable: true, default: null })
-  unlock_by: string;
+  @Column({ comment: '해금 조건', nullable: true, default: null })
+  unlock_by: number;
 
   @Column({ comment: '종속된 에피소드ID', default: -1 })
   depend_episode: number;
