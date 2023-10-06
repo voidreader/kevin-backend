@@ -6,9 +6,11 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { ProfileLineLang } from './profile-line-lang.entity';
 
 // * 캐릭터 프로필 대사
 
@@ -33,4 +35,10 @@ export class ProfileLine extends CoreEntity {
   @ManyToOne((type) => Profile, (profile) => profile.lines)
   @JoinColumn({ name: 'profile_id' })
   profile: Profile;
+
+  @OneToMany((t) => ProfileLineLang, (lang) => lang.profileLine, {
+    eager: true,
+    cascade: true,
+  })
+  localizations: ProfileLineLang[];
 }

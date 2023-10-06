@@ -4,10 +4,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 import { Profile } from './profile.entity';
+import { AbilityLang } from '../ability-lang.entity';
 
 // * 캐릭터별 능력치&호감도 Entity
 
@@ -44,4 +46,10 @@ export class Ability {
   @ManyToOne((type) => Profile, (profile) => profile.abilities)
   @JoinColumn({ name: 'profile_id' })
   profile: Profile;
+
+  @OneToMany((t) => AbilityLang, (lang) => lang.ability, {
+    eager: true,
+    cascade: true,
+  })
+  localizations: AbilityLang[];
 }

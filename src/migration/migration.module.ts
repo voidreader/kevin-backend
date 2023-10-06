@@ -24,6 +24,9 @@ import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
 import { Loading } from 'src/database/produce_entity/loading.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
+import { TextLocalize } from 'src/common/entities/text-localize.entity';
+import { ProfileLineLang } from 'src/database/produce_entity/profile-line-lang.entity';
+import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 
 @Module({
   imports: [
@@ -50,6 +53,9 @@ import { Dress } from 'src/database/produce_entity/dress.entity';
       Loading,
       Emoticon,
       Dress,
+      TextLocalize,
+      ProfileLine,
+      ProfileLineLang,
     ]),
   ],
   controllers: [MigrationController],

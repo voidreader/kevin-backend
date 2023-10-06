@@ -26,6 +26,8 @@ import { ProductDetail } from 'src/database/produce_entity/product-detail.entity
 import { Loading } from 'src/database/produce_entity/loading.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
+import { TextLocalize } from 'src/common/entities/text-localize.entity';
+import { ProfileLineLang } from 'src/database/produce_entity/profile-line-lang.entity';
 
 @Injectable()
 export class MigrationService {
@@ -66,6 +68,12 @@ export class MigrationService {
     private readonly repEmoticon: Repository<Emoticon>,
     @InjectRepository(Dress)
     private readonly repDress: Repository<Dress>,
+    @InjectRepository(TextLocalize)
+    private readonly repTextLocalize: Repository<TextLocalize>,
+    @InjectRepository(ProfileLineLang)
+    private readonly repProfileLineLang: Repository<ProfileLineLang>,
+    @InjectRepository(ProfileLine)
+    private readonly repProfileLine: Repository<ProfileLine>,
   ) {}
 
   // * 의상
@@ -806,4 +814,57 @@ export class MigrationService {
 
     return { isSuccess: true, total: result.length };
   } // ? END copy live object
+
+  // * 프로필 대사 다국어 데이터 생성
+  async createProfileLineLang(profile_id: number) {
+    // 프로필 ID 에 해당하는 line 정보 가져오기
+    const lines: ProfileLine[] = await this.dataSource.query(`
+    SELECT a.* 
+      FROM produce.profile_line a
+    WHERE a.profile_id = ${profile_id};
+    `);
+
+    console.log(lines);
+
+    for (const line of lines) {
+      // 지우고 시작
+      await this.dataSource.query(`
+      DELETE FROM produce.profile_line_lang WHERE line_id = ${line.id};
+      `);
+
+      const textLocalize = await this.repTextLocalize.findOneBy({
+        text_id: line.text_id,
+      });
+
+      line.localizations = [];
+
+      if (!textLocalize) continue;
+
+      line.localizations.push(
+        this.repProfileLineLang.create({
+          line_text: textLocalize.KO,
+          lang: 'KO',
+        }),
+      );
+      line.localizations.push(
+        this.repProfileLineLang.create({
+          line_text: textLocalize.EN,
+          lang: 'EN',
+        }),
+      );
+      line.localizations.push(
+        this.repProfileLineLang.create({
+          line_text: textLocalize.JA,
+          lang: 'JA',
+        }),
+      );
+    }
+
+    try {
+      await this.repProfileLine.save(lines);
+      return { isSuccess: true, totalLines: lines.length };
+    } catch (error) {
+      return { isSuccess: false, error };
+    }
+  }
 } // ? End of class

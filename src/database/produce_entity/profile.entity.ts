@@ -2,6 +2,7 @@ import { CoreDeployEntity } from 'src/common/entities/core-deploy.entity';
 import { Column, Entity, OneToMany, Unique } from 'typeorm';
 import { Ability } from './ability.entity';
 import { ProfileLine } from './profile-line.entity';
+import { ProfileLang } from './profile-lang.entity';
 
 // * 캐릭터 프로파일
 @Entity()
@@ -22,17 +23,11 @@ export class Profile extends CoreDeployEntity {
   @Column({ comment: '생년월일' })
   profile_birth_date: Date;
 
-  @Column({ comment: '좋아하는것 text_id', default: -1 })
-  profile_favorite_id: number;
-
-  @Column({ comment: '싫어하는것 text_id', default: -1 })
-  profile_hate_id: number;
-
-  @Column({ comment: '기본 한 줄 대사 text_id', default: -1 })
-  profile_line_id: number;
-
-  @Column({ comment: '소개글 text_id', default: -1 })
-  profile_introduce_id: number;
+  // 프로필 : 좋아하는것, 싫어하는것, 소개, 기타
+  profile_favorite: string;
+  profile_dislike: string;
+  profile_introduce: string;
+  profile_etc: string;
 
   @Column({
     type: 'boolean',
@@ -49,13 +44,13 @@ export class Profile extends CoreDeployEntity {
 
   @OneToMany((type) => Ability, (ability) => ability.profile, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
   })
   abilities: Ability[];
 
   @OneToMany((type) => ProfileLine, (line) => line.profile, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
   })
   lines: ProfileLine[];
 }
