@@ -104,6 +104,8 @@ export class ResourceManagerController {
     @Param('id') id: number,
     @Param('project_id') project_id: number,
   ) {
+    console.log(`updateStaticThumbnail : ${id} / ${project_id}`);
+
     return this.resourceManagerService.updateStaticThumbnail(file, id);
   }
 

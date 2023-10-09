@@ -431,6 +431,7 @@ export class ResourceManagerService {
   ): Promise<ThumbnailOutputDto> {
     // 파일이 없는 경우.
     if (!file) {
+      console.log(`updateStaticThumbnail failed : invalid file`);
       return { isSuccess: false, error: 'invalid file' };
     }
 
@@ -439,6 +440,7 @@ export class ResourceManagerService {
 
     // 소속된 리소스가 없는 경우.
     if (!item) {
+      console.log(`updateStaticThumbnail failed : invalid resource id`);
       return { isSuccess: false, error: 'invalid resource id' };
     }
 
