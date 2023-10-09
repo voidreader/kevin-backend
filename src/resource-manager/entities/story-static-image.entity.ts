@@ -19,7 +19,7 @@ export class StoryStaticImage extends CommonImageResourceEntity {
 
   @OneToMany(() => ImageLocalization, (local) => local.image, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
   })
   localizations: ImageLocalization[];
 }

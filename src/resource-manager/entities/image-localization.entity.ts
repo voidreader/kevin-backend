@@ -16,10 +16,6 @@ import { StoryStaticImage } from './story-static-image.entity';
 
 @Entity()
 export class ImageLocalization extends CoreEntity {
-  @Column({ type: 'enum', enum: VisualResourceType })
-  @IsEnum(VisualResourceType)
-  resource_type: string; // minicut, illust, live_object, live_illust 일단 4가지.
-
   @Column({ length: 10 })
   lang: string;
 
@@ -34,9 +30,6 @@ export class ImageLocalization extends CoreEntity {
     (staticImage) => staticImage.localizations,
     { onDelete: 'CASCADE' },
   )
-  @JoinColumn([
-    { name: 'resource_id', referencedColumnName: 'id' },
-    { name: 'resource_type', referencedColumnName: 'image_type' },
-  ])
+  @JoinColumn([{ name: 'resource_id' }])
   image: StoryStaticImage;
 }
