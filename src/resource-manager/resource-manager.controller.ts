@@ -97,13 +97,12 @@ export class ResourceManagerController {
   }
 
   // Thumbnail 업로드
-  @Post(`/static-thumbnail/:project_id/:type/:id`)
+  @Post(`/static-thumbnail/:project_id/:id`)
   @UseInterceptors(FileInterceptor('file'))
   updateStaticThumbnail(
     @UploadedFile() file: Express.MulterS3.File,
     @Param('id') id: number,
     @Param('project_id') project_id: number,
-    @Param('type') type: string,
   ) {
     return this.resourceManagerService.updateStaticThumbnail(file, id);
   }
