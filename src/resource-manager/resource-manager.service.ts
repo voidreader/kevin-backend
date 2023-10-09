@@ -442,10 +442,18 @@ export class ResourceManagerService {
       return { isSuccess: false, error: 'invalid resource id' };
     }
 
-    // upload된 값 저장
-    item.extension.thumbnail_url = location;
-    item.extension.thumbnail_key = key;
-    item.extension.bucket = bucket;
+    if (item.extension == null) {
+      item.extension = this.repPublicExtension.create({
+        thumbnail_url: location,
+        thumbnail_key: key,
+        bucket,
+      });
+    } else {
+      // upload된 값 저장
+      item.extension.thumbnail_url = location;
+      item.extension.thumbnail_key = key;
+      item.extension.bucket = bucket;
+    }
 
     try {
       await this.repStaticImage.save(item);
