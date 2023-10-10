@@ -20,15 +20,62 @@ import {
 } from 'src/common/common.const';
 import {
   BackgroundImageUpdateDto,
+  ModelCreateDto,
   StaticImageDetailOutputDto,
   UpdateStaticImageDto,
 } from './dto/resource-manager.dto';
+import { Model } from 'src/database/produce_entity/model.entity';
 
 @Controller('resource-manager')
 export class ResourceManagerController {
   constructor(
     private readonly resourceManagerService: ResourceManagerService,
   ) {}
+
+  @Get(`/model/:project_id`)
+  getModelList(@Param('project_id') project_id: number): Promise<Model[]> {
+    return this.resourceManagerService.getModelList(project_id);
+  }
+
+  @Post(`/model/:project_id`)
+  createModel(
+    @Param('project_id') project_id: number,
+    @Body() dto: ModelCreateDto,
+  ): Promise<Model[]> {
+    console.log(`createModel with `, dto);
+
+    return this.resourceManagerService.createModel(project_id, dto);
+  }
+
+  @Post(`/model/:project_id/:model_id`)
+  @UseInterceptors(FileInterceptor('file'))
+  uploadModelZip(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('model_id') model_id: number,
+  ) {
+    return this.resourceManagerService.uploadModelZip(
+      project_id,
+      model_id,
+      file,
+    );
+  } // ? END uploadModelZip
+
+  // * 모델의 모션이름  업데이트
+  @Patch(`/model/:project_id/:model_id`)
+  updateModelMotion(
+    @Param('model_id') model_id: number,
+    @Body('model_slave_id') model_slave_id: number,
+    @Body('motion_name') motion_name: string,
+  ): Promise<Model> {
+    return this.resourceManagerService.updateModelMotion(
+      model_id,
+      model_slave_id,
+      motion_name,
+    );
+  }
+
+  /////////////////////////////////////////////
 
   // 리소스 리스트 조회 (기본)
   @Get('/static/:project_id/:image_type')

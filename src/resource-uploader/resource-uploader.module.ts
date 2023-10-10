@@ -12,6 +12,8 @@ import { ImageLocalization } from 'src/resource-manager/entities/image-localizat
 import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { PublicExtension } from 'src/resource-manager/entities/public-extension.entity';
+import { Model } from 'src/database/produce_entity/model.entity';
+import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { PublicExtension } from 'src/resource-manager/entities/public-extension.
       StoryStaticImage,
       Project,
       PublicExtension,
+      Model,
+      ModelSlave,
     ]),
   ],
 

@@ -10,6 +10,8 @@ import { ImageLocalization } from './entities/image-localization.entity';
 import { StoryStaticImage } from './entities/story-static-image.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { PublicExtension } from './entities/public-extension.entity';
+import { Model } from 'src/database/produce_entity/model.entity';
+import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { PublicExtension } from './entities/public-extension.entity';
       StoryStaticImage,
       Project,
       PublicExtension,
+      Model,
+      ModelSlave,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

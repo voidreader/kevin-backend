@@ -20,6 +20,9 @@ export class UserDress extends CoreEntity {
   @PrimaryColumn()
   project_id: number;
 
+  @PrimaryColumn({ length: 30 })
+  speaker: string;
+
   @PrimaryColumn()
   dress_id: number;
 

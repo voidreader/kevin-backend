@@ -10,6 +10,12 @@ import { StoryStaticImage } from '../entities/story-static-image.entity';
 import { PublicExtension } from '../entities/public-extension.entity';
 import { CoreEntity } from 'src/common/entities/core.entity';
 
+export interface unzipFile {
+  Key: string;
+  Location: string;
+  Bucket: string;
+}
+
 export class StaticImageOutputDto extends CoreOutput {
   list?: StoryStaticImage[] = [];
 }
@@ -33,6 +39,11 @@ export class BackgroundImageUpdateDto extends PartialType(CoreEntity) {
 
   game_scale: number;
   is_updated: boolean = true;
+}
+
+// * 모델 생성 DTO
+export class ModelCreateDto {
+  model_name: string;
 }
 
 // export class UpdateBackgroundDto extends PartialType(Background) {}

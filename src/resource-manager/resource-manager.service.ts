@@ -1,19 +1,29 @@
-import { Get, Inject, Injectable } from '@nestjs/common';
+import {
+  Get,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import {
   BackgroundImageUpdateDto,
+  ModelCreateDto,
   StaticImageDetailOutputDto,
   StaticImageOutputDto,
   ThumbnailOutputDto,
   UpdateStaticImageDto,
+  unzipFile,
 } from './dto/resource-manager.dto';
 import { DiscardResource } from './entities/discard-resource.entity';
 import { ImageLocalization } from './entities/image-localization.entity';
 import { StoryStaticImage } from './entities/story-static-image.entity';
 
-import * as multerS3 from 'multer-s3';
+import * as unzipper from 'unzipper';
+import * as S3 from 'aws-sdk/clients/s3';
+
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { ConfigService } from '@nestjs/config';
@@ -33,6 +43,9 @@ import {
   RESOURCE_MINICUT,
 } from 'src/common/common.const';
 import { of } from 'rxjs';
+import { Model } from 'src/database/produce_entity/model.entity';
+import { unzip } from 'zlib';
+import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
 
 @Injectable()
 export class ResourceManagerService {
@@ -50,6 +63,10 @@ export class ResourceManagerService {
     private readonly repProject: Repository<Project>,
     @InjectRepository(DiscardResource)
     private readonly repDiscard: Repository<DiscardResource>,
+    @InjectRepository(Model)
+    private readonly repModel: Repository<Model>,
+    @InjectRepository(ModelSlave)
+    private readonly repModelSlave: Repository<ModelSlave>,
 
     private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
@@ -469,5 +486,148 @@ export class ResourceManagerService {
       thumbnail_key: key,
       bucket,
     };
-  }
+  } // ? END updateStaticThumbnail
+
+  // * 신규 모델 생성
+  async createModel(project_id: number, dto: ModelCreateDto): Promise<Model[]> {
+    const newModel = this.repModel.create({
+      model_name: dto.model_name,
+      project_id,
+    });
+
+    try {
+      await this.repModel.save(newModel);
+
+      return this.getModelList(project_id);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  } // ? END createModel
+
+  // * 모델 리스트 가져오기
+  getModelList(project_id: number): Promise<Model[]> {
+    try {
+      return this.repModel.find({ where: { project_id } });
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  } // ? END getModelList
+
+  // * 모델의 zip 파일 업로드
+  // * 복잡함.. 🥵🥵🥵
+  async uploadModelZip(
+    project_id: number,
+    model_id: number,
+    file: Express.MulterS3.File,
+  ) {
+    if (!file) {
+      throw new HttpException('Invalid file', HttpStatus.BAD_REQUEST);
+    }
+
+    // zip 파일 정보 가져오기
+    const { location, key, bucket } = file;
+    let unzipCount: number = 0;
+    let resultUnzip: any = null;
+
+    console.log(`zip file info : ${location}/${key}/${bucket}`);
+
+    const s3 = new S3({
+      region: this.configService.get('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get('AWS_KEY'),
+        secretAccessKey: this.configService.get('AWS_SECRET_KEY'),
+      },
+    });
+
+    const zip = s3
+      .getObject({ Bucket: bucket, Key: key })
+      .createReadStream()
+      .pipe(unzipper.Parse({ forceStream: true }));
+
+    const promises = [];
+    for await (const item of zip) {
+      const entry = item;
+      const fileName = entry.path;
+      const { type } = entry;
+
+      if (type == 'File') {
+        const uploadParams = {
+          Bucket: bucket,
+          Key: `assets/${project_id}/model/${model_id}/${fileName}`,
+          Body: entry,
+        };
+
+        promises.push(s3.upload(uploadParams).promise());
+
+        unzipCount++;
+      } else {
+        entry.autodrain();
+      }
+    } // end for
+
+    // 압축해제된 파일들을 업로드
+    await Promise.all(promises)
+      .then((values) => {
+        resultUnzip = values;
+        console.log(`unzip done! : ${unzipCount} :: `, values);
+      })
+      .catch((error) => {
+        throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      });
+
+    // 업로드가 완료되었으면, slave로 입력한다.
+    const model = await this.repModel.findOneBy({ model_id });
+
+    if (!model) {
+      throw new HttpException('Invalid model ID', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!model.slaves) {
+      model.slaves = [];
+    }
+
+    // 압축 풀린 파일들의 정보를 slave로 저장.
+    resultUnzip.map((item: unzipFile) => {
+      const keySplits = item.Key.split('/'); // 순수 파일명!
+      const newSlave = this.repModelSlave.create({
+        file_url: item.Location,
+        file_key: item.Key,
+        is_motion: item.Key.includes('.motion3.json') ? true : false,
+        file_name: keySplits[keySplits.length - 1],
+      });
+
+      model.slaves.push(newSlave);
+    });
+
+    try {
+      await this.repModel.save(model);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to save model files',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+
+    return this.getModelList(project_id);
+  } // ? END uploadModelZip
+
+  // * 모델의 모션 업데이트
+  async updateModelMotion(
+    model_id: number,
+    model_slave_id: number,
+    motion_name: string,
+  ): Promise<Model> {
+    try {
+      await this.repModelSlave.update(model_slave_id, { motion_name });
+    } catch (error) {
+      throw new HttpException(
+        'Failed to save model motion',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+
+    return this.repModel.findOneBy({ model_id });
+  } // ? END updateMotion
 }
