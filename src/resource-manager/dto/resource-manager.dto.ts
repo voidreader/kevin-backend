@@ -9,6 +9,7 @@ import {
 import { StoryStaticImage } from '../entities/story-static-image.entity';
 import { PublicExtension } from '../entities/public-extension.entity';
 import { CoreEntity } from 'src/common/entities/core.entity';
+import { Model } from 'src/database/produce_entity/model.entity';
 
 export interface unzipFile {
   Key: string;
@@ -44,6 +45,16 @@ export class BackgroundImageUpdateDto extends PartialType(CoreEntity) {
 // * 모델 생성 DTO
 export class ModelCreateDto {
   model_name: string;
+}
+
+export class ModelListDto extends CoreOutput {
+  list?: Model[];
+}
+
+export class ModelUpdateDto extends PartialType(Model) {}
+
+export class ModelUpdateOutputDto extends CoreOutput {
+  update?: Model;
 }
 
 // export class UpdateBackgroundDto extends PartialType(Background) {}

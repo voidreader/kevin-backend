@@ -21,6 +21,9 @@ import {
 import {
   BackgroundImageUpdateDto,
   ModelCreateDto,
+  ModelListDto,
+  ModelUpdateDto,
+  ModelUpdateOutputDto,
   StaticImageDetailOutputDto,
   UpdateStaticImageDto,
 } from './dto/resource-manager.dto';
@@ -32,28 +35,31 @@ export class ResourceManagerController {
     private readonly resourceManagerService: ResourceManagerService,
   ) {}
 
+  // * 모델 리스트 조회
   @Get(`/model/:project_id`)
-  getModelList(@Param('project_id') project_id: number): Promise<Model[]> {
+  getModelList(@Param('project_id') project_id: number): Promise<ModelListDto> {
     return this.resourceManagerService.getModelList(project_id);
   }
 
+  // * 모델 생성
   @Post(`/model/:project_id`)
   createModel(
     @Param('project_id') project_id: number,
     @Body() dto: ModelCreateDto,
-  ): Promise<Model[]> {
+  ): Promise<ModelListDto> {
     console.log(`createModel with `, dto);
 
     return this.resourceManagerService.createModel(project_id, dto);
   }
 
+  // * 모델 zip 업로드
   @Post(`/model/:project_id/:model_id`)
   @UseInterceptors(FileInterceptor('file'))
   uploadModelZip(
     @UploadedFile() file: Express.MulterS3.File,
     @Param('project_id') project_id: number,
     @Param('model_id') model_id: number,
-  ) {
+  ): Promise<ModelListDto> {
     return this.resourceManagerService.uploadModelZip(
       project_id,
       model_id,
@@ -67,12 +73,38 @@ export class ResourceManagerController {
     @Param('model_id') model_id: number,
     @Body('model_slave_id') model_slave_id: number,
     @Body('motion_name') motion_name: string,
-  ): Promise<Model> {
+  ): Promise<ModelUpdateOutputDto> {
     return this.resourceManagerService.updateModelMotion(
       model_id,
       model_slave_id,
       motion_name,
     );
+  }
+
+  // * 모델 정보 업데이트
+  @Put(`/model/:project_id/:model_id`)
+  updateModel(
+    @Param('model_id') model_id: number,
+    @Body('update') dto: ModelUpdateDto,
+  ): Promise<ModelUpdateOutputDto> {
+    return this.resourceManagerService.updateModel(model_id, dto);
+  }
+
+  // * 모델 삭제
+  @Delete(`/model/:project_id/:model_id`)
+  deleteModel(
+    @Param('model_id') model_id: number,
+    @Param('project_id') project_id: number,
+  ) {
+    return this.resourceManagerService.deleteModel(project_id, model_id);
+  }
+
+  // * 모델 리셋
+  @Get(`/model/:project_id/:model_id`)
+  resetModel(
+    @Param('model_id') model_id: number,
+  ): Promise<ModelUpdateOutputDto> {
+    return this.resourceManagerService.resetModel(model_id);
   }
 
   /////////////////////////////////////////////

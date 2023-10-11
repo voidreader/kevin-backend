@@ -11,6 +11,9 @@ import * as path from 'path';
 import {
   BackgroundImageUpdateDto,
   ModelCreateDto,
+  ModelListDto,
+  ModelUpdateDto,
+  ModelUpdateOutputDto,
   StaticImageDetailOutputDto,
   StaticImageOutputDto,
   ThumbnailOutputDto,
@@ -489,7 +492,10 @@ export class ResourceManagerService {
   } // ? END updateStaticThumbnail
 
   // * 신규 모델 생성
-  async createModel(project_id: number, dto: ModelCreateDto): Promise<Model[]> {
+  async createModel(
+    project_id: number,
+    dto: ModelCreateDto,
+  ): Promise<ModelListDto> {
     const newModel = this.repModel.create({
       model_name: dto.model_name,
       project_id,
@@ -505,9 +511,11 @@ export class ResourceManagerService {
   } // ? END createModel
 
   // * 모델 리스트 가져오기
-  getModelList(project_id: number): Promise<Model[]> {
+  async getModelList(project_id: number): Promise<ModelListDto> {
     try {
-      return this.repModel.find({ where: { project_id } });
+      const list = await this.repModel.find({ where: { project_id } });
+
+      return { isSuccess: true, list };
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
@@ -519,7 +527,7 @@ export class ResourceManagerService {
     project_id: number,
     model_id: number,
     file: Express.MulterS3.File,
-  ) {
+  ): Promise<ModelListDto> {
     if (!file) {
       throw new HttpException('Invalid file', HttpStatus.BAD_REQUEST);
     }
@@ -617,9 +625,12 @@ export class ResourceManagerService {
     model_id: number,
     model_slave_id: number,
     motion_name: string,
-  ): Promise<Model> {
+  ): Promise<ModelUpdateOutputDto> {
     try {
       await this.repModelSlave.update(model_slave_id, { motion_name });
+
+      const model = await this.repModel.findOneBy({ model_id });
+      return { isSuccess: true, update: model };
     } catch (error) {
       throw new HttpException(
         'Failed to save model motion',
@@ -627,7 +638,62 @@ export class ResourceManagerService {
         { description: error },
       );
     }
-
-    return this.repModel.findOneBy({ model_id });
   } // ? END updateMotion
+
+  // * 모델 삭제
+  async deleteModel(
+    project_id: number,
+    model_id: number,
+  ): Promise<ModelListDto> {
+    try {
+      await this.repModel.delete({ model_id });
+
+      return this.getModelList(project_id);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to delete model',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  } // ? END DeleteModel
+
+  // * 모델 리셋
+  // 모델의 모든 슬레이브를 제거
+  async resetModel(model_id: number): Promise<ModelUpdateOutputDto> {
+    try {
+      // this.repModelSlave.find({where : {model : model_id}});
+      const model = await this.repModel.findOneBy({ model_id });
+      if (model.slaves && model.slaves.length > 0) {
+        // TODO 슬레이브 파일들을 discard 필요
+        await this.repModelSlave.remove(model.slaves);
+      }
+
+      model.slaves = [];
+      return { isSuccess: true, update: model };
+    } catch (error) {
+      throw new HttpException('Failed to reset model', HttpStatus.BAD_REQUEST, {
+        description: error,
+      });
+    }
+  } // ? END 모델 리셋
+
+  // * 모델 정보 업데이트
+  async updateModel(
+    model_id: number,
+    dto: ModelUpdateDto,
+  ): Promise<ModelUpdateOutputDto> {
+    try {
+      const model = await this.repModel.save(dto); // 저장
+      return { isSuccess: true, update: model };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to update model',
+        HttpStatus.BAD_REQUEST,
+        {
+          description: error,
+        },
+      );
+    }
+  } // ? END updateModel
 }
