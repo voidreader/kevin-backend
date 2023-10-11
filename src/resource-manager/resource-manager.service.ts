@@ -515,6 +515,12 @@ export class ResourceManagerService {
     try {
       const list = await this.repModel.find({ where: { project_id } });
 
+      list.forEach((model) => {
+        if (model.slaves) {
+          model.slaves.forEach((slave) => (slave.model_id = model.model_id));
+        }
+      });
+
       return { isSuccess: true, list };
     } catch (error) {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
@@ -620,6 +626,17 @@ export class ResourceManagerService {
     return this.getModelList(project_id);
   } // ? END uploadModelZip
 
+  // * slave에 model_id 추가하기
+  updateModelSlaveInfo(model: Model): Model {
+    if (!model.slaves) return;
+
+    model.slaves.forEach((slave) => {
+      slave.model_id = model.model_id;
+    });
+
+    return model;
+  }
+
   // * 모델의 모션 업데이트
   async updateModelMotion(
     model_id: number,
@@ -630,6 +647,8 @@ export class ResourceManagerService {
       await this.repModelSlave.update(model_slave_id, { motion_name });
 
       const model = await this.repModel.findOneBy({ model_id });
+      this.updateModelSlaveInfo(model);
+
       return { isSuccess: true, update: model };
     } catch (error) {
       throw new HttpException(
@@ -685,6 +704,8 @@ export class ResourceManagerService {
   ): Promise<ModelUpdateOutputDto> {
     try {
       const model = await this.repModel.save(dto); // 저장
+      this.updateModelSlaveInfo(model);
+
       return { isSuccess: true, update: model };
     } catch (error) {
       throw new HttpException(

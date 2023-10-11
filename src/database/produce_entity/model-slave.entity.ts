@@ -37,6 +37,8 @@ export class ModelSlave {
   @JoinColumn({ name: 'model_id' })
   model: Model;
 
+  model_id: number;
+
   // 생성된 시간
   @CreateDateColumn({ select: false })
   created_at: Date;
