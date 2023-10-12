@@ -569,6 +569,7 @@ export class ResourceManagerService {
           Bucket: bucket,
           Key: `assets/${project_id}/model/${model_id}/${fileName}`,
           Body: entry,
+          ACL: 'public-read',
         };
 
         promises.push(s3.upload(uploadParams).promise());
