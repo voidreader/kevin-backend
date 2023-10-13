@@ -30,4 +30,6 @@ export class LiveResourceDetail extends CoreEntity {
   @ManyToOne((type) => LiveResource, (liveResource) => liveResource.details)
   @JoinColumn({ name: 'resource_id' })
   parent: LiveResource;
+
+  resource_id: number;
 }

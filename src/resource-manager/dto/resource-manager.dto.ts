@@ -10,6 +10,7 @@ import { StoryStaticImage } from '../entities/story-static-image.entity';
 import { PublicExtension } from '../entities/public-extension.entity';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Model } from 'src/database/produce_entity/model.entity';
+import { LiveResource } from '../entities/live-resource.entity';
 
 export interface unzipFile {
   Key: string;
@@ -56,6 +57,9 @@ export class ModelUpdateDto extends PartialType(Model) {}
 export class ModelUpdateOutputDto extends CoreOutput {
   update?: Model;
 }
+
+// 라이브 리소스 업데이트 DTO
+export class LiveResourceUpdateDto extends PartialType(LiveResource) {}
 
 // export class UpdateBackgroundDto extends PartialType(Background) {}
 // export class UpdateMinicutDto extends PartialType(Minicut) {}

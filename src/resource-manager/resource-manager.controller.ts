@@ -20,6 +20,7 @@ import {
 } from 'src/common/common.const';
 import {
   BackgroundImageUpdateDto,
+  LiveResourceUpdateDto,
   ModelCreateDto,
   ModelListDto,
   ModelUpdateDto,
@@ -34,6 +35,70 @@ export class ResourceManagerController {
   constructor(
     private readonly resourceManagerService: ResourceManagerService,
   ) {}
+
+  // * 라이브 리소스 리스트 조회
+  @Get(`/live/:project_id/:live_type`)
+  getLiveResourceList(
+    @Param('project_id') project_id: number,
+    @Param('live_type') live_type: string,
+  ) {
+    return this.resourceManagerService.getLiveResourceList(
+      project_id,
+      live_type,
+    );
+  } // ? END getLiveResourceList
+
+  @Post(`/live/:project_id/:live_type`)
+  createLiveResource(
+    @Param('project_id') project_id: number,
+    @Param('live_type') live_type: string,
+    @Body('live_name') live_name: string,
+  ) {
+    return this.resourceManagerService.createLiveResource(
+      project_id,
+      live_type,
+      live_name,
+    );
+  }
+
+  // * 라이브 리소스 zip 업로드
+  @Post(`/live/:project_id/:live_type/:id`)
+  @UseInterceptors(FileInterceptor('file'))
+  uploadLiveResourceZip(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('live_type') live_type: string,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.uploadLiveZip(
+      project_id,
+      id,
+      live_type,
+      file,
+    );
+  } // ? END uploadLiveResourceZip
+
+  // * 라이브 리소스 삭제
+  @Delete(`/live/:project_id/:live_type/:id`)
+  deleteLiveResource(
+    @Param('project_id') project_id: number,
+    @Param('live_type') live_type: string,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.deleteLiveResource(
+      project_id,
+      live_type,
+      id,
+    );
+  }
+
+  // * 라이브 리소스 수정
+  @Put(`/live/:project_id/:live_type/:id`)
+  updateLiveResource(@Body('update') dto: LiveResourceUpdateDto) {
+    return this.resourceManagerService.updateLiveResourceInfo(dto);
+  }
+
+  //////////////////////////////////////////
 
   // * 모델 리스트 조회
   @Get(`/model/:project_id`)

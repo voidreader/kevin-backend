@@ -37,7 +37,7 @@ export class ModelSlave {
   @JoinColumn({ name: 'model_id' })
   model: Model;
 
-  model_id: number;
+  model_id: number; // 조회 컬럼용도
 
   // 생성된 시간
   @CreateDateColumn({ select: false })

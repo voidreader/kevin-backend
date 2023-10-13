@@ -12,6 +12,8 @@ import { Project } from 'src/database/produce_entity/project.entity';
 import { PublicExtension } from './entities/public-extension.entity';
 import { Model } from 'src/database/produce_entity/model.entity';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
+import { LiveResource } from './entities/live-resource.entity';
+import { LiveResourceDetail } from './entities/live-resource-detail.entity';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
       PublicExtension,
       Model,
       ModelSlave,
+      LiveResource,
+      LiveResourceDetail,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

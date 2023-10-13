@@ -15,11 +15,8 @@ import { LiveResource } from 'src/resource-manager/entities/live-resource.entity
 // * 라이브 오브젝트, 일러스트 리소스 로컬라이징 정보
 
 @Entity()
+@Unique(['live', 'lang'])
 export class LiveLocalization extends CoreEntity {
-  @Column({ type: 'enum', enum: VisualResourceType })
-  @IsEnum(VisualResourceType)
-  resource_type: string; // minicut, illust, live_object, live_illust 일단 4가지.
-
   @Column({ length: 10 })
   lang: string;
 

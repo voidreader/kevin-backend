@@ -14,6 +14,8 @@ import { Project } from 'src/database/produce_entity/project.entity';
 import { PublicExtension } from 'src/resource-manager/entities/public-extension.entity';
 import { Model } from 'src/database/produce_entity/model.entity';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
+import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
+import { LiveResourceDetail } from 'src/resource-manager/entities/live-resource-detail.entity';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
       PublicExtension,
       Model,
       ModelSlave,
+      LiveResource,
+      LiveResourceDetail,
     ]),
   ],
 

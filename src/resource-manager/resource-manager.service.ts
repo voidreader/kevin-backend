@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import {
   BackgroundImageUpdateDto,
+  LiveResourceUpdateDto,
   ModelCreateDto,
   ModelListDto,
   ModelUpdateDto,
@@ -45,10 +46,12 @@ import {
   RESOURCE_ILLUST,
   RESOURCE_MINICUT,
 } from 'src/common/common.const';
-import { of } from 'rxjs';
+import { async, of } from 'rxjs';
 import { Model } from 'src/database/produce_entity/model.entity';
 import { unzip } from 'zlib';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
+import { LiveResource } from './entities/live-resource.entity';
+import { LiveResourceDetail } from './entities/live-resource-detail.entity';
 
 @Injectable()
 export class ResourceManagerService {
@@ -70,6 +73,11 @@ export class ResourceManagerService {
     private readonly repModel: Repository<Model>,
     @InjectRepository(ModelSlave)
     private readonly repModelSlave: Repository<ModelSlave>,
+
+    @InjectRepository(LiveResource)
+    private readonly repLiveResource: Repository<LiveResource>,
+    @InjectRepository(LiveResourceDetail)
+    private readonly repLiveResourceDetail: Repository<LiveResourceDetail>,
 
     private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
@@ -718,4 +726,194 @@ export class ResourceManagerService {
       );
     }
   } // ? END updateModel
+
+  // * 라이브 리소스 리스트 조회
+  async getLiveResourceList(project_id: number, live_type: string) {
+    const list = await this.repLiveResource.find({
+      where: { project_id, live_type },
+    });
+
+    list.forEach((live) => {
+      if (live.details) {
+        live.details.forEach((detail) => {
+          detail.resource_id = live.id;
+        });
+      }
+    });
+
+    return { isSuccess: true, list };
+  }
+
+  // * 라이브 리소스 zip파일 업로드
+  async uploadLiveZip(
+    project_id: number,
+    id: number,
+    live_type: string,
+    file: Express.MulterS3.File,
+  ) {
+    if (!file) {
+      throw new HttpException('Invalid zip file', HttpStatus.BAD_REQUEST);
+    }
+
+    // zip 파일 정보 가져오기
+    const { location, key, bucket } = file;
+    let unzipCount: number = 0;
+    let resultUnzip: any = null;
+
+    console.log(`live resource zip file info : ${location}/${key}/${bucket}`);
+
+    const s3 = new S3({
+      region: this.configService.get('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get('AWS_KEY'),
+        secretAccessKey: this.configService.get('AWS_SECRET_KEY'),
+      },
+    });
+
+    const zip = s3
+      .getObject({ Bucket: bucket, Key: key })
+      .createReadStream()
+      .pipe(unzipper.Parse({ forceStream: true }));
+
+    const promises = [];
+    for await (const item of zip) {
+      const entry = item;
+      const fileName = entry.path;
+      const { type } = entry;
+
+      if (type == 'File') {
+        const uploadParams = {
+          Bucket: bucket,
+          Key: `assets/${project_id}/${live_type}/${id}/${fileName}`,
+          Body: entry,
+          ACL: 'public-read',
+        };
+
+        promises.push(s3.upload(uploadParams).promise());
+
+        unzipCount++;
+      } else {
+        entry.autodrain();
+      }
+    } // end for
+
+    // 압축해제된 파일들을 업로드
+    await Promise.all(promises)
+      .then((values) => {
+        resultUnzip = values;
+        console.log(`unzip done! : ${unzipCount} :: `, values);
+      })
+      .catch((error) => {
+        throw new HttpException(error, HttpStatus.BAD_REQUEST);
+      });
+
+    const liveResource = await this.repLiveResource.findOneBy({ id });
+    if (!liveResource) {
+      throw new HttpException(
+        'Invalid live resource ID',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (!liveResource.details) {
+      liveResource.details = [];
+    }
+
+    // 압축풀린 파일 정보를 저장
+    // 압축 풀린 파일들의 정보를 slave로 저장.
+    resultUnzip.map((item: unzipFile) => {
+      const keySplits = item.Key.split('/'); // 순수 파일명!
+      const newDetail = this.repLiveResourceDetail.create({
+        file_url: item.Location,
+        file_key: item.Key,
+        // is_motion: item.Key.includes('.motion3.json') ? true : false,
+        file_name: keySplits[keySplits.length - 1],
+        bucket,
+      });
+
+      if (newDetail.file_name.includes('loop.motion3.')) {
+        newDetail.motion_name = '루프';
+      } else if (newDetail.file_name.includes('start.motion3.')) {
+        newDetail.motion_name = '시작';
+      }
+
+      liveResource.details.push(newDetail);
+    });
+
+    try {
+      console.log(liveResource);
+
+      await this.repLiveResource.save(liveResource);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to save live files',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+
+    // 리턴!
+    return this.getLiveResourceList(project_id, live_type);
+  } // ? END uploadLiveZip
+
+  // * 신규 라이브 리소스 생성
+  async createLiveResource(
+    project_id: number,
+    live_type: string,
+    live_name: string,
+  ) {
+    console.log(`createLiveResource : ${project_id}/${live_type}/${live_name}`);
+
+    const newLive = this.repLiveResource.create({
+      live_name: live_name,
+      project_id,
+      live_type,
+    });
+
+    try {
+      await this.repLiveResource.save(newLive);
+      return this.getLiveResourceList(project_id, live_type);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  } // ? END createLiveResource
+
+  updateLiveResourceDetailInfo(liveResource: LiveResource) {
+    if (liveResource.details) {
+      liveResource.details.forEach((detail) => {
+        detail.resource_id = liveResource.id;
+      });
+    }
+  }
+
+  // * 라이브 리소스 정보 업데이트
+  async updateLiveResourceInfo(dto: LiveResourceUpdateDto) {
+    try {
+      const live = await this.repLiveResource.save(dto); // 저장
+      this.updateLiveResourceDetailInfo(live);
+
+      return { isSuccess: true, update: live };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to save live resource info',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  } // ? END updateLiveResourceInfo
+
+  // 라이브 리소스 삭제
+  async deleteLiveResource(project_id: number, live_type: string, id: number) {
+    try {
+      await this.repLiveResource.delete({ id });
+
+      return this.getLiveResourceList(project_id, live_type);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to delete live resource',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  } // ? deleteLiveResource
 }
