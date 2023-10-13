@@ -916,4 +916,34 @@ export class ResourceManagerService {
       );
     }
   } // ? deleteLiveResource
+
+  async updateLiveThumbnail(file: Express.MulterS3.File, id: number) {
+    // 파일이 없는 경우.
+    if (!file) {
+      throw new HttpException('invalid thumbnail file', HttpStatus.BAD_REQUEST);
+    }
+
+    const liveResource = await this.repLiveResource.findOneBy({ id });
+    const { location, key, bucket } = file;
+
+    liveResource.thumbnail_url = location;
+    liveResource.thumbnail_key = key;
+    liveResource.bucket = bucket;
+
+    try {
+      await this.repLiveResource.save(liveResource);
+      return {
+        isSuccess: true,
+        thumbnail_url: location,
+        thumbnail_key: key,
+        bucket,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'fail to save thumbnail info',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  } // ? END updateLiveThumbnail
 }

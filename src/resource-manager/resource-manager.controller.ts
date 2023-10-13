@@ -98,6 +98,17 @@ export class ResourceManagerController {
     return this.resourceManagerService.updateLiveResourceInfo(dto);
   }
 
+  // * 라이브 썸네일 업로드
+  @Post(`live-thumbnail/:project_id/:id`)
+  @UseInterceptors(FileInterceptor('file'))
+  updateLiveThumbnail(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('id') id: number,
+    @Param('project_id') project_id: number,
+  ) {
+    return this.resourceManagerService.updateLiveThumbnail(file, id);
+  }
+
   //////////////////////////////////////////
 
   // * 모델 리스트 조회
