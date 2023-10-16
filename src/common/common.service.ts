@@ -67,6 +67,8 @@ export class CommonService {
     `);
   }
 
+  getProjectCharacterModel(project_id: number, speaker: string) {}
+
   // * 프로젝트 에피소드 dropdown (DLC 제외)
   getProjectEpisodeDropdown(project_id: number, dlc_id: number): Promise<any> {
     return this.dataSource.query(`

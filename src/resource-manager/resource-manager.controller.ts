@@ -312,6 +312,7 @@ export class ResourceManagerController {
   // * ////////////////////////////////////////
 
   // * 이모티콘 서비스 로직
+  @Get('/emoticon/:project_id')
   getEmoticonList(project_id: number): Promise<EmoticonListDto> {
     return this.resourceManagerService.getEmoticonList(project_id);
   }

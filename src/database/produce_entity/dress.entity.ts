@@ -31,6 +31,8 @@ export class Dress {
   @Index()
   model_id: number;
 
+  model_name: string; // 모델 id와 연결된 모델 이름
+
   @Column({ comment: '기본 의상 여부', type: 'boolean', default: false })
   is_default: boolean;
 

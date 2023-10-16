@@ -968,10 +968,24 @@ export class ResourceManagerService {
 
   // 복장 리스트
   async getCostumeList(project_id: number): Promise<DressListDto> {
-    const list = await this.repDress.find({
-      where: { project_id },
-      order: { speaker: 'ASC', dress_name: 'ASC' },
-    });
+    // const list = await this.repDress.find({
+    //   where: { project_id },
+    //   order: { speaker: 'ASC', dress_name: 'ASC' },
+    // });
+
+    const list = await this.dataSource.query(`
+    SELECT a.dress_id
+         , a.dress_name
+         , a.project_id
+         , a.speaker
+         , a.model_id
+         , m.model_name 
+         , a.is_default
+    FROM produce.dress a
+    LEFT OUTER JOIN produce.model m ON m.project_id = a.project_id  AND m.model_id = a.model_id 
+  WHERE a.project_id = ${project_id}
+  ORDER BY a.speaker, dress_name ;
+    `);
 
     return { isSuccess: true, list };
   }
@@ -1025,11 +1039,25 @@ export class ResourceManagerService {
 
   // ? 복장(Costume Service 로직) 끝! ///////////////////////////////////////////
 
-  // * 이모티콘 서비스 로직
+  // * 이모티콘 서비스 로직 시작 ////////////////
+
+  // slave에 emoticon_id 붙이기
+  attchEmoticonParentInfo(emoticon: Emoticon) {
+    if (emoticon.slaves) {
+      emoticon.slaves.forEach((item) => {
+        item.emoticon_id = emoticon.id;
+      });
+    }
+  }
+
   async getEmoticonList(project_id: number): Promise<EmoticonListDto> {
     const list = await this.repEmoticon.find({
       where: { project_id },
       order: { speaker: 'ASC' },
+    });
+
+    list.forEach((master) => {
+      this.attchEmoticonParentInfo(master);
     });
 
     return { isSuccess: true, list };

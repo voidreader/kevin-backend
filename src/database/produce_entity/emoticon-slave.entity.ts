@@ -30,4 +30,6 @@ export class EmoticonSlave extends CoreEntity {
   @ManyToOne((t) => Emoticon, (e) => e.slaves)
   @JoinColumn({ name: 'master_id' })
   master: Emoticon;
+
+  emoticon_id: number;
 }
