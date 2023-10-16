@@ -24,7 +24,7 @@ export class Emoticon extends CoreDeployEntity {
 
   @OneToMany((t) => EmoticonSlave, (es) => es.master, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
   })
   slaves: EmoticonSlave[];
 }

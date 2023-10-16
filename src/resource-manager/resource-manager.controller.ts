@@ -9,10 +9,11 @@ import {
   UseInterceptors,
   UploadedFile,
   Put,
+  UploadedFiles,
 } from '@nestjs/common';
 import { ResourceManagerService } from './resource-manager.service';
 
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   RESOURCE_BG,
   RESOURCE_ILLUST,
@@ -22,6 +23,8 @@ import {
   BackgroundImageUpdateDto,
   DressUpdateInputDto,
   EmoticonListDto,
+  EmoticonMasterCreateDto,
+  EmoticonSlaveUpdateDto,
   LiveResourceUpdateDto,
   ModelCreateDto,
   ModelListDto,
@@ -313,23 +316,91 @@ export class ResourceManagerController {
 
   // * 이모티콘 서비스 로직
   @Get('/emoticon/:project_id')
-  getEmoticonList(project_id: number): Promise<EmoticonListDto> {
+  getEmoticonList(
+    @Param('project_id') project_id: number,
+  ): Promise<EmoticonListDto> {
     return this.resourceManagerService.getEmoticonList(project_id);
   }
 
-  createEmoticonGroup() {}
+  @Post('/emoticon/:project_id')
+  createEmoticonGroup(
+    @Param('project_id') project_id: number,
+    @Body('update') dto: EmoticonMasterCreateDto,
+  ) {
+    return this.resourceManagerService.createEmoticonGroup(project_id, dto);
+  }
 
-  updateEmoticonGroup() {}
+  // * 이모티콘 그룹 이름 변경
+  @Patch(`/emoticon/:project_id/:id`)
+  updateEmoticonGroup(
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+    @Body('update') dto: EmoticonMasterCreateDto,
+  ) {
+    return this.resourceManagerService.updateEmoticonGroup(project_id, id, dto);
+  }
 
   // * 이모티콘 이미지 파일 멀티 업로드
-  uploadEmoticonSlave() {}
+  @Put(`/emoticon/:project_id/:id`)
+  @UseInterceptors(FilesInterceptor('files'))
+  uploadEmoticonSlave(
+    @UploadedFiles() files: Array<Express.MulterS3.File>,
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.uploadEmoticonSlave(
+      files,
+      project_id,
+      id,
+    );
+  }
 
   // * 이모티콘 이미지 단일 개체 수정
-  updateEmoticonSlave() {}
+  @Patch(`/emoticon/:project_id/:id/:slave_id`)
+  updateEmoticonSlaveName(
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+    @Param('slave_id') slave_id: number,
+    @Body('update') dto: EmoticonSlaveUpdateDto,
+  ) {
+    return this.resourceManagerService.updateEmoticonSlaveName(
+      project_id,
+      id,
+      dto,
+    );
+  }
 
-  deleteEmoticonGroup() {}
+  @Put(`/emoticon/:project_id/:id/:slave_id`)
+  @UseInterceptors(FileInterceptor('file'))
+  updateEmoticonSlaveImage(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+    @Param('slave_id') slave_id: number,
+  ) {
+    return this.resourceManagerService.updateEmoticonSlaveImage(file, slave_id);
+  }
 
-  deleteEmoticonSlave() {}
+  @Delete(`/emoticon/:project_id/:id`)
+  deleteEmoticonGroup(
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.deleteEmoticonGroup(project_id, id);
+  }
+
+  @Delete(`/emoticon/:project_id/:id/:slave_id`)
+  deleteEmoticonSlave(
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+    @Param('slave_id') slave_id: number,
+  ) {
+    return this.resourceManagerService.deleteEmoticonSlave(
+      project_id,
+      id,
+      slave_id,
+    );
+  }
 
   // ? 이모티콘 서비스 로직 끝!!! ///////////////////////////////////////////////
 }

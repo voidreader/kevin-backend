@@ -14,6 +14,9 @@ import {
   DressUpdateInputDto,
   DressUpdateOutputDto,
   EmoticonListDto,
+  EmoticonMasterCreateDto,
+  EmoticonSlaveUpdateDto,
+  EmoticonUpdateOutputDto,
   LiveResourceUpdateDto,
   ModelCreateDto,
   ModelListDto,
@@ -1050,6 +1053,7 @@ export class ResourceManagerService {
     }
   }
 
+  // * 이모티콘 리스트
   async getEmoticonList(project_id: number): Promise<EmoticonListDto> {
     const list = await this.repEmoticon.find({
       where: { project_id },
@@ -1063,19 +1067,180 @@ export class ResourceManagerService {
     return { isSuccess: true, list };
   }
 
-  async createEmoticonGroup() {}
+  // * 이모티콘 그룹 생성
+  async createEmoticonGroup(project_id: number, dto: EmoticonMasterCreateDto) {
+    console.log(dto);
 
-  async updateEmoticonGroup() {}
+    dto.project_id = project_id;
+
+    try {
+      await this.repEmoticon.save(dto);
+      return this.getEmoticonList(project_id);
+    } catch (error) {
+      throw new HttpException(
+        'fail to create emoticon group',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  }
+
+  // * 이모티콘 그룹명 수정
+  async updateEmoticonGroup(
+    project_id: number,
+    id: number,
+    dto: EmoticonMasterCreateDto,
+  ) {
+    try {
+      const updatedEmoticon = await this.repEmoticon.save(dto);
+      return { isSuccess: true, update: updatedEmoticon };
+    } catch (error) {
+      throw new HttpException(
+        'fail to modify emoticon group',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  }
 
   // * 이모티콘 이미지 파일 멀티 업로드
-  async uploadEmoticonSlave() {}
+  async uploadEmoticonSlave(
+    files: Array<Express.MulterS3.File>,
+    project_id: number,
+    id: number,
+  ): Promise<EmoticonListDto> {
+    // 마스터 찾기!
+    let master: Emoticon = await this.repEmoticon.findOneBy({ id });
+    if (!master) {
+      throw new HttpException(
+        'invalid emoticon group ID',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
-  // * 이모티콘 이미지 단일 개체 수정
-  async updateEmoticonSlave() {}
+    files.forEach((file) => {
+      const item = this.repEmoticonSlave.create({
+        image_url: file.location,
+        image_key: file.key,
+        image_bucket: file.bucket,
+        image_name: path.basename(
+          file.originalname,
+          path.extname(file.originalname),
+        ),
+      });
 
-  async deleteEmoticonGroup() {}
+      master.slaves.push(item);
+    }); // end forEach
 
-  async deleteEmoticonSlave() {}
+    try {
+      master = await this.repEmoticon.save(master);
+      return this.getEmoticonList(project_id);
+    } catch (error) {
+      throw new HttpException(
+        'fail to upload emoticon images',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  } // ? END uploadEmoticonSlave
+
+  // * 이모티콘 슬레이브 이름 변경
+  async updateEmoticonSlaveName(
+    project_id: number,
+    id: number,
+    dto: EmoticonSlaveUpdateDto,
+  ): Promise<EmoticonUpdateOutputDto> {
+    try {
+      await this.repEmoticonSlave.save(dto);
+
+      // 갱신된 정보 돌려주기
+      const update = await this.repEmoticon.findOneBy({ id });
+
+      return { isSuccess: true, update };
+    } catch (error) {
+      throw new HttpException(
+        'fail to edit emoticon name',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  }
+
+  // * 이모티콘 슬레이브의 이미지 변경
+  // slave의 id가 파라매터.
+  async updateEmoticonSlaveImage(file: Express.MulterS3.File, id: number) {
+    if (!file) {
+      throw new HttpException('Invalid file!', HttpStatus.BAD_REQUEST);
+    }
+
+    const { location, key, bucket } = file;
+    const slave = await this.repEmoticonSlave.findOneBy({ id });
+    if (!slave) {
+      throw new HttpException(
+        'Invalid emoticon slave id!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (slave.image_url && slave.image_key) {
+      this.saveDiscardImage(slave.image_url, slave.image_key);
+    }
+
+    slave.image_url = location;
+    slave.image_key = key;
+    slave.image_bucket = bucket;
+
+    try {
+      this.repEmoticonSlave.save(slave);
+      return {
+        isSuccess: true,
+        image_url: location,
+        image_key: key,
+        image_bucket: bucket,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'failed to save emoticon slave image!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteEmoticonGroup(
+    project_id: number,
+    id: number,
+  ): Promise<EmoticonListDto> {
+    try {
+      await this.repEmoticon.delete({ id });
+      return this.getEmoticonList(project_id);
+    } catch (error) {
+      console.log(error);
+
+      throw new HttpException(
+        'failed to delete emoticon group!',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  }
+
+  async deleteEmoticonSlave(
+    project_id: number,
+    id: number,
+    slave_id: number,
+  ): Promise<EmoticonUpdateOutputDto> {
+    try {
+      await this.repEmoticonSlave.delete({ id: slave_id });
+      const master = await this.repEmoticon.findOneBy({ id });
+
+      return { isSuccess: true, update: master };
+    } catch (error) {
+      throw new HttpException(
+        'failed to delete emoticon slave!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 
   // ? 이모티콘 서비스 로직 끝!!! ///////////////////////////////////////////////
 }

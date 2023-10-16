@@ -27,7 +27,7 @@ export class EmoticonSlave extends CoreEntity {
   @Column({ length: 30, nullable: true })
   image_bucket: string;
 
-  @ManyToOne((t) => Emoticon, (e) => e.slaves)
+  @ManyToOne((t) => Emoticon, (e) => e.slaves, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'master_id' })
   master: Emoticon;
 
