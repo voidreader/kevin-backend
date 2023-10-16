@@ -20,6 +20,8 @@ import {
 } from 'src/common/common.const';
 import {
   BackgroundImageUpdateDto,
+  DressUpdateInputDto,
+  EmoticonListDto,
   LiveResourceUpdateDto,
   ModelCreateDto,
   ModelListDto,
@@ -275,4 +277,58 @@ export class ResourceManagerController {
       type,
     );
   }
+
+  // * 복장(Costume) API
+  @Get('/costume/:project_id')
+  getCostumeList(@Param('project_id') project_id: number) {
+    return this.resourceManagerService.getCostumeList(project_id);
+  }
+
+  @Delete('/costume/:project_id/:dress_id')
+  deleteCostume(
+    @Param('project_id') project_id: number,
+    @Param('dress_id') dress_id: number,
+  ) {
+    return this.resourceManagerService.deleteCostume(project_id, dress_id);
+  }
+
+  @Post('/costume/:project_id')
+  createCostume(
+    @Param('project_id') project_id: number,
+    @Body('update') dto: DressUpdateInputDto,
+  ) {
+    return this.resourceManagerService.createCostume(project_id, dto);
+  }
+
+  @Patch('/costume/:project_id/:dress_id')
+  updateCostume(
+    @Param('project_id') project_id: number,
+    @Param('dress_id') dress_id: number,
+    @Body('update') dto: DressUpdateInputDto,
+  ) {
+    return this.resourceManagerService.updateCostume(project_id, dto);
+  }
+
+  // * ////////////////////////////////////////
+
+  // * 이모티콘 서비스 로직
+  getEmoticonList(project_id: number): Promise<EmoticonListDto> {
+    return this.resourceManagerService.getEmoticonList(project_id);
+  }
+
+  createEmoticonGroup() {}
+
+  updateEmoticonGroup() {}
+
+  // * 이모티콘 이미지 파일 멀티 업로드
+  uploadEmoticonSlave() {}
+
+  // * 이모티콘 이미지 단일 개체 수정
+  updateEmoticonSlave() {}
+
+  deleteEmoticonGroup() {}
+
+  deleteEmoticonSlave() {}
+
+  // ? 이모티콘 서비스 로직 끝!!! ///////////////////////////////////////////////
 }

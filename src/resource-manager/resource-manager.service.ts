@@ -10,6 +10,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import {
   BackgroundImageUpdateDto,
+  DressListDto,
+  DressUpdateInputDto,
+  DressUpdateOutputDto,
+  EmoticonListDto,
   LiveResourceUpdateDto,
   ModelCreateDto,
   ModelListDto,
@@ -52,6 +56,10 @@ import { unzip } from 'zlib';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
 import { LiveResource } from './entities/live-resource.entity';
 import { LiveResourceDetail } from './entities/live-resource-detail.entity';
+import { Dress } from 'src/database/produce_entity/dress.entity';
+import { Nametag } from 'src/database/produce_entity/nametag.entity';
+import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
+import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
 
 @Injectable()
 export class ResourceManagerService {
@@ -78,6 +86,15 @@ export class ResourceManagerService {
     private readonly repLiveResource: Repository<LiveResource>,
     @InjectRepository(LiveResourceDetail)
     private readonly repLiveResourceDetail: Repository<LiveResourceDetail>,
+    @InjectRepository(Dress)
+    private readonly repDress: Repository<Dress>,
+    @InjectRepository(Nametag)
+    private readonly repNametag: Repository<Nametag>,
+
+    @InjectRepository(Emoticon)
+    private readonly repEmoticon: Repository<Emoticon>,
+    @InjectRepository(EmoticonSlave)
+    private readonly repEmoticonSlave: Repository<EmoticonSlave>,
 
     private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
@@ -946,4 +963,91 @@ export class ResourceManagerService {
       );
     }
   } // ? END updateLiveThumbnail
+
+  // * 복장(Costume Service 로직 )
+
+  // 복장 리스트
+  async getCostumeList(project_id: number): Promise<DressListDto> {
+    const list = await this.repDress.find({
+      where: { project_id },
+      order: { speaker: 'ASC', dress_name: 'ASC' },
+    });
+
+    return { isSuccess: true, list };
+  }
+
+  // 복장 삭제
+  async deleteCostume(
+    project_id: number,
+    dress_id: number,
+  ): Promise<DressListDto> {
+    await this.repDress.delete({ dress_id });
+
+    return this.getCostumeList(project_id);
+  }
+
+  // * 복장 생성
+  async createCostume(
+    project_id: number,
+    dto: DressUpdateInputDto,
+  ): Promise<DressListDto> {
+    try {
+      dto.project_id = project_id;
+
+      await this.repDress.save(dto);
+    } catch (error) {
+      throw new HttpException(
+        'fail to create new costume info',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+
+    return this.getCostumeList(project_id);
+  }
+
+  // * 복장 업데이트
+  async updateCostume(
+    project: number,
+    dto: DressUpdateInputDto,
+  ): Promise<DressUpdateOutputDto> {
+    try {
+      const dress = await this.repDress.save(dto);
+      return { isSuccess: true, update: dress };
+    } catch (error) {
+      throw new HttpException(
+        'fail to save costume info',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  }
+
+  // ? 복장(Costume Service 로직) 끝! ///////////////////////////////////////////
+
+  // * 이모티콘 서비스 로직
+  async getEmoticonList(project_id: number): Promise<EmoticonListDto> {
+    const list = await this.repEmoticon.find({
+      where: { project_id },
+      order: { speaker: 'ASC' },
+    });
+
+    return { isSuccess: true, list };
+  }
+
+  async createEmoticonGroup() {}
+
+  async updateEmoticonGroup() {}
+
+  // * 이모티콘 이미지 파일 멀티 업로드
+  async uploadEmoticonSlave() {}
+
+  // * 이모티콘 이미지 단일 개체 수정
+  async updateEmoticonSlave() {}
+
+  async deleteEmoticonGroup() {}
+
+  async deleteEmoticonSlave() {}
+
+  // ? 이모티콘 서비스 로직 끝!!! ///////////////////////////////////////////////
 }

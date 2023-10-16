@@ -14,6 +14,10 @@ import { Model } from 'src/database/produce_entity/model.entity';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
 import { LiveResource } from './entities/live-resource.entity';
 import { LiveResourceDetail } from './entities/live-resource-detail.entity';
+import { Dress } from 'src/database/produce_entity/dress.entity';
+import { Nametag } from 'src/database/produce_entity/nametag.entity';
+import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
+import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
 
 @Module({
   imports: [
@@ -27,6 +31,10 @@ import { LiveResourceDetail } from './entities/live-resource-detail.entity';
       ModelSlave,
       LiveResource,
       LiveResourceDetail,
+      Dress,
+      Nametag,
+      Emoticon,
+      EmoticonSlave,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

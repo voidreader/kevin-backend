@@ -24,14 +24,14 @@ export class Dress {
   @Column()
   project_id: number;
 
-  @Column({ length: 20, comment: '의상 소유자' })
+  @Column({ length: 20, comment: '의상 소유자', default: null })
   speaker: string;
 
-  @Column({ comment: '연결 모델 ID' })
+  @Column({ comment: '연결 모델 ID', nullable: true })
   @Index()
   model_id: number;
 
-  @Column({ comment: '기본 의상 여부', type: 'boolean' })
+  @Column({ comment: '기본 의상 여부', type: 'boolean', default: false })
   is_default: boolean;
 
   // 생성된 시간
