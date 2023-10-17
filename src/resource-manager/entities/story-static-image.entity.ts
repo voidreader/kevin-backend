@@ -12,7 +12,8 @@ import { PublicExtension } from './public-extension.entity';
 export class StoryStaticImage extends CommonImageResourceEntity {
   @OneToOne(() => PublicExtension, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'extension_id' })
   extension: PublicExtension;

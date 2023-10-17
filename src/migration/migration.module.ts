@@ -30,6 +30,9 @@ import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { ProfileLang } from 'src/database/produce_entity/profile-lang.entity';
 import { AbilityLang } from 'src/database/ability-lang.entity';
+import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
+import { PublicExtension } from 'src/resource-manager/entities/public-extension.entity';
+import { ImageLocalization } from 'src/resource-manager/entities/image-localization.entity';
 
 @Module({
   imports: [
@@ -62,6 +65,9 @@ import { AbilityLang } from 'src/database/ability-lang.entity';
       ProfileLang,
       AbilityLang,
       Project,
+      StoryStaticImage,
+      PublicExtension,
+      ImageLocalization,
     ]),
   ],
   controllers: [MigrationController],

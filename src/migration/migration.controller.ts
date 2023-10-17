@@ -73,6 +73,14 @@ export class MigrationController {
     return this.service.createProfileLineLang(profile_id);
   }
 
+  @Get('static-image/:project_id/:type')
+  async copyStoryStaticImage(
+    @Param('project_id') project_id: number,
+    @Param('type') type: string,
+  ) {
+    return this.service.copyOriginStaticImageResource(project_id, type);
+  }
+
   @Get('packages')
   async copyPackages() {
     return this.service.copyPackages();

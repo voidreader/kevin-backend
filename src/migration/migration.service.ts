@@ -1,5 +1,22 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
+import {
+  RESOURCE_BG,
+  RESOURCE_ILLUST,
+  RESOURCE_MINICUT,
+} from 'src/common/common.const';
+
+import {
+  OLD_Q_COPY_LIST_BG,
+  OLD_Q_COPY_LIST_ILLUST,
+  OLD_Q_COPY_LIST_ILLUST_LANG,
+  OLD_Q_COPY_LIST_ILLUST_THUMBNAIL,
+  OLD_Q_COPY_LIST_MINICUT,
+  OLD_Q_COPY_LIST_MINICUT_LANG,
+  OLD_Q_COPY_LIST_MINICUT_THUMBNAIL,
+} from 'src/common/origin-schema.query';
+
 import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
 import { Episode } from 'src/database/produce_entity/episode.entity';
 import { ItemExtension } from 'src/database/produce_entity/item-extension.entity';
@@ -32,6 +49,9 @@ import { Project } from 'src/database/produce_entity/project.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { AbilityLang } from 'src/database/ability-lang.entity';
 import { ProfileLang } from 'src/database/produce_entity/profile-lang.entity';
+import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
+import { PublicExtension } from 'src/resource-manager/entities/public-extension.entity';
+import { ImageLocalization } from 'src/resource-manager/entities/image-localization.entity';
 
 @Injectable()
 export class MigrationService {
@@ -85,6 +105,13 @@ export class MigrationService {
 
     @InjectRepository(ProfileLang)
     private readonly repProfileLang: Repository<ProfileLang>,
+
+    @InjectRepository(StoryStaticImage)
+    private readonly repStoryStaticImage: Repository<StoryStaticImage>,
+    @InjectRepository(PublicExtension)
+    private readonly repPublicExtension: Repository<PublicExtension>,
+    @InjectRepository(ImageLocalization)
+    private readonly repImageLocalization: Repository<ImageLocalization>,
   ) {}
 
   // * 프로젝트 마스터 마이그레이션
@@ -1060,4 +1087,124 @@ export class MigrationService {
       return { isSuccess: false, error };
     }
   }
+
+  //
+  getDefaultExtension() {
+    return this.repPublicExtension.create({
+      thumbnail_url: null,
+      thumbnail_key: null,
+      bucket: null,
+    });
+  }
+
+  // Default Image Localization 생성
+  getDefaultLocalization(
+    item: StoryStaticImage,
+    default_lang: string,
+  ): ImageLocalization {
+    return this.repImageLocalization.create({
+      lang: default_lang,
+      public_name: item.image_name,
+      summary: '',
+    });
+  }
+
+  // * 올드 데이터 카피, 컨버팅 (마이그레이션으로 이동 필요)
+  async copyOriginStaticImageResource(project_id: number, type: string) {
+    console.log(`copyOriginStaticImageResource START ${project_id} / ${type}`);
+
+    let result: StoryStaticImage[];
+    const updateItems: StoryStaticImage[] = [];
+
+    console.log('프로듀스에 저장된 이미지 삭제 시작');
+    const produceStaticImages: StoryStaticImage[] =
+      await this.repStoryStaticImage.find({
+        where: { project_id, image_type: type },
+      });
+    await this.repStoryStaticImage.remove(produceStaticImages);
+    console.log('프로듀스에 저장된 이미지 삭제 종료');
+
+    if (type == RESOURCE_BG)
+      result = await this.dataSource.query(OLD_Q_COPY_LIST_BG, [project_id]);
+    else if (type == RESOURCE_MINICUT)
+      result = await this.dataSource.query(OLD_Q_COPY_LIST_MINICUT, [
+        project_id,
+      ]);
+    else if (type == RESOURCE_ILLUST)
+      result = await this.dataSource.query(OLD_Q_COPY_LIST_ILLUST, [
+        project_id,
+      ]);
+    else {
+      return { isSuccess: false, error: 'Wrong type' };
+    }
+
+    console.log(`result origin data count : `, result.length);
+
+    for (const origin of result) {
+      console.log(`in for : `, origin);
+
+      // 공개된 미니컷에 대한 추가 처리
+      if (
+        origin.is_public &&
+        (origin.image_type == RESOURCE_MINICUT ||
+          origin.image_type == RESOURCE_ILLUST)
+      ) {
+        console.log(`is public !!!!!!!!!!!!!!!!!`);
+
+        let Q_LANG = ``;
+        let Q_THUMB = ``;
+
+        if (origin.image_type == RESOURCE_MINICUT) {
+          Q_LANG = OLD_Q_COPY_LIST_MINICUT_LANG;
+          Q_THUMB = OLD_Q_COPY_LIST_MINICUT_THUMBNAIL;
+        } else if (origin.image_type == RESOURCE_ILLUST) {
+          Q_LANG = OLD_Q_COPY_LIST_ILLUST_LANG;
+          Q_THUMB = OLD_Q_COPY_LIST_ILLUST_THUMBNAIL;
+        }
+
+        // localizations
+        origin.localizations = await this.dataSource.query(Q_LANG, [
+          origin.id,
+          origin.image_type,
+        ]);
+
+        const extensions = await this.dataSource.query(Q_THUMB, [origin.id]);
+
+        origin.extension = extensions[0];
+      } else {
+        origin.extension = this.getDefaultExtension();
+        origin.localizations = [];
+        origin.localizations.push(this.getDefaultLocalization(origin, 'KO'));
+      }
+
+      updateItems.push(origin);
+    }
+
+    // result.forEach((origin) => {
+    //   // const item: StoryStaticImage = this.repStaticImage.create(origin);
+    //   // const item = items[0];
+
+    //   // console.log(`origin check : `, item);
+    //   origin.extension = this.getDefaultExtension();
+    //   origin.localizations = [];
+    //   origin.localizations.push(this.getDefaultLocalization(origin, 'KO'));
+    // });
+
+    try {
+      console.log('Start... Insert static image');
+
+      await this.repStoryStaticImage.save(updateItems);
+    } catch (error) {
+      if (
+        error.driverError &&
+        error.driverError.code &&
+        error.driverError.sqlMessage
+      ) {
+        return { isSuccess: false, error: error.driverError.sqlMessage };
+      } else return { isSuccess: false, error };
+    }
+
+    // console.log(result);
+    return { isSuccess: true, total: result.length };
+  } // ? END copy.
 } // ? End of class
