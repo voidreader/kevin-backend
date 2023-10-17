@@ -79,7 +79,7 @@ export class Item extends CoreDeployEntity {
 
   @OneToOne((type) => ItemExtension, {
     eager: true,
-    cascade: ['insert', 'remove', 'update'],
+    cascade: true,
   })
   @JoinColumn({ name: 'extension_id' })
   extension: ItemExtension;

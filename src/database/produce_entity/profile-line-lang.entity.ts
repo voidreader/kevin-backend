@@ -21,7 +21,9 @@ export class ProfileLineLang extends CoreEntity {
   @Column({ length: 120 })
   line_text: string;
 
-  @ManyToOne((t) => ProfileLine, (line) => line.localizations)
+  @ManyToOne((t) => ProfileLine, (line) => line.localizations, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'line_id' })
   profileLine: ProfileLine;
 }

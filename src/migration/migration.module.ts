@@ -27,6 +27,9 @@ import { Dress } from 'src/database/produce_entity/dress.entity';
 import { TextLocalize } from 'src/common/entities/text-localize.entity';
 import { ProfileLineLang } from 'src/database/produce_entity/profile-line-lang.entity';
 import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
+import { Project } from 'src/database/produce_entity/project.entity';
+import { ProfileLang } from 'src/database/produce_entity/profile-lang.entity';
+import { AbilityLang } from 'src/database/ability-lang.entity';
 
 @Module({
   imports: [
@@ -56,6 +59,9 @@ import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
       TextLocalize,
       ProfileLine,
       ProfileLineLang,
+      ProfileLang,
+      AbilityLang,
+      Project,
     ]),
   ],
   controllers: [MigrationController],

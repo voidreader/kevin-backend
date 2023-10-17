@@ -17,7 +17,10 @@ import { ProfileLineLang } from './profile-line-lang.entity';
 @Entity()
 @Index(['profile'])
 export class ProfileLine extends CoreEntity {
-  @Column({ default: -1, comment: '연결된 현지화 text_id' })
+  @Column({
+    default: -1,
+    comment: '연결된 현지화 text_id. lang 테이블 생성 후 사용하지 않음',
+  })
   text_id: number;
 
   @Column({ comment: '프로필과 연결된 캐릭터의 모션 이름', length: 30 })
@@ -32,7 +35,9 @@ export class ProfileLine extends CoreEntity {
   @Column({ nullable: true, length: 30 })
   sound_name: string;
 
-  @ManyToOne((type) => Profile, (profile) => profile.lines)
+  @ManyToOne((type) => Profile, (profile) => profile.lines, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'profile_id' })
   profile: Profile;
 

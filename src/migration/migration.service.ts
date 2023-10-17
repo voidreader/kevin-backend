@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
 import { Episode } from 'src/database/produce_entity/episode.entity';
@@ -28,6 +28,10 @@ import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
 import { TextLocalize } from 'src/common/entities/text-localize.entity';
 import { ProfileLineLang } from 'src/database/produce_entity/profile-line-lang.entity';
+import { Project } from 'src/database/produce_entity/project.entity';
+import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
+import { AbilityLang } from 'src/database/ability-lang.entity';
+import { ProfileLang } from 'src/database/produce_entity/profile-lang.entity';
 
 @Injectable()
 export class MigrationService {
@@ -74,7 +78,74 @@ export class MigrationService {
     private readonly repProfileLineLang: Repository<ProfileLineLang>,
     @InjectRepository(ProfileLine)
     private readonly repProfileLine: Repository<ProfileLine>,
+    @InjectRepository(Project)
+    private readonly repProject: Repository<Project>,
+    @InjectRepository(AbilityLang)
+    private readonly repAbilityLang: Repository<AbilityLang>,
+
+    @InjectRepository(ProfileLang)
+    private readonly repProfileLang: Repository<ProfileLang>,
   ) {}
+
+  // * 프로젝트 마스터 마이그레이션
+  async copyProject(project_id: number) {
+    const projectList: Project[] = await this.dataSource.query(`
+    SELECT a.project_id
+        , 'Otome' project_type
+        , a.default_lang 
+        , 'Draft' project_state
+        , b.title 'title'
+        , a.sortkey 
+        , a.bubble_set_id 
+        , 2001 prime_currency_text_id
+      FROM pier.list_project_master a
+        , pier.list_project_detail b
+    WHERE b.project_id = a.project_id 
+      AND b.lang = a.default_lang
+      AND a.project_id = ${project_id};
+    `);
+
+    if (projectList.length == 0) {
+      throw new HttpException('프로젝트 정보 없음', HttpStatus.BAD_REQUEST);
+    }
+
+    const project: Project = projectList[0];
+
+    const detailList: ProjectDetail[] = await this.dataSource.query(`
+    SELECT b.lang 
+        , b.title 
+        , b.summary 
+        , b.writer 
+        , b.original
+        , b.translator 
+      FROM pier.list_project_master a
+        , pier.list_project_detail b
+    WHERE b.project_id = a.project_id 
+      AND a.project_id = ${project_id};
+    `);
+
+    if (detailList.length == 0) {
+      throw new HttpException(
+        '프로젝트 상세 정보 없음',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    project.projectDetails = detailList;
+
+    try {
+      await this.repProject.save(project);
+
+      return { message: '프로젝트 마이그레이션 완료!' };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        '프로젝트 마이그레이션 실패',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  } // ? END copyProject
 
   // * 의상
   async copyDress(project_id: number) {
@@ -427,6 +498,12 @@ export class MigrationService {
   // * 구 currency, currency_item, 텍스트 정보 불러오기
   async copyItem(project_id: number) {
     let items: Item[];
+    const produceItems: Item[] = await this.repItem.find({
+      where: { project_id, is_prime: false },
+    });
+
+    // 입력된 produce 아이템을 삭제한다.
+    await this.repItem.remove(produceItems);
 
     items = await this.dataSource.query(
       `
@@ -443,7 +520,10 @@ export class MigrationService {
         , pier.fn_get_design_info(a.resource_image_id, 'key') image_key
         , a.model_id AS resource_id 
         , a.currency
+        , ifnull(cca.ability_id, 0) ability_id
+        , ifnull(cca.add_value, 0) ability_value
     FROM pier.com_currency a
+    LEFT OUTER JOIN  pier.com_currency_ability cca ON cca.currency = a.currency
     WHERE connected_project = ?;    
     `,
       [project_id],
@@ -533,8 +613,19 @@ export class MigrationService {
   } // ? end of copy item
 
   // * 구 Profile, 능력치, 프로필 대사 등 Migration
+  // * 구 버전의 Profile(com_ability)는 profile, ability, profile_line 등으로 쪼개진다.
   async copyProfile(project_id: number) {
-    let profiles: Profile[];
+    let profiles: Profile[]; // 구 데이터베이스
+    const produceProfiles: Profile[] = await this.repProfile.find({
+      where: { project_id },
+    });
+
+    // com_ability의 ability_id가 profile과 ability의 식별자로 똑같이 들어가도록 해야한다. (나중에 아이템 연계시 그게 편함)
+
+    console.log(produceProfiles);
+
+    this.repProfile.remove(produceProfiles);
+    console.log('프로듀스 프로필 삭제');
 
     profiles = await this.dataSource.query(
       `
@@ -544,17 +635,78 @@ export class MigrationService {
         , a.profile_height 
         , a.profile_age 
         , a.profile_birth_date 
-        , a.profile_favorite_id 
-        , a.profile_hate_id 
-        , a.profile_line_id 
-        , a.profile_introduce_id 
+        , 1 is_main
+        , 1 use_standing
+        , 1 use_emoticon
+        , a.profile_favorite_id profile_favorite_id
+        , a.profile_hate_id profile_dislike
+        , a.profile_line_id profile_introduce
+        , a.profile_introduce_id profile_etc
     FROM pier.com_ability a
     WHERE a.project_id = ?;    
     `,
       [project_id],
     );
 
+    // * 각각의 구버전 profile에 맞는 데이터 생성
     for (const profile of profiles) {
+      // profile_lang 데이터 생성
+      const favoriteText = await this.repTextLocalize.findOneBy({
+        text_id: profile.profile_favorite,
+      });
+      const dislikeText = await this.repTextLocalize.findOneBy({
+        text_id: profile.profile_dislike,
+      });
+      const introText = await this.repTextLocalize.findOneBy({
+        text_id: profile.profile_introduce,
+      });
+      const etcText = await this.repTextLocalize.findOneBy({
+        text_id: profile.profile_etc,
+      });
+
+      profile.localizations = [];
+
+      if (favoriteText) {
+        profile.localizations.push(
+          this.repProfileLang.create({
+            lang: 'KO',
+            profile_text: favoriteText.KO,
+            text_type: 'favorite',
+          }),
+        );
+      }
+
+      if (dislikeText) {
+        profile.localizations.push(
+          this.repProfileLang.create({
+            lang: 'KO',
+            profile_text: dislikeText.KO,
+            text_type: 'dislike',
+          }),
+        );
+      }
+
+      if (introText) {
+        profile.localizations.push(
+          this.repProfileLang.create({
+            lang: 'KO',
+            profile_text: introText.KO,
+            text_type: 'introduce',
+          }),
+        );
+      }
+
+      if (etcText) {
+        profile.localizations.push(
+          this.repProfileLang.create({
+            lang: 'KO',
+            profile_text: etcText.KO,
+            text_type: 'etc',
+          }),
+        );
+      }
+
+      // 프로필 라인 가져오기
       profile.lines = await this.dataSource.query(
         `
       SELECT a.line_id AS text_id
@@ -567,9 +719,26 @@ export class MigrationService {
         [profile.id],
       );
 
+      for (const line of profile.lines) {
+        line.localizations = [];
+        const line_text = await this.repTextLocalize.findOneBy({
+          text_id: line.text_id,
+        });
+
+        if (line_text) {
+          line.localizations.push(
+            this.repProfileLineLang.create({
+              lang: 'KO',
+              line_text: line_text.KO,
+            }),
+          );
+        }
+      } // ? end of profile line localizations
+
       profile.abilities = await this.dataSource.query(
         `
-      SELECT a.ability_name 
+      SELECT a.ability_id 
+          , a.ability_name 
           , a.min_value  
           , a.max_value  
           , a.is_main 
@@ -580,38 +749,59 @@ export class MigrationService {
       `,
         [profile.speaker, project_id],
       );
-    }
 
-    // * nametag 복사
+      for (const ability of profile.abilities) {
+        ability.localizations = [];
+        const ability_text = await this.repTextLocalize.findOneBy({
+          text_id: ability.local_id,
+        });
+
+        if (ability_text) {
+          ability.localizations.push(
+            this.repAbilityLang.create({
+              lang: 'KO',
+              ability_name: ability_text.KO,
+            }),
+          );
+        }
+      }
+    } // ? end of top for
+
+    // * nametag 삭제하고 복사하기
+    console.log('프로듀스 네임태그를 삭제!');
+    await this.repNametag.delete({ project_id });
     const originNametags = await this.dataSource.query(
       `
-    SELECT a.project_id 
-        , a.speaker 
-        , a.main_color 
-        , a.sub_color 
+    SELECT a.project_id
+        , a.speaker
+        , a.main_color
+        , a.sub_color
         , a.KO
-        , a.EN 
-        , a.JA 
-        , a.AR 
-        , '' AS "ID" 
-        , a.ES 
-        , a.MS 
-        , a.RU 
-        , a.ZH 
-        , a.SC 
+        , a.EN
+        , a.JA
+        , a.AR
+        , '' AS "ID"
+        , a.ES
+        , a.MS
+        , a.RU
+        , a.ZH
+        , a.SC
       FROM pier.list_nametag a
     WHERE a.project_id = ?;`,
       [project_id],
     );
 
+    console.log('프로듀스 네임태그에 입력시작');
     await this.repNametag.save(originNametags);
 
     try {
+      console.log('프로필 저장 시작');
       await this.repProfile.save(profiles);
     } catch (error) {
       return { isSuccess: false, error };
     }
 
+    console.log('프로필 저장 끝');
     return { isSuccess: true, total: profiles.length };
   } // ? END OF copyProfile
 
@@ -621,6 +811,10 @@ export class MigrationService {
   async copyModels(project_id: number) {
     let result: Model[];
 
+    // 현 프로듀스의 model 정보를 삭제한다.
+    await this.repModel.delete({ project_id });
+
+    // 구 DB에서 데이터 가져오기
     result = await this.dataSource.query(
       `
     SELECT a.* 
@@ -631,7 +825,6 @@ export class MigrationService {
     );
 
     // slave-motion 조회
-
     for (const model of result) {
       model.offset_x = Math.round(model.offset_x * 10) / 10;
       model.offset_y = Math.round(model.offset_y * 10) / 10;

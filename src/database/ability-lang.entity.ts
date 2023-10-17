@@ -20,7 +20,7 @@ export class AbilityLang extends CoreEntity {
   @Column({ length: 30 })
   ability_name: string;
 
-  @ManyToOne((t) => Ability, (a) => a.localizations)
+  @ManyToOne((t) => Ability, (a) => a.localizations, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'ability_id' })
   ability: Ability;
 }

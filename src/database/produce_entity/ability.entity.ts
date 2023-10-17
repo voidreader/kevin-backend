@@ -43,7 +43,9 @@ export class Ability {
   local_id: number; // localizations
 
   // Profile 과의 관계 설정
-  @ManyToOne((type) => Profile, (profile) => profile.abilities)
+  @ManyToOne((type) => Profile, (profile) => profile.abilities, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'profile_id' })
   profile: Profile;
 

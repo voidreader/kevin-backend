@@ -63,6 +63,11 @@ export class MigrationController {
     return this.service.copyDress(project_id);
   }
 
+  @Get('project/:project_id')
+  async copyProject(@Param('project_id') project_id: number) {
+    return this.service.copyProject(project_id);
+  }
+
   @Get('profile-line-lang/:profile_id')
   async createProfileLineLangs(@Param('profile_id') profile_id: number) {
     return this.service.createProfileLineLang(profile_id);

@@ -24,10 +24,10 @@ export class Profile extends CoreDeployEntity {
   profile_birth_date: Date;
 
   // 프로필 : 좋아하는것, 싫어하는것, 소개, 기타
-  profile_favorite: string;
-  profile_dislike: string;
-  profile_introduce: string;
-  profile_etc: string;
+  profile_favorite: number;
+  profile_dislike: number;
+  profile_introduce: number;
+  profile_etc: number;
 
   @Column({
     type: 'boolean',
@@ -53,4 +53,10 @@ export class Profile extends CoreDeployEntity {
     cascade: true,
   })
   lines: ProfileLine[];
+
+  @OneToMany((type) => ProfileLang, (p) => p.profile, {
+    eager: true,
+    cascade: true,
+  })
+  localizations: ProfileLang[];
 }
