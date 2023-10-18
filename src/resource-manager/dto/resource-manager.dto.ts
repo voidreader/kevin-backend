@@ -14,6 +14,7 @@ import { LiveResource } from '../entities/live-resource.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
+import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 
 export interface unzipFile {
   Key: string;
@@ -84,6 +85,10 @@ export class EmoticonUpdateOutputDto extends CoreOutput {
 }
 
 export class EmoticonSlaveUpdateDto extends PartialType(EmoticonSlave) {}
+
+export class SoundListDto extends CoreOutput {
+  list?: SoundResource[];
+}
 
 // export class UpdateBackgroundDto extends PartialType(Background) {}
 // export class UpdateMinicutDto extends PartialType(Minicut) {}

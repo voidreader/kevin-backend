@@ -20,6 +20,7 @@ import { Dress } from 'src/database/produce_entity/dress.entity';
 import { Nametag } from 'src/database/produce_entity/nametag.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
+import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity
       Nametag,
       Emoticon,
       EmoticonSlave,
+      SoundResource,
     ]),
   ],
 

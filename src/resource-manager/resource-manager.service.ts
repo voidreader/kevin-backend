@@ -53,9 +53,9 @@ import {
   RESOURCE_ILLUST,
   RESOURCE_MINICUT,
 } from 'src/common/common.const';
-import { async, of } from 'rxjs';
+
 import { Model } from 'src/database/produce_entity/model.entity';
-import { unzip } from 'zlib';
+
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
 import { LiveResource } from './entities/live-resource.entity';
 import { LiveResourceDetail } from './entities/live-resource-detail.entity';
@@ -63,6 +63,7 @@ import { Dress } from 'src/database/produce_entity/dress.entity';
 import { Nametag } from 'src/database/produce_entity/nametag.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
+import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 
 @Injectable()
 export class ResourceManagerService {
@@ -98,6 +99,8 @@ export class ResourceManagerService {
     private readonly repEmoticon: Repository<Emoticon>,
     @InjectRepository(EmoticonSlave)
     private readonly repEmoticonSlave: Repository<EmoticonSlave>,
+    @InjectRepository(SoundResource)
+    private readonly repSoundResource: Repository<SoundResource>,
 
     private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
@@ -1243,4 +1246,32 @@ export class ResourceManagerService {
   }
 
   // ? 이모티콘 서비스 로직 끝!!! ///////////////////////////////////////////////
+
+  // * 사운드 리소스
+  async getSoundList(project_id: number) {
+    try {
+      const list = await this.repSoundResource.find({
+        where: { project_id },
+        order: { sound_name: 'ASC' },
+      });
+
+      return { isSuccess: true, list };
+    } catch (error) {
+      throw new HttpException(
+        'failed to get sound list!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  // * 사운드 삭제
+  async deleteSound(project_id: number, id: number) {}
+
+  // * 사운드 멀티 업로드
+  async uploadSounds() {}
+
+  // * 사운드 수정
+  async updateSound() {}
+
+  // ? /////////////////////////////////////////////////
 }
