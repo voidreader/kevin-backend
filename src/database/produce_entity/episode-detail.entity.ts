@@ -25,7 +25,6 @@ export class EpisodeDetail extends CoreEntity {
 
   @ManyToOne((type) => Episode, (episode) => episode.details, {
     onDelete: 'CASCADE',
-    cascade: true,
   })
   @JoinColumn({ name: 'episode_id' })
   episode: Episode;

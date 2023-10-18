@@ -95,13 +95,14 @@ export class Episode extends DeployableEntity {
   @OneToMany(
     (type) => EpisodeDetail,
     (episodeDetail) => episodeDetail.episode,
-    { eager: true, cascade: ['insert', 'update'] },
+    { eager: true, cascade: true },
   )
   details: EpisodeDetail[];
 
   @OneToOne(() => EpisodeExtension, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'extension_id' })
   extension: EpisodeExtension;

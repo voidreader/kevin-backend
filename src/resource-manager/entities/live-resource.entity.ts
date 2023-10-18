@@ -52,13 +52,13 @@ export class LiveResource extends CoreDeployEntity {
 
   @OneToMany((t) => LiveResourceDetail, (detail) => detail.parent, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
   })
   details: LiveResourceDetail[];
 
   @OneToMany((t) => LiveLocalization, (local) => local.live, {
     eager: true,
-    cascade: ['insert', 'update'],
+    cascade: true,
   })
   localizations: LiveLocalization[];
 }

@@ -27,7 +27,9 @@ export class LiveResourceDetail extends CoreEntity {
   @Column({ length: 30, nullable: true })
   motion_name: string;
 
-  @ManyToOne((type) => LiveResource, (liveResource) => liveResource.details)
+  @ManyToOne((type) => LiveResource, (liveResource) => liveResource.details, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'resource_id' })
   parent: LiveResource;
 

@@ -176,6 +176,9 @@ export class MigrationService {
 
   // * 의상
   async copyDress(project_id: number) {
+    const produceList = await this.repDress.find({ where: { project_id } });
+    await this.repDress.remove(produceList);
+
     const rows: Dress[] = await this.dataSource.query(`
     SELECT ldm.dressmodel_name speaker
           , ldm.project_id 
@@ -201,6 +204,13 @@ export class MigrationService {
 
   // * 이모티콘 migration
   async copyEmoticon(project_id: number) {
+    const produceEmoticon: Emoticon[] = await this.repEmoticon.find({
+      where: { project_id },
+    });
+
+    console.log(`produce 이모티콘 삭제`);
+    await this.repEmoticon.remove(produceEmoticon);
+
     const rows: Emoticon[] = await this.dataSource.query(`
     SELECT a.emoticon_master_id id
         , a.emoticon_owner speaker
@@ -221,8 +231,9 @@ export class MigrationService {
     } // end for
 
     try {
+      console.log(`이모티콘 복사 시작`);
       await this.repEmoticon.save(rows);
-
+      console.log(`이모티콘 복사 종료`);
       return { isSuccess: true, total: rows.length };
     } catch (error) {
       return { isSuccess: false, error };
@@ -308,6 +319,9 @@ export class MigrationService {
 
   // * 에피소드 로딩
   async copyEpisodeLoading(project_id: number) {
+    const produceList = await this.repLoading.find({ where: { project_id } });
+    await this.repLoading.remove(produceList);
+
     const loadings: Loading[] = await this.dataSource.query(`
     SELECT a.loading_id id 
         , a.project_id 
@@ -352,6 +366,26 @@ export class MigrationService {
 
   // * 에피소드 및 스크립트
   async copyEpisodeScript(project_id: number) {
+    console.log('매우매우 중요한 에피소드 및 스크립트 복사를 시작합니다');
+
+    console.log('프로듀스에 등록된 에피소드 및 스크립트, 선택지 정보 삭제');
+    const produceEpisodes = await this.repEpisode.find({
+      where: { project_id },
+    });
+    const produceScripts = await this.repScript.find({ where: { project_id } });
+    const produceSelections = await this.repSelection.find({
+      where: { project_id },
+    });
+
+    try {
+      await this.repEpisode.save(produceEpisodes);
+      await this.repScript.save(produceScripts);
+      await this.repSelection.save(produceSelections);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('삭제하다 에러남!', HttpStatus.BAD_REQUEST);
+    }
+
     let totalEpisode: number = 0;
     let totalScriptRow: number = 0;
 
@@ -378,7 +412,7 @@ export class MigrationService {
 
     // * Episode 관련 로직 시작
     for (const episode of originEpisodes) {
-      console.log(episode.title);
+      // console.log(episode.title);
       episode.details = await this.dataSource.query(
         `
       SELECT a.lang 
@@ -410,7 +444,9 @@ export class MigrationService {
 
     // 에피소드 저장
     try {
+      console.log('에피소드 복사 시작!');
       await this.repEpisode.save(originEpisodes);
+      console.log('에피소드 복사 종료!');
     } catch (error) {
       return { isSuccess: false, error };
     }
@@ -491,6 +527,13 @@ export class MigrationService {
 
   // * 사운드 리소스 마이그레이션
   async copySoundResource(project_id: number) {
+    console.log('프로듀스 사운드 리소스 삭제');
+    const produceSounds = await this.repSoundResource.find({
+      where: { project_id },
+    });
+    await this.repSoundResource.remove(produceSounds); // 삭제
+    console.log('프로듀스 사운드 리소스 완료');
+
     const originSounds = await this.dataSource.query(
       `
     SELECT ls.project_id 
@@ -915,10 +958,24 @@ export class MigrationService {
 
   // * 라이브 일러스트 카피
   async copyLiveIllust(project_id: number) {
+    try {
+      const produceList = await this.repLiveResource.find({
+        where: { project_id, live_type: 'live_illust' },
+      });
+      await this.repLiveResource.remove(produceList);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        '프로듀스 라이브 삭제 실패',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     let result: LiveResource[];
 
+    // 두 테이블이 합쳐지는거라서 origin_id를 따오고, id는 신규로 부여
     result = await this.dataSource.query(`
-    SELECT a.live_illust_id as id
+    SELECT a.live_illust_id as origin_id
         , a.project_id 
         , 'live_illust' live_type
         , a.live_illust_name live_name
@@ -948,7 +1005,7 @@ export class MigrationService {
         , 'carpestore' bucket
         , a.motion_name 
       FROM pier.list_live_illust_detail a
-    WHERE a.live_illust_id = ${model.id};
+    WHERE a.live_illust_id = ${model.origin_id};
       `);
 
       model.details = details;
@@ -961,7 +1018,7 @@ export class MigrationService {
         , ifnull(public_name, '-') public_name
         , ifnull(summary, '-') summary
       FROM pier.list_illust_lang a
-    WHERE a.illust_id = ${model.id} AND a.illust_type = 'live2d';
+    WHERE a.illust_id = ${model.origin_id} AND a.illust_type = 'live2d';
       `);
 
       console.log(`live langs : `, model.localizations.length);
@@ -978,6 +1035,19 @@ export class MigrationService {
 
   // * 라이브 오브젝트 카피
   async copyLiveObject(project_id: number) {
+    try {
+      const produceList = await this.repLiveResource.find({
+        where: { project_id, live_type: 'live_object' },
+      });
+      await this.repLiveResource.remove(produceList);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        '프로듀스 라이브 삭제 실패',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     let result: LiveResource[];
 
     result = await this.dataSource.query(`

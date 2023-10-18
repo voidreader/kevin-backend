@@ -22,7 +22,7 @@ export class LoadingEpisode extends CoreEntity {
   @Column({ type: 'boolean', default: true })
   is_use: boolean;
 
-  @ManyToOne((type) => Loading, (l) => l.episodes)
+  @ManyToOne((type) => Loading, (l) => l.episodes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'loading_id' })
   loading: Loading;
 }

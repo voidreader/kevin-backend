@@ -21,7 +21,7 @@ export class LoadingDetail extends CoreEntity {
   @Column({ length: 160 })
   loading_text: string;
 
-  @ManyToOne((type) => Loading, (l) => l.episodes)
+  @ManyToOne((type) => Loading, (l) => l.episodes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'loading_id' })
   loading: Loading;
 }
