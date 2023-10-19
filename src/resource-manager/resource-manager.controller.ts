@@ -34,6 +34,7 @@ import {
   UpdateStaticImageDto,
 } from './dto/resource-manager.dto';
 import { Model } from 'src/database/produce_entity/model.entity';
+import { ReturningStatementNotSupportedError } from 'typeorm';
 
 @Controller('resource-manager')
 export class ResourceManagerController {
@@ -403,4 +404,57 @@ export class ResourceManagerController {
   }
 
   // ? 이모티콘 서비스 로직 끝!!! ///////////////////////////////////////////////
+
+  // * 사운드 리소스 /////////////////////
+
+  @Get(`/sound/:project_id`)
+  getSoundList(@Param('project_id') project_id: number) {
+    return this.resourceManagerService.getSoundList(project_id);
+  }
+
+  @Post(`/sound/:project_id`)
+  @UseInterceptors(FilesInterceptor('files'))
+  uploadSounds(
+    @UploadedFiles() files: Array<Express.MulterS3.File>,
+    @Param('project_id') project_id: number,
+    @Body('sound_type') sound_type: string,
+    @Body('speaker') speaker: string,
+  ) {
+    return this.resourceManagerService.uploadSounds(
+      files,
+      project_id,
+      sound_type,
+      speaker,
+    );
+  }
+
+  @Delete(`/sound/:project_id/:id`)
+  deleteSound(
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.deleteSound(project_id, id);
+  }
+
+  @Patch(`/sound/:project_id/:id`)
+  @UseInterceptors(FileInterceptor('file'))
+  updateSound(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+    @Body('sound_type') sound_type: string,
+    @Body('sound_name') sound_name: string,
+    @Body('speaker') speaker: string,
+  ) {
+    return this.resourceManagerService.updateSound(
+      project_id,
+      id,
+      file,
+      sound_type,
+      sound_name,
+      speaker,
+    );
+  }
+
+  // ? 사운드 리소스 끝 ////////////////////
 }

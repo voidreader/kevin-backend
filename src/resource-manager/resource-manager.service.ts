@@ -1265,13 +1265,94 @@ export class ResourceManagerService {
   }
 
   // * 사운드 삭제
-  async deleteSound(project_id: number, id: number) {}
+  async deleteSound(project_id: number, id: number) {
+    try {
+      await this.repSoundResource.delete({ id });
+      return this.getSoundList(project_id);
+    } catch (error) {
+      console.log(error);
+
+      throw new HttpException(
+        'failed to delete sound resource!',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  }
 
   // * 사운드 멀티 업로드
-  async uploadSounds() {}
+  async uploadSounds(
+    files: Array<Express.MulterS3.File>,
+    project_id: number,
+    sound_type: string,
+    speaker: string,
+  ) {
+    const list: SoundResource[] = [];
+
+    files.forEach((file) => {
+      const sound = this.repSoundResource.create({
+        sound_name: path.basename(
+          file.originalname,
+          path.extname(file.originalname),
+        ),
+        sound_url: file.location,
+        sound_key: file.key,
+        bucket: file.bucket,
+        sound_type,
+        speaker,
+        project_id,
+      });
+
+      list.push(sound);
+    }); // end of for
+
+    try {
+      await this.repSoundResource.save(list);
+      return this.getSoundList(project_id);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'fail to upload sound resource',
+        HttpStatus.BAD_REQUEST,
+        { description: error },
+      );
+    }
+  }
 
   // * 사운드 수정
-  async updateSound() {}
+  async updateSound(
+    project_id: number,
+    id: number,
+    file: Express.MulterS3.File,
+    sound_type: string,
+    sound_name: string,
+    speaker: string,
+  ) {
+    let sound = await this.repSoundResource.findOneBy({ id });
+    if (!sound) {
+      throw new HttpException('invalid sound id', HttpStatus.BAD_REQUEST);
+    }
+
+    sound.sound_type = sound_type;
+    sound.sound_name = sound_name;
+    sound.speaker = speaker;
+
+    if (file) {
+      const { location, key, bucket } = file;
+      sound.sound_url = location;
+      sound.sound_key = key;
+      sound.bucket = bucket;
+    }
+
+    try {
+      sound = await this.repSoundResource.save(sound);
+
+      return { isSuccess: true, update: sound };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException('failed to update sound', HttpStatus.BAD_REQUEST);
+    }
+  }
 
   // ? /////////////////////////////////////////////////
 }
