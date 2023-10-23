@@ -91,7 +91,7 @@ export class SoundListDto extends CoreOutput {
   list?: SoundResource[];
 }
 
-export class NametagCreateDto extends PartialType(Nametag) {}
+export class NametagCreateDto extends Nametag {}
 
 // export class UpdateBackgroundDto extends PartialType(Background) {}
 // export class UpdateMinicutDto extends PartialType(Minicut) {}

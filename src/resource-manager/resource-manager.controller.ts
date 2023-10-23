@@ -475,6 +475,14 @@ export class ResourceManagerController {
   }
 
   @Post(`/nametag/:project_id`)
+  createNametag(
+    @Param('project_id') project_id: number,
+    @Body() dto: NametagCreateDto,
+  ) {
+    return this.resourceManagerService.createNametag(project_id, dto);
+  }
+
+  @Patch(`/nametag/:project_id`)
   updateNametag(
     @Param('project_id') project_id: number,
     @Body() dto: NametagCreateDto,

@@ -1359,11 +1359,23 @@ export class ResourceManagerService {
 
   // * 네임태그 //////////////////////
 
+  setNametagColorCode(list: Nametag[]) {
+    list.forEach((item) => {
+      if (!item.main_color.includes('#'))
+        item.main_color = '#' + item.main_color;
+
+      if (!item.sub_color.includes('#')) item.sub_color = '#' + item.sub_color;
+    });
+  }
+
   async getNametags(project_id: number) {
     const list = await this.repNametag.find({
       where: { project_id },
       order: { speaker: 'ASC' },
     });
+
+    this.setNametagColorCode(list);
+
     return { isSuccess: true, list };
   }
 
@@ -1372,16 +1384,56 @@ export class ResourceManagerService {
     return this.getNametags(project_id);
   }
 
-  async updateNametag(project_id: number, dto: NametagCreateDto) {
+  async createNametag(project_id: number, dto: NametagCreateDto) {
     dto.project_id = project_id;
 
+    const updateNametag = this.repNametag.create(dto);
+    const originNametag = this.repNametag.create(dto);
+
+    updateNametag.main_color = updateNametag.main_color.replace('#', '');
+    updateNametag.sub_color = updateNametag.sub_color.replace('#', '');
+    console.log(`createNametag update : `, updateNametag);
+
     try {
-      const nametag: Nametag = await this.repNametag.save(dto);
+      const nametag: Nametag = await this.repNametag.save(updateNametag);
       const list = await this.repNametag.find({
         where: { project_id },
         order: { speaker: 'ASC' },
       });
-      return { isSuccess: true, update: nametag, list };
+
+      this.setNametagColorCode(list);
+
+      return { isSuccess: true, update: originNametag, list };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'The speaker name is duplicated',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+  async updateNametag(project_id: number, dto: NametagCreateDto) {
+    dto.project_id = project_id;
+
+    const updateNametag = this.repNametag.create(dto);
+    const originNametag = this.repNametag.create(dto);
+
+    updateNametag.main_color = updateNametag.main_color.replace('#', '');
+    updateNametag.sub_color = updateNametag.sub_color.replace('#', '');
+    console.log(`updateNametag update : `, updateNametag);
+
+    try {
+      await this.repNametag.update(
+        { project_id, speaker: dto.speaker },
+        { ...updateNametag },
+      );
+      const list = await this.repNametag.find({
+        where: { project_id },
+        order: { speaker: 'ASC' },
+      });
+
+      this.setNametagColorCode(list);
+      return { isSuccess: true, update: originNametag, list };
     } catch (error) {
       console.log(error);
       throw new HttpException(
