@@ -30,6 +30,7 @@ import {
   ModelListDto,
   ModelUpdateDto,
   ModelUpdateOutputDto,
+  NametagCreateDto,
   StaticImageDetailOutputDto,
   UpdateStaticImageDto,
 } from './dto/resource-manager.dto';
@@ -457,4 +458,28 @@ export class ResourceManagerController {
   }
 
   // ? 사운드 리소스 끝 ////////////////////
+
+  // * 네임태그 //////////////////////
+  @Get(`/nametag/:project_id`)
+  getNametags(@Param('project_id') project_id: number) {
+    return this.resourceManagerService.getNametags(project_id);
+  }
+
+  @Delete(`/nametag/:project_id`)
+  deleteNametag(
+    @Param('project_id') project_id: number,
+    @Body('speaker') speaker: string,
+  ) {
+    return this.resourceManagerService.deleteNametag(project_id, speaker);
+  }
+
+  @Post(`/nametag/:project_id`)
+  updateNametag(
+    @Param('project_id') project_id: number,
+    @Body() dto: NametagCreateDto,
+  ) {
+    return this.resourceManagerService.updateNametag(project_id, dto);
+  }
+
+  // ? //////////////////////////////
 }

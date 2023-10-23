@@ -22,6 +22,7 @@ import {
   ModelListDto,
   ModelUpdateDto,
   ModelUpdateOutputDto,
+  NametagCreateDto,
   StaticImageDetailOutputDto,
   StaticImageOutputDto,
   ThumbnailOutputDto,
@@ -1355,4 +1356,32 @@ export class ResourceManagerService {
   }
 
   // ? /////////////////////////////////////////////////
+
+  // * 네임태그 //////////////////////
+
+  async getNametags(project_id: number) {
+    const list = await this.repNametag.find({
+      where: { project_id },
+      order: { speaker: 'ASC' },
+    });
+    return { isSuccess: true, list };
+  }
+
+  async deleteNametag(project_id: number, speaker: string) {
+    await this.repNametag.delete({ project_id, speaker });
+    return this.getNametags(project_id);
+  }
+
+  async updateNametag(project_id: number, dto: NametagCreateDto) {
+    dto.project_id = project_id;
+
+    const nametag: Nametag = await this.repNametag.save(dto);
+    const list = await this.repNametag.find({
+      where: { project_id },
+      order: { speaker: 'ASC' },
+    });
+    return { isSuccess: true, update: nametag, list };
+  }
+
+  // ? ////////////////////////////////
 }
