@@ -1375,12 +1375,20 @@ export class ResourceManagerService {
   async updateNametag(project_id: number, dto: NametagCreateDto) {
     dto.project_id = project_id;
 
-    const nametag: Nametag = await this.repNametag.save(dto);
-    const list = await this.repNametag.find({
-      where: { project_id },
-      order: { speaker: 'ASC' },
-    });
-    return { isSuccess: true, update: nametag, list };
+    try {
+      const nametag: Nametag = await this.repNametag.save(dto);
+      const list = await this.repNametag.find({
+        where: { project_id },
+        order: { speaker: 'ASC' },
+      });
+      return { isSuccess: true, update: nametag, list };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'The speaker name is duplicated',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   // ? ////////////////////////////////
