@@ -10,6 +10,7 @@ import {
   UploadedFile,
   Put,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { ResourceManagerService } from './resource-manager.service';
 
@@ -468,7 +469,7 @@ export class ResourceManagerController {
   @Delete(`/nametag/:project_id`)
   deleteNametag(
     @Param('project_id') project_id: number,
-    @Body('speaker') speaker: string,
+    @Query('speaker') speaker: string,
   ) {
     return this.resourceManagerService.deleteNametag(project_id, speaker);
   }
