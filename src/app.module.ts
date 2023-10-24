@@ -35,6 +35,7 @@ import { PublicExtension } from './resource-manager/entities/public-extension.en
 import { LiveResource } from './resource-manager/entities/live-resource.entity';
 import { MigrationModule } from './migration/migration.module';
 import { LiveResourceDetail } from './resource-manager/entities/live-resource-detail.entity';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -113,6 +114,8 @@ import { LiveResourceDetail } from './resource-manager/entities/live-resource-de
     ResourceManagerModule,
 
     MigrationModule,
+
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
