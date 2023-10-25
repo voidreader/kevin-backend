@@ -20,7 +20,7 @@ export class Profile extends CoreDeployEntity {
   @Column({ comment: '나이', default: 0 })
   profile_age: number;
 
-  @Column({ comment: '생년월일' })
+  @Column({ comment: '생년월일', default: null, nullable: true })
   profile_birth_date: Date;
 
   // 프로필 : 좋아하는것, 싫어하는것, 소개, 기타
