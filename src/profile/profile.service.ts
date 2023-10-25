@@ -17,11 +17,69 @@ export class ProfileService {
     private readonly repAbility: Repository<Ability>,
   ) {}
 
+  // * 프로필 정리 (조회용도)
+  arrangeProfileForSelect(profile: Profile) {
+    // 프론트엔드에서는 각각 구역을 나눠보여주기 때문에 분리한다.
+    profile.favorite_localizations = [];
+    profile.dislike_localizations = [];
+    profile.introduce_localizations = [];
+    profile.etc_localizations = [];
+
+    profile.localizations.forEach((lang) => {
+      if (lang.text_type == 'favorite')
+        profile.favorite_localizations.push(lang);
+      else if (lang.text_type == 'dislike')
+        profile.dislike_localizations.push(lang);
+      else if (lang.text_type == 'introduce')
+        profile.introduce_localizations.push(lang);
+      else if (lang.text_type == 'etc') profile.etc_localizations.push(lang);
+    });
+  }
+
+  // * 프로필 정리 (저장용도)
+  arrangeProfileForSave(profile: Profile) {
+    // 프론트엔드에서는 각각 구역을 나눠보여주기 때문에 분리한다.
+    profile.favorite_localizations = [];
+    profile.dislike_localizations = [];
+    profile.introduce_localizations = [];
+    profile.etc_localizations = [];
+
+    // 순차적으로 localization array 에 추가하기
+    if (profile.favorite_localizations) {
+      profile.favorite_localizations.forEach((lang) => {
+        if (!profile.localizations.includes(lang))
+          profile.localizations.push(lang);
+      });
+    }
+    if (profile.dislike_localizations) {
+      profile.dislike_localizations.forEach((lang) => {
+        if (!profile.localizations.includes(lang))
+          profile.localizations.push(lang);
+      });
+    }
+    if (profile.introduce_localizations) {
+      profile.introduce_localizations.forEach((lang) => {
+        if (!profile.localizations.includes(lang))
+          profile.localizations.push(lang);
+      });
+    }
+    if (profile.etc_localizations) {
+      profile.etc_localizations.forEach((lang) => {
+        if (!profile.localizations.includes(lang))
+          profile.localizations.push(lang);
+      });
+    }
+  }
+
   // * 등장인물 리스트
   async getProfileList(project_id: number): Promise<ProfileListOutputDto> {
     const list = await this.repProfile.find({
       where: { project_id },
       order: { speaker: 'ASC' },
+    });
+
+    list.forEach((profile) => {
+      this.arrangeProfileForSelect(profile);
     });
 
     return { isSuccess: true, list };
