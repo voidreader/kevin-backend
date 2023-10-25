@@ -37,7 +37,7 @@ export class ProfileService {
   }
 
   // * 프로필 정리 (저장용도)
-  arrangeProfileForSave(profile: Profile) {
+  arrangeProfileForSave(profile: ProfileUpdateInputDto) {
     // 프론트엔드에서는 각각 구역을 나눠보여주기 때문에 분리한다.
     profile.favorite_localizations = [];
     profile.dislike_localizations = [];
@@ -124,7 +124,9 @@ export class ProfileService {
   // * 프로필 업데이트
   async updateProfile(project_id: number, dto: ProfileUpdateInputDto) {
     try {
+      this.arrangeProfileForSave(dto);
       const profile = await this.repProfile.save(dto);
+
       return { isSuccess: true, update: profile };
     } catch (error) {
       console.log(error);
