@@ -4,7 +4,11 @@ import { Ability } from 'src/database/produce_entity/ability.entity';
 import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Profile } from 'src/database/produce_entity/profile.entity';
 import { Repository } from 'typeorm';
-import { ProfileListOutputDto, ProfileUpdateInputDto } from './dto/profile.dto';
+import {
+  AbilityUpdateInputDto,
+  ProfileListOutputDto,
+  ProfileUpdateInputDto,
+} from './dto/profile.dto';
 
 @Injectable()
 export class ProfileService {
@@ -34,15 +38,15 @@ export class ProfileService {
         profile.introduce_localizations.push(lang);
       else if (lang.text_type == 'etc') profile.etc_localizations.push(lang);
     });
+
+    profile.abilities.forEach((ability) => {
+      ability.profile_id = profile.id;
+    });
   }
 
   // * 프로필 정리 (저장용도)
   arrangeProfileForSave(profile: ProfileUpdateInputDto) {
-    // 프론트엔드에서는 각각 구역을 나눠보여주기 때문에 분리한다.
-    profile.favorite_localizations = [];
-    profile.dislike_localizations = [];
-    profile.introduce_localizations = [];
-    profile.etc_localizations = [];
+    profile.localizations = [];
 
     // 순차적으로 localization array 에 추가하기
     if (profile.favorite_localizations) {
@@ -121,17 +125,120 @@ export class ProfileService {
     }
   }
 
-  // * 프로필 업데이트
+  // * 프로필 업데이트 (프로필 라인과 프로필 정보)
   async updateProfile(project_id: number, dto: ProfileUpdateInputDto) {
     try {
       this.arrangeProfileForSave(dto);
+
+      console.log(`updateProfile : `, dto);
+
       const profile = await this.repProfile.save(dto);
+      this.arrangeProfileForSelect(profile);
 
       return { isSuccess: true, update: profile };
     } catch (error) {
       console.log(error);
       throw new HttpException(
         'failed to update a profile!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async createAbility(
+    project_id: number,
+    profile_id: number,
+    dto: AbilityUpdateInputDto,
+  ) {
+    try {
+      const newAbility = this.repAbility.create(dto);
+      let profile = await this.repProfile.findOneBy({ id: profile_id });
+      profile.abilities.push(newAbility);
+
+      profile = await this.repProfile.save(profile);
+      this.arrangeProfileForSelect(profile);
+
+      const list = await this.repProfile.find({
+        where: { project_id },
+        order: { speaker: 'ASC' },
+      });
+
+      list.forEach((profile) => {
+        this.arrangeProfileForSelect(profile);
+      });
+
+      return { isSuccess: true, list, update: profile };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'failed to create an ability!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async updateAbility(
+    project_id: number,
+    profile_id: number,
+    dto: AbilityUpdateInputDto,
+  ) {
+    try {
+      console.log(`updateAbility start`);
+
+      const newAbility = this.repAbility.create(dto);
+      let targetProfile = await this.repProfile.findOneBy({ id: profile_id });
+
+      console.log(newAbility);
+      newAbility.profile = targetProfile;
+
+      // 능력 저장
+      await this.repAbility.save(newAbility);
+
+      const list = await this.repProfile.find({
+        where: { project_id },
+        order: { speaker: 'ASC' },
+      });
+
+      list.forEach((profile) => {
+        this.arrangeProfileForSelect(profile);
+
+        if (profile.id == profile_id) targetProfile = profile;
+      });
+
+      return { isSuccess: true, list, update: targetProfile };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'failed to update an ability!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async deleteAbility(
+    project_id: number,
+    profile_id: number,
+    ability_id: number,
+  ) {
+    try {
+      await this.repAbility.delete({ ability_id });
+
+      const profile = await this.repProfile.findOneBy({ id: profile_id });
+      this.arrangeProfileForSelect(profile);
+      const list = await this.repProfile.find({
+        where: { project_id },
+        order: { speaker: 'ASC' },
+      });
+
+      list.forEach((profile) => {
+        this.arrangeProfileForSelect(profile);
+      });
+
+      return { isSuccess: true, list, update: profile };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'failed to delete an ability!',
         HttpStatus.BAD_REQUEST,
       );
     }

@@ -54,4 +54,7 @@ export class Ability {
     cascade: true,
   })
   localizations: AbilityLang[];
+
+  // 서브 그리드에서 필요
+  profile_id: number;
 }

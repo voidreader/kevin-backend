@@ -8,7 +8,11 @@ import {
   Post,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { ProfileListOutputDto, ProfileUpdateInputDto } from './dto/profile.dto';
+import {
+  AbilityUpdateInputDto,
+  ProfileListOutputDto,
+  ProfileUpdateInputDto,
+} from './dto/profile.dto';
 
 @Controller('profile')
 export class ProfileController {
@@ -41,5 +45,37 @@ export class ProfileController {
     @Body() dto: ProfileUpdateInputDto,
   ) {
     return this.profileService.updateProfile(project_id, dto);
+  }
+
+  @Post(`/:project_id/:profile_id/ability`)
+  createAbility(
+    @Param('project_id') project_id: number,
+    @Param('profile_id') profile_id: number,
+    @Body() dto: AbilityUpdateInputDto,
+  ) {
+    return this.profileService.createAbility(project_id, profile_id, dto);
+  }
+
+  @Patch(`/:project_id/:profile_id/ability/:ability_id`)
+  updateAbility(
+    @Param('project_id') project_id: number,
+    @Param('profile_id') profile_id: number,
+    @Param('ability_id') ability_id: number,
+    @Body() dto: AbilityUpdateInputDto,
+  ) {
+    return this.profileService.updateAbility(project_id, profile_id, dto);
+  }
+
+  @Delete(`/:project_id/:profile_id/ability/:ability_id`)
+  deleteAbility(
+    @Param('project_id') project_id: number,
+    @Param('profile_id') profile_id: number,
+    @Param('ability_id') ability_id: number,
+  ) {
+    return this.profileService.deleteAbility(
+      project_id,
+      profile_id,
+      ability_id,
+    );
   }
 }
