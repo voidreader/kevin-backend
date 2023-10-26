@@ -48,4 +48,20 @@ export class CommonController {
       return [];
     }
   }
+
+  @Get(`/profile/:project_id/:type/:arg`)
+  getProfileDropdown(
+    @Param('project_id') project_id: number,
+    @Param('type') data_type: string,
+    @Param('arg') arg: string,
+  ) {
+    if (data_type == 'motion') {
+      return this.commonService.getProjectCharacterMotionDropdown(
+        project_id,
+        arg,
+      );
+    } else {
+      return [];
+    }
+  }
 }

@@ -378,13 +378,14 @@ export class MigrationService {
     });
 
     try {
-      await this.repEpisode.save(produceEpisodes);
-      await this.repScript.save(produceScripts);
-      await this.repSelection.save(produceSelections);
+      await this.repEpisode.remove(produceEpisodes);
+      await this.repScript.remove(produceScripts);
+      await this.repSelection.remove(produceSelections);
     } catch (error) {
       console.log(error);
       throw new HttpException('삭제하다 에러남!', HttpStatus.BAD_REQUEST);
     }
+    console.log('기존 데이터 (에피소드, 스크립트, 선택지) 삭제 완료');
 
     let totalEpisode: number = 0;
     let totalScriptRow: number = 0;

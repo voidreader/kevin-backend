@@ -69,6 +69,21 @@ export class CommonService {
 
   getProjectCharacterModel(project_id: number, speaker: string) {}
 
+  // * 프로젝트 캐릭터 모션
+  getProjectCharacterMotionDropdown(project_id: number, speaker: string) {
+    return this.dataSource.query(`
+    SELECT DISTINCT b.motion_name code
+         , b.motion_name code_name
+      FROM model a
+        , model_slave b 
+    WHERE a.model_name = '${speaker}' 
+      AND a.project_id = ${project_id}
+      AND b.model_id = b.model_id  
+      AND b.is_motion > 0
+ ;
+    `);
+  }
+
   // * 프로젝트 에피소드 dropdown (DLC 제외)
   getProjectEpisodeDropdown(project_id: number, dlc_id: number): Promise<any> {
     return this.dataSource.query(`
