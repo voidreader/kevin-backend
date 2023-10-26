@@ -6,6 +6,9 @@ import {
   Param,
   Patch,
   Post,
+  Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import {
@@ -13,6 +16,7 @@ import {
   ProfileListOutputDto,
   ProfileUpdateInputDto,
 } from './dto/profile.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('profile')
 export class ProfileController {
@@ -64,6 +68,17 @@ export class ProfileController {
     @Body() dto: AbilityUpdateInputDto,
   ) {
     return this.profileService.updateAbility(project_id, profile_id, dto);
+  }
+
+  @Put(`/:project_id/:profile_id/ability/:ability_id`)
+  @UseInterceptors(FileInterceptor('file'))
+  updateAbilityIcon(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('profile_id') profile_id: number,
+    @Param('ability_id') ability_id: number,
+  ) {
+    return this.profileService.updateAbilityIcon(file, ability_id);
   }
 
   @Delete(`/:project_id/:profile_id/ability/:ability_id`)

@@ -242,5 +242,39 @@ export class ProfileService {
         HttpStatus.BAD_REQUEST,
       );
     }
+  } // ? END deleteAbility
+
+  async updateAbilityIcon(file: Express.MulterS3.File, ability_id: number) {
+    console.log(`updateAbilityIcon called : `, file);
+
+    if (!file) {
+      throw new HttpException('Invalid file!', HttpStatus.BAD_REQUEST);
+    }
+
+    const ability = await this.repAbility.findOneBy({ ability_id });
+    const { location, key, bucket } = file;
+
+    if (!ability) {
+      throw new HttpException('Invalid ability ID!', HttpStatus.BAD_REQUEST);
+    }
+
+    ability.icon_url = location;
+    ability.icon_key = key;
+    ability.bucket = bucket;
+
+    try {
+      await this.repAbility.save(ability);
+      return {
+        isSuccess: true,
+        icon_url: location,
+        icon_key: key,
+        bucket,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'failed to save ability icon!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }
