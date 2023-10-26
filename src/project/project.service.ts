@@ -24,10 +24,10 @@ import {
   Episode,
   EpisodeTypeEnum,
 } from 'src/database/produce_entity/episode.entity';
-import { Script } from 'vm';
 import { EpisodeDetail } from 'src/database/produce_entity/episode-detail.entity';
 import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { Script } from 'src/database/produce_entity/script.entity';
 
 @Injectable()
 export class ProjectService {
@@ -529,5 +529,46 @@ export class ProjectService {
     }
 
     return iconURL;
+  }
+
+  // * Script 관련 로직
+  async getScript(project_id: number, episode_id: number, lang: string) {
+    console.log(`getScript : ${project_id}/ ${episode_id} / ${lang}`);
+
+    const list: Script[] = await this.dataSource.query(`
+    SELECT a.script_no
+      , a.scene_id 
+      , fn_get_standard_name('script_template', a.template) template
+      , a.speaker 
+      , a.script_data 
+      , a.target_scene_id 
+      , a.requisite 
+      , a.character_expression 
+      , a.emoticon_expression 
+      , fn_get_standard_name('in_effect', a.in_effect) in_effect
+      , fn_get_standard_name('out_effect', a.out_effect) out_effect
+      , a.bubble_size 
+      , a.bubble_pos 
+      , a.bubble_hold 
+      , a.bubble_reverse 
+      , a.emoticon_size 
+      , a.voice 
+      , a.autoplay_row 
+      , a.sound_effect
+      , a.control
+      , a.selection_group
+      , a.selection_no 
+      , a.dev_comment 
+      , a.project_id 
+      , a.episode_id
+      , a.lang
+      FROM script a
+      WHERE a.project_id = ${project_id}
+      AND a.episode_id = ${episode_id}
+      AND a.lang = '${lang}'
+      ORDER BY a.script_no;  
+    `);
+
+    return { isSuccess: true, script: list };
   }
 }

@@ -11,6 +11,7 @@ import {
   Put,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import {
@@ -158,5 +159,14 @@ export class ProjectController {
     return this.projectService.updateEpisodeSorting(inputDto);
     // return 'ok';
     // return this.updateEpisodeSorting(inputDto);
+  }
+
+  @Get(`/:project_id/script/:episode_id`)
+  getScript(
+    @Param('project_id') project_id: number,
+    @Param('episode_id') episode_id: number,
+    @Query('lang') lang: string,
+  ) {
+    return this.projectService.getScript(project_id, episode_id, lang);
   }
 }
