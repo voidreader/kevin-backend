@@ -64,4 +64,9 @@ export class CommonController {
       return [];
     }
   }
+
+  @Get(`/script/template`)
+  getScriptTemplateList(@Query('lang') lang: string) {
+    return this.commonService.getScriptTemplateList(lang);
+  }
 }

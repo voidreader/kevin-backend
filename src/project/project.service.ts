@@ -569,6 +569,8 @@ export class ProjectService {
       ORDER BY a.script_no;  
     `);
 
+    // console.log(list);
+
     return { isSuccess: true, script: list };
   }
 }

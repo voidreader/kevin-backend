@@ -97,4 +97,14 @@ export class CommonService {
     ORDER BY e.dlc_id, e.episode_type , e.chapter_number;
     `);
   }
+
+  getScriptTemplateList(lang: string) {
+    return this.dataSource.query(`
+    SELECT si.code
+         , si.code_name
+         , si.extra
+         , si.sortkey
+      FROM standard_info si  WHERE si.standard_class = 'script_template' ORDER BY  extra, sortkey ;
+    `);
+  }
 }
