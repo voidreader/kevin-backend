@@ -4,6 +4,7 @@ import {
   CreateProjectInputDto,
   EpisodeListOutputDto,
   ProjectOutputDto,
+  SaveScriptDto,
   SingleProjectOutputDto,
   UpdateEpisodeSortingInputDto,
   UpdateProjectInputDto,
@@ -572,5 +573,15 @@ export class ProjectService {
     // console.log(list);
 
     return { isSuccess: true, script: list };
+  }
+
+  // * 스크립트 저장
+  async saveScript(
+    project_id: number,
+    episode_id: number,
+    lang: string,
+    dto: SaveScriptDto,
+  ) {
+    return [];
   }
 }

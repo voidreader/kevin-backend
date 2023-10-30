@@ -19,6 +19,7 @@ import {
   CreateProjectInputDto,
   EpisodeListOutputDto,
   ProjectOutputDto,
+  SaveScriptDto,
   SingleProjectOutputDto,
   UpdateEpisodeDto,
   UpdateEpisodeSortingInputDto,
@@ -168,5 +169,15 @@ export class ProjectController {
     @Query('lang') lang: string,
   ) {
     return this.projectService.getScript(project_id, episode_id, lang);
+  }
+
+  @Post(`/:project_id/script/:episode_id`)
+  saveScript(
+    @Param('project_id') project_id: number,
+    @Param('episode_id') episode_id: number,
+    @Query('lang') lang: string,
+    @Body() dto: SaveScriptDto,
+  ) {
+    return this.projectService.saveScript(project_id, episode_id, lang, dto);
   }
 }

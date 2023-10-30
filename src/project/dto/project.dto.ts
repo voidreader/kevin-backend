@@ -6,6 +6,7 @@ import {
 } from 'src/database/produce_entity/episode.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
+import { Script } from 'src/database/produce_entity/script.entity';
 
 // 프로젝스 생성 DTO
 export class CreateProjectInputDto extends PickType(Project, [
@@ -43,4 +44,8 @@ export class EpisodeListOutputDto extends CoreOutput {
 
 export class UpdateEpisodeSortingInputDto {
   episodes: Episode[];
+}
+
+export class SaveScriptDto {
+  script: Script[];
 }

@@ -98,6 +98,7 @@ export class CommonService {
     `);
   }
 
+  // 스크립트 편집기에서 사용하는 템플릿 리스트
   getScriptTemplateList(lang: string) {
     return this.dataSource.query(`
     SELECT si.code
@@ -105,6 +106,39 @@ export class CommonService {
          , si.extra
          , si.sortkey
       FROM standard_info si  WHERE si.standard_class = 'script_template' ORDER BY  extra, sortkey ;
+    `);
+  }
+
+  getScriptMotionList(project_id: number) {
+    return this.dataSource.query(`
+    SELECT a.model_name , ms.motion_name 
+      FROM model a
+        , model_slave ms 
+    WHERE a.project_id = ${project_id}
+      AND ms.model_id = a.model_id
+      AND ms.is_motion > 0
+      AND ms.motion_name NOT LIKE '%_M'
+    ORDER BY a.model_name, ms.motion_name
+    ;
+    `);
+  }
+
+  getScriptSpeakerList(project_id: number) {
+    return this.dataSource.query(`
+    SELECT z.speaker, z.data_source
+      FROM (
+    SELECT a.speaker 
+        , 'profile' data_source
+      FROM profile a 
+    WHERE a.project_id = ${project_id}
+    UNION all 
+    SELECT n.speaker
+        , 'tag' data_source
+      FROM nametag n
+    WHERE n.project_id = ${project_id}
+    ) z
+    ORDER BY z.data_source, z.speaker
+    ;
     `);
   }
 }

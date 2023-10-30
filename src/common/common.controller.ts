@@ -69,4 +69,14 @@ export class CommonController {
   getScriptTemplateList(@Query('lang') lang: string) {
     return this.commonService.getScriptTemplateList(lang);
   }
+
+  @Get(`/script/motion/:project_id`)
+  getScriptMotionList(@Param('project_id') project_id: number) {
+    return this.commonService.getScriptMotionList(project_id);
+  }
+
+  @Get(`/script/speaker/:project_id`)
+  getScriptSpeakerList(@Param('project_id') project_id: number) {
+    return this.commonService.getScriptSpeakerList(project_id);
+  }
 }
