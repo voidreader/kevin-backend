@@ -18,6 +18,7 @@ import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity
 import { EpisodeDetail } from 'src/database/produce_entity/episode-detail.entity';
 import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { StandardInfo } from 'src/common/entities/standard-info.entity';
 
 @Module({
   //imports: [DatabaseModule],
@@ -31,6 +32,7 @@ import { DiscardResource } from 'src/resource-manager/entities/discard-resource.
       EpisodeDetail,
       EpisodeExtension,
       DiscardResource,
+      StandardInfo,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

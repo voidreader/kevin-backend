@@ -468,8 +468,8 @@ export class MigrationService {
         , a.requisite 
         , a.character_expression 
         , a.emoticon_expression 
-        , a.in_effect 
-        , a.out_effect 
+        , ifnull(a.in_effect, '') in_effect
+        , ifnull(a.out_effect, '') out_effect
         , a.bubble_size 
         , a.bubble_pos 
         , a.bubble_hold 

@@ -29,6 +29,7 @@ import { EpisodeDetail } from 'src/database/produce_entity/episode-detail.entity
 import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
+import { StandardInfo } from 'src/common/entities/standard-info.entity';
 
 @Injectable()
 export class ProjectService {
@@ -49,6 +50,8 @@ export class ProjectService {
     private readonly repScript: Repository<Script>,
     @InjectRepository(DiscardResource)
     private readonly repDiscard: Repository<DiscardResource>,
+    @InjectRepository(StandardInfo)
+    private readonly repStandardInfo: Repository<StandardInfo>,
   ) {}
 
   // * 신규 에피소드 생성
@@ -546,8 +549,8 @@ export class ProjectService {
       , a.requisite 
       , a.character_expression 
       , a.emoticon_expression 
-      , fn_get_standard_name('in_effect', a.in_effect) in_effect
-      , fn_get_standard_name('out_effect', a.out_effect) out_effect
+      , ifnull(fn_get_standard_name('in_effect', a.in_effect), '') in_effect
+      , ifnull(fn_get_standard_name('out_effect', a.out_effect), '') out_effect
       , a.bubble_size 
       , a.bubble_pos 
       , a.bubble_hold 
@@ -582,6 +585,57 @@ export class ProjectService {
     lang: string,
     dto: SaveScriptDto,
   ) {
+    // template 컬럼을 코드값으로 변경.
+    const templateList = await this.repStandardInfo.find({
+      where: { standard_class: 'script_template' },
+    });
+
+    const inEffectList = await this.repStandardInfo.find({
+      where: { standard_class: 'in_effect' },
+    });
+
+    const outEffectList = await this.repStandardInfo.find({
+      where: { standard_class: 'out_effect' },
+    });
+
+    // forEach..
+    dto.script.forEach((row) => {
+      // 기본값 재설정
+      // in & out effect
+      if (row.in_effect == '') row.in_effect = null;
+      if (row.out_effect == '') row.out_effect = null;
+
+      // template
+      for (let i = 0; i < templateList.length; i++) {
+        if (row.template == templateList[i].code_name) {
+          row.template = templateList[i].code;
+          break;
+        }
+      }
+
+      if (row.in_effect) {
+        // in_effect
+        for (let i = 0; i < inEffectList.length; i++) {
+          if (row.in_effect == inEffectList[i].code_name) {
+            row.in_effect = inEffectList[i].code;
+            break;
+          }
+        }
+      }
+
+      if (row.out_effect) {
+        // out_effect
+        for (let i = 0; i < outEffectList.length; i++) {
+          if (row.out_effect == outEffectList[i].code_name) {
+            row.out_effect = outEffectList[i].code;
+            break;
+          }
+        }
+      }
+    }); // ? end forEach
+
+    console.log(dto.script);
+
     return [];
   }
 }
