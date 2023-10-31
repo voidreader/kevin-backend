@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
   CreateEpisodeDto,
   CreateProjectInputDto,
@@ -585,6 +585,10 @@ export class ProjectService {
     lang: string,
     dto: SaveScriptDto,
   ) {
+    console.log(`saveScript : ${project_id} / ${episode_id} / ${lang}`);
+    const queryRunner = await this.dataSource.createQueryRunner();
+    const saveScripts: Script[] = [];
+
     // template 컬럼을 코드값으로 변경.
     const templateList = await this.repStandardInfo.find({
       where: { standard_class: 'script_template' },
@@ -600,10 +604,18 @@ export class ProjectService {
 
     // forEach..
     dto.script.forEach((row) => {
+      row.project_id = project_id;
+      row.episode_id = episode_id;
+      row.lang = lang;
+
       // 기본값 재설정
       // in & out effect
-      if (row.in_effect == '') row.in_effect = null;
-      if (row.out_effect == '') row.out_effect = null;
+      if (!row.in_effect) row.in_effect = '';
+      if (!row.out_effect) row.out_effect = '';
+
+      // if (isNaN(row.bubble_size)) row.bubble_size = null;
+      // if (isNaN(row.bubble_pos)) row.bubble_pos = null;
+      // if (isNaN(row.bubble_hold)) row.bubble_hold = null;
 
       // template
       for (let i = 0; i < templateList.length; i++) {
@@ -632,10 +644,35 @@ export class ProjectService {
           }
         }
       }
+
+      saveScripts.push(this.repScript.create(row));
     }); // ? end forEach
 
-    console.log(dto.script);
+    // console.log(dto.script);
+    try {
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
 
-    return [];
+      console.log(`save script with ${saveScripts.length} rows`);
+      console.log(saveScripts);
+      // await this.repScript.save(saveScripts);
+
+      await queryRunner.manager.delete(Script, { episode_id, lang });
+      await queryRunner.manager.save(saveScripts);
+
+      await queryRunner.commitTransaction();
+
+      return { isSuccess: true };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.log(error);
+
+      throw new HttpException(
+        { error, message: '스크립트 저장 실패' },
+        HttpStatus.BAD_REQUEST,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

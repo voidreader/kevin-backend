@@ -6,6 +6,8 @@ import * as express from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as https from 'https';
 import * as http from 'http';
+import { urlencoded, json } from 'body-parser';
+import { HttpExceptionFilter } from './util/http-exception.filter';
 
 console.log(`__dirname :: `, __dirname);
 
@@ -20,6 +22,9 @@ async function bootstrap() {
   const server = express();
 
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ limit: '50mb', extended: true }));
 
   app.enableCors({
     origin: true,
