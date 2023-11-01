@@ -44,6 +44,10 @@ export class CommonController {
       return this.commonService.getProjectEpisodeDropdown(project_id, dlc_id);
     } else if (data_type == 'character') {
       return this.commonService.getProjectCharacterDropdown(project_id);
+    } else if (data_type == 'minicut') {
+      return this.commonService.getProjectMinicutList(project_id);
+    } else if (data_type == 'bg') {
+      return this.commonService.getProjectBackgroundDropdown(project_id);
     } else if (data_type == 'coupon') {
       return [];
     }

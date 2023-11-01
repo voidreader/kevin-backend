@@ -152,4 +152,23 @@ WHERE p.project_id = ${project_id}
  AND a.profile_id = p.id;
     `);
   }
+
+  getProjectMinicutList(project_id: number) {
+    return this.dataSource.query(`
+    SELECT ssi.id code
+     , ssi.image_name code_name
+  FROM story_static_image ssi 
+ WHERE ssi.project_id = ${project_id}
+   AND ssi.image_type = 'minicut';
+    `);
+  }
+  getProjectBackgroundDropdown(project_id: number) {
+    return this.dataSource.query(`
+    SELECT ssi.id code
+    , ssi.image_name code_name
+ FROM story_static_image ssi 
+WHERE ssi.project_id = ${project_id}
+  AND ssi.image_type = 'bg';
+    `);
+  }
 }
