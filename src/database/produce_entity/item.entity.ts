@@ -1,12 +1,14 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
   VersionColumn,
 } from 'typeorm';
@@ -70,6 +72,9 @@ export class Item extends CoreDeployEntity {
   ability_id: number;
   @Column({ comment: '능력 증감 수치', default: 0 })
   ability_value: number;
+
+  @DeleteDateColumn({ select: false })
+  deleted_at: Date;
 
   @OneToMany((type) => ItemLang, (itemLang) => itemLang.item, {
     eager: true,

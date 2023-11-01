@@ -37,6 +37,7 @@ import { MigrationModule } from './migration/migration.module';
 import { LiveResourceDetail } from './resource-manager/entities/live-resource-detail.entity';
 import { ProfileModule } from './profile/profile.module';
 import { AssetStockModule } from './asset-stock/asset-stock.module';
+import { ItemModule } from './item/item.module';
 
 @Module({
   imports: [
@@ -119,6 +120,8 @@ import { AssetStockModule } from './asset-stock/asset-stock.module';
     ProfileModule,
 
     AssetStockModule,
+
+    ItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

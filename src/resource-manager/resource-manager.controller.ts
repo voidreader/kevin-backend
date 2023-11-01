@@ -35,8 +35,6 @@ import {
   StaticImageDetailOutputDto,
   UpdateStaticImageDto,
 } from './dto/resource-manager.dto';
-import { Model } from 'src/database/produce_entity/model.entity';
-import { ReturningStatementNotSupportedError } from 'typeorm';
 
 @Controller('resource-manager')
 export class ResourceManagerController {
