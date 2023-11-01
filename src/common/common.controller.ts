@@ -60,6 +60,8 @@ export class CommonController {
         project_id,
         arg,
       );
+    } else if (data_type == 'ability') {
+      return this.commonService.getProjectAbilityList(project_id);
     } else {
       return [];
     }

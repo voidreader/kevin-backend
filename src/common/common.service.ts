@@ -141,4 +141,15 @@ export class CommonService {
     ;
     `);
   }
+
+  getProjectAbilityList(project_id: number) {
+    return this.dataSource.query(`
+    SELECT a.ability_id 
+   , CONCAT('[', p.speaker, '] ', a.ability_name) AS ability_name
+FROM ability a
+   , profile p 
+WHERE p.project_id = ${project_id}
+ AND a.profile_id = p.id;
+    `);
+  }
 }

@@ -45,4 +45,10 @@ export class ItemService {
       throw new HttpException(error, HttpStatus.BAD_REQUEST);
     }
   }
+
+  // * 아이콘 이미지 변경
+  async changeItemIcon() {}
+  async changeItemImage() {}
+
+  async editItemInfo() {}
 }
