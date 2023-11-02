@@ -14,6 +14,7 @@ import {
 import { Item } from './item.entity';
 import { IsIn } from 'class-validator';
 import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
+import { LocalDateTimeTransformer } from 'src/util/time-transformer';
 
 // * 아이템의 확장 정보 (판매 등의 정보)
 
@@ -28,9 +29,17 @@ export class ItemExtension extends CoreEntity {
   @Column({ default: 0, comment: '할인 가격' })
   sale_price: number;
 
-  @Column({ default: () => 'CURRENT_TIMESTAMP', comment: '세일 시작 일시' })
+  @Column({
+    default: () => 'CURRENT_TIMESTAMP',
+    comment: '세일 시작 일시',
+    transformer: new LocalDateTimeTransformer(),
+  })
   sale_start_date: Date;
-  @Column({ default: '9999-12-31', comment: '세일 종료 일시' })
+  @Column({
+    default: '9999-12-31',
+    comment: '세일 종료 일시',
+    transformer: new LocalDateTimeTransformer(),
+  })
   sale_end_date: Date;
 
   @Column({ type: 'boolean', default: true })

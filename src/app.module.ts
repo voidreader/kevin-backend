@@ -68,6 +68,7 @@ import { ItemModule } from './item/item.module';
       ],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
       logging: false,
+      timezone: 'local',
     }),
     TypeOrmModule.forRoot({
       name: 'game',
@@ -80,6 +81,7 @@ import { ItemModule } from './item/item.module';
       entities: [__dirname + '/gamedb/**/*.entity.*'],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
       logging: process.env.NODE_ENV !== 'prod',
+      timezone: 'local',
     }),
 
     // TypeOrmModule.forRoot({
