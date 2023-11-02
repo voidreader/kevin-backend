@@ -19,7 +19,7 @@ import { StoryStaticImage } from 'src/resource-manager/entities/story-static-ima
 
 @Entity()
 export class ItemExtension extends CoreEntity {
-  @Column({ length: 30, comment: '제품 판매 형태' })
+  @Column({ length: 30, comment: '제품 판매 형태', default: 'free' })
   product_type: string;
 
   @Column({ default: 0 })

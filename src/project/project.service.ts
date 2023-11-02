@@ -662,7 +662,7 @@ export class ProjectService {
 
       await queryRunner.commitTransaction();
 
-      return { isSuccess: true };
+      return this.getScript(project_id, episode_id, lang);
     } catch (error) {
       await queryRunner.rollbackTransaction();
       console.log(error);

@@ -123,6 +123,16 @@ export class CommonService {
     `);
   }
 
+  getScripEmoticonList(project_id: number) {
+    return this.dataSource.query(`
+    SELECT e.speaker, es.image_name AS emoticon
+    FROM emoticon e
+       , emoticon_slave es 
+   WHERE e.project_id = ${project_id}
+     AND es.master_id = e.id;
+    `);
+  }
+
   getScriptSpeakerList(project_id: number) {
     return this.dataSource.query(`
     SELECT z.speaker, z.data_source
@@ -171,4 +181,51 @@ WHERE ssi.project_id = ${project_id}
   AND ssi.image_type = 'bg';
     `);
   }
+
+  // * 한방에 가져오기...
+  async getScriptResourceInfo(project_id: number) {
+    // * 캐릭터, 이모티콘, 모션, static images
+    const [speakers, emoticons, motions, images] = await Promise.all([
+      this.dataSource.query(`
+    SELECT z.speaker, z.data_source
+      FROM (
+            SELECT a.speaker 
+                , 'profile' data_source
+              FROM profile a 
+            WHERE a.project_id = ${project_id}
+            UNION all 
+            SELECT n.speaker
+                , 'tag' data_source
+              FROM nametag n
+            WHERE n.project_id = ${project_id}
+            ) z
+    ORDER BY z.data_source, z.speaker;`),
+      this.dataSource.query(`
+    SELECT e.speaker, es.image_name AS emoticon
+      FROM emoticon e
+        , emoticon_slave es 
+    WHERE e.project_id = ${project_id}
+      AND es.master_id = e.id;`),
+
+      this.dataSource.query(`
+      SELECT a.model_name , ms.motion_name 
+        FROM model a
+          , model_slave ms 
+      WHERE a.project_id = ${project_id}
+        AND ms.model_id = a.model_id
+        AND ms.is_motion > 0
+        AND ms.motion_name NOT LIKE '%_M'
+      ORDER BY a.model_name, ms.motion_name;`),
+
+      this.dataSource.query(`
+        SELECT ssi.image_name
+             , ssi.image_type
+        FROM story_static_image ssi 
+        WHERE ssi.project_id = ${project_id}
+          AND ssi.image_type in ('bg', 'minicut', 'illust');
+        `),
+    ]);
+
+    return { speakers, emoticons, motions, images };
+  } // ? END getScriptResourceInfo
 }

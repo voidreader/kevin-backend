@@ -85,4 +85,14 @@ export class CommonController {
   getScriptSpeakerList(@Param('project_id') project_id: number) {
     return this.commonService.getScriptSpeakerList(project_id);
   }
+
+  @Get(`/script/emoticon/:project_id`)
+  getScripEmoticonList(@Param('project_id') project_id: number) {
+    return this.commonService.getScripEmoticonList(project_id);
+  }
+
+  @Get(`/script/resources/:project_id`)
+  getScriptResources(@Param('project_id') project_id: number) {
+    return this.commonService.getScriptResourceInfo(project_id);
+  }
 }
