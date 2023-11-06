@@ -65,6 +65,7 @@ import { Nametag } from 'src/database/produce_entity/nametag.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
 import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
+import { LiveLocalization } from 'src/database/produce_entity/live-localization.entity';
 
 @Injectable()
 export class ResourceManagerService {
@@ -91,6 +92,8 @@ export class ResourceManagerService {
     private readonly repLiveResource: Repository<LiveResource>,
     @InjectRepository(LiveResourceDetail)
     private readonly repLiveResourceDetail: Repository<LiveResourceDetail>,
+    @InjectRepository(LiveLocalization)
+    private readonly repLiveLocalization: Repository<LiveLocalization>,
     @InjectRepository(Dress)
     private readonly repDress: Repository<Dress>,
     @InjectRepository(Nametag)
@@ -913,12 +916,31 @@ export class ResourceManagerService {
   // * 라이브 리소스 정보 업데이트
   async updateLiveResourceInfo(dto: LiveResourceUpdateDto) {
     try {
-      console.log(`updateLiveResourceInfo check : `, dto);
+      let targetLive = await this.repLiveResource.findOneBy({ id: dto.id });
 
-      const live = await this.repLiveResource.save(dto); // 저장
-      this.updateLiveResourceDetailInfo(live);
+      console.log(`updateLiveResourceInfo dto check : `, dto);
 
-      return { isSuccess: true, update: live };
+      let dtolocalizations: LiveLocalization[] = [];
+
+      dto.localizations.forEach((item) => {
+        const ea = this.repLiveLocalization.create(item);
+        ea.live = targetLive;
+        dtolocalizations.push(ea);
+      });
+
+      // 따로 저장한다. (한번에 저장하면 잘 안됨;;)
+      dtolocalizations = await this.repLiveLocalization.save(dtolocalizations);
+
+      const newLive = this.repLiveResource.create(dto);
+      newLive.localizations = dtolocalizations;
+      console.log(`updateLiveResourceInfo create check : `, newLive);
+
+      await this.repLiveResource.save(newLive); // 저장
+      targetLive = await this.repLiveResource.findOneBy({ id: dto.id });
+
+      this.updateLiveResourceDetailInfo(targetLive);
+
+      return { isSuccess: true, update: targetLive };
     } catch (error) {
       throw new HttpException(
         'Failed to save live resource info',
