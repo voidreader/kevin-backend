@@ -466,6 +466,8 @@ export class ProjectService {
     let modifiedProject: Project;
 
     try {
+      console.log(`project update check : `, inputDto);
+
       modifiedProject = await repProject.save(inputDto);
     } catch (error) {
       return { isSuccess: false, error };
