@@ -913,6 +913,8 @@ export class ResourceManagerService {
   // * 라이브 리소스 정보 업데이트
   async updateLiveResourceInfo(dto: LiveResourceUpdateDto) {
     try {
+      console.log(`updateLiveResourceInfo check : `, dto);
+
       const live = await this.repLiveResource.save(dto); // 저장
       this.updateLiveResourceDetailInfo(live);
 
