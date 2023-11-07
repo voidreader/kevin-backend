@@ -18,6 +18,7 @@ import {
   EmoticonSlaveUpdateDto,
   EmoticonUpdateOutputDto,
   LiveResourceUpdateDto,
+  LoadingUpdateDto,
   ModelCreateDto,
   ModelListDto,
   ModelUpdateDto,
@@ -66,6 +67,8 @@ import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
 import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 import { LiveLocalization } from 'src/database/produce_entity/live-localization.entity';
+import { Loading } from 'src/database/produce_entity/loading.entity';
+import { LoadingDetail } from 'src/database/produce_entity/loading-detail.entity';
 
 @Injectable()
 export class ResourceManagerService {
@@ -105,6 +108,10 @@ export class ResourceManagerService {
     private readonly repEmoticonSlave: Repository<EmoticonSlave>,
     @InjectRepository(SoundResource)
     private readonly repSoundResource: Repository<SoundResource>,
+    @InjectRepository(Loading)
+    private readonly repLoading: Repository<Loading>,
+    @InjectRepository(LoadingDetail)
+    private readonly repLoadingDetail: Repository<LoadingDetail>,
 
     private readonly configService: ConfigService, //thumbnailS3: S3Client
   ) {}
@@ -406,7 +413,10 @@ export class ResourceManagerService {
     let incomingDiscard: DiscardResource = null;
 
     if (!file) {
-      return { isSuccess: false, error: 'Invalid File' };
+      throw new HttpException(
+        '유효하지 않은 파일(Invalid file)',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // 파일 정보
@@ -418,7 +428,10 @@ export class ResourceManagerService {
     });
 
     if (!target) {
-      return { isSuccess: false, error: 'Invalid Resource ID' };
+      throw new HttpException(
+        '대상 리소스 정보가 존재하지 않음!',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // 업데이트 파라매터
@@ -1468,4 +1481,108 @@ export class ResourceManagerService {
   }
 
   // ? ////////////////////////////////
+
+  async getLoadingList(project_id: number) {
+    const list = await this.repLoading.find({ where: { project_id } });
+    return { isSuccess: true, list };
+  }
+
+  // 로딩 생성
+  async createLoading(files: Array<Express.MulterS3.File>, project_id: number) {
+    const insertList: Loading[] = [];
+
+    files.forEach((file) => {
+      const loading = this.repLoading.create({
+        project_id,
+        image_url: file.location,
+        image_key: file.key,
+        bucket: file.bucket,
+        loading_name: path.basename(
+          file.originalname,
+          path.extname(file.originalname),
+        ),
+        is_public: true,
+      });
+
+      insertList.push(loading);
+    });
+
+    try {
+      await this.repLoading.save(insertList);
+      return this.getLoadingList(project_id);
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  } // ? END createloaindg
+
+  // * 로딩 이미지 변경
+  async changeLoadingImage(
+    project_id: number,
+    id: number,
+    file: Express.MulterS3.File,
+  ) {
+    let incomingDiscard: DiscardResource = null;
+    if (!file) {
+      throw new HttpException(
+        '유효하지 않은 파일(Invalid file)',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const { location, key, bucket } = file;
+
+    const target = await this.repLoading.findOneBy({ id });
+    if (!target) {
+      console.log(`로딩 정보 없음!!!`);
+
+      throw new HttpException(
+        '대상 로딩 정보가 존재하지 않음!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // 업데이트 파라매터
+    const updateParam = {
+      image_url: location,
+      image_key: key,
+      bucket,
+    };
+
+    try {
+      await this.repLoading.update(id, updateParam);
+      // 기존 이미지 discard 처리
+      this.saveDiscardImage(target.image_url, target.image_key);
+
+      return { isSuccess: true, ...updateParam };
+    } catch (error) {
+      console.log(error);
+      this.saveDiscardImage(location, key);
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  } // ? END changeLoadingImage
+
+  async updateLoadingInfo(
+    project_id: number,
+    id: number,
+    dto: LoadingUpdateDto,
+  ) {
+    const updateLoading = this.repLoading.create(dto);
+
+    console.log(`updateLoading : `, updateLoading);
+
+    try {
+      await this.repLoading.save(updateLoading);
+      const target = await this.repLoading.findOneBy({ id });
+      return { isSuccess: true, update: target };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error, HttpStatus.BAD_REQUEST);
+    }
+  } // ? END updateLoadingInfo
+
+  // 삭제
+  async deleteLoaindg(project_id: number, id: number) {
+    await this.repLoading.delete({ id });
+    return this.getLoadingList(project_id);
+  }
 }

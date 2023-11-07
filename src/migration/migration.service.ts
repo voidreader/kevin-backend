@@ -344,16 +344,16 @@ export class MigrationService {
       WHERE a.loading_id = ${loading.id};
       `);
 
-      loading.episodes = await this.dataSource.query(`
-      SELECT a.episode_id 
-          , a.is_use 
-        FROM pier.list_loading_appear  a
-      WHERE a.loading_id = ${loading.id};
-       `);
+      // loading.episodes = await this.dataSource.query(`
+      // SELECT a.episode_id
+      //     , a.is_use
+      //   FROM pier.list_loading_appear  a
+      // WHERE a.loading_id = ${loading.id};
+      //  `);
 
-      console.log(
-        `${loading.id} has ${loading.details.length} details and ${loading.episodes.length} episodes`,
-      );
+      // console.log(
+      //   `${loading.id} has ${loading.details.length} details and ${loading.episodes.length} episodes`,
+      // );
     } // end for
 
     try {

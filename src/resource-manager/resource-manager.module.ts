@@ -20,6 +20,8 @@ import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
 import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 import { LiveLocalization } from 'src/database/produce_entity/live-localization.entity';
+import { Loading } from 'src/database/produce_entity/loading.entity';
+import { LoadingDetail } from 'src/database/produce_entity/loading-detail.entity';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { LiveLocalization } from 'src/database/produce_entity/live-localization.
       Emoticon,
       EmoticonSlave,
       SoundResource,
+      Loading,
+      LoadingDetail,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

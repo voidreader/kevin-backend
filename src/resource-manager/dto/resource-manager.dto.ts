@@ -16,6 +16,7 @@ import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';
 import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 import { Nametag } from 'src/database/produce_entity/nametag.entity';
+import { Loading } from 'src/database/produce_entity/loading.entity';
 
 export interface unzipFile {
   Key: string;
@@ -92,6 +93,8 @@ export class SoundListDto extends CoreOutput {
 }
 
 export class NametagCreateDto extends Nametag {}
+
+export class LoadingUpdateDto extends PartialType(Loading) {}
 
 // export class UpdateBackgroundDto extends PartialType(Background) {}
 // export class UpdateMinicutDto extends PartialType(Minicut) {}

@@ -12,7 +12,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { LoadingEpisode } from './loading-episode.entity';
+
 import { LoadingDetail } from './loading-detail.entity';
 
 @Entity()
@@ -32,12 +32,6 @@ export class Loading extends CoreDeployEntity {
 
   @Column({ default: false, type: 'boolean' })
   is_public: boolean;
-
-  @OneToMany((type) => LoadingEpisode, (l) => l.loading, {
-    eager: true,
-    cascade: true,
-  })
-  episodes: LoadingEpisode[];
 
   @OneToMany((type) => LoadingDetail, (l) => l.loading, {
     eager: true,

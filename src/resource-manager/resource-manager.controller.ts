@@ -27,6 +27,7 @@ import {
   EmoticonMasterCreateDto,
   EmoticonSlaveUpdateDto,
   LiveResourceUpdateDto,
+  LoadingUpdateDto,
   ModelCreateDto,
   ModelListDto,
   ModelUpdateDto,
@@ -489,4 +490,45 @@ export class ResourceManagerController {
   }
 
   // ? //////////////////////////////
+
+  @Get(`/loading/:project_id`)
+  getLoadingList(@Param('project_id') project_id: number) {
+    return this.resourceManagerService.getLoadingList(project_id);
+  }
+
+  @Post(`/loading/:project_id`)
+  @UseInterceptors(FilesInterceptor('files'))
+  createLoading(
+    @UploadedFiles() files: Array<Express.MulterS3.File>,
+    @Param('project_id') project_id: number,
+  ) {
+    return this.resourceManagerService.createLoading(files, project_id);
+  }
+
+  @Patch(`/loading/:project_id/:id/change`)
+  @UseInterceptors(FileInterceptor('file'))
+  changeLoadingImage(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.changeLoadingImage(project_id, id, file);
+  } // ? END updateStaticImage
+
+  @Put(`/loading/:project_id/:id`)
+  updateLoadingInfo(
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+    @Body() dto: LoadingUpdateDto,
+  ) {
+    return this.resourceManagerService.updateLoadingInfo(project_id, id, dto);
+  }
+
+  @Delete(`/loading/:project_id/:id`)
+  deleteLoaindg(
+    @Param('project_id') project_id: number,
+    @Param('id') id: number,
+  ) {
+    return this.resourceManagerService.deleteLoaindg(project_id, id);
+  }
 }
