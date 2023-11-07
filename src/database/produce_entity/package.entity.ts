@@ -3,12 +3,15 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { PackageClient } from './package-client.entity';
+import { PackageAd } from './package-ad.entity';
 
 // * 패키지 마스터
 @Entity()
@@ -62,4 +65,12 @@ export class Package {
     cascade: ['insert', 'update'],
   })
   clients: PackageClient[];
+
+  @OneToOne(() => PackageAd, {
+    eager: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'ad_id' })
+  ad: PackageAd;
 }
