@@ -55,14 +55,11 @@ export class Script {
   @Column({ nullable: true, comment: '말풍선 위치 1-9' })
   bubble_pos: number;
 
-  @Column({ nullable: true, comment: '말풍선 유지' })
+  @Column({ nullable: true, comment: '말풍선 유지', default: 0 })
   bubble_hold: number;
 
-  @Column({ nullable: true, comment: '말꼬리 반전' })
+  @Column({ nullable: true, comment: '말꼬리 반전', default: 0 })
   bubble_reverse: number;
-
-  @Column({ nullable: true, comment: '이모티콘 사이즈 1-4' })
-  emoticon_size: number;
 
   @Column({ default: '', length: 30, comment: 'Voice 이름' })
   voice: string;

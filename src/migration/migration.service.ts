@@ -474,7 +474,6 @@ export class MigrationService {
         , a.bubble_pos 
         , a.bubble_hold 
         , a.bubble_reverse 
-        , a.emoticon_size 
         , a.voice 
         , a.autoplay_row
         , a.sound_effect 
