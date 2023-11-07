@@ -18,6 +18,7 @@ export enum osTypeEnum {
 
 @Entity({ database: 'game' })
 @Index(['device_id'])
+@Unique(['thirdparty_id', 'project_id'])
 export class GameUser {
   @PrimaryGeneratedColumn()
   userkey: number;
