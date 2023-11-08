@@ -9,6 +9,8 @@ import * as http from 'http';
 import { urlencoded, json } from 'body-parser';
 import { HttpExceptionFilter } from './util/http-exception.filter';
 
+import { winstonLogger } from './util/winston.config';
+
 console.log(`__dirname :: `, __dirname);
 
 const httpsOptions = {
@@ -21,7 +23,9 @@ async function bootstrap() {
   // http
   const server = express();
 
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
+    logger: winstonLogger,
+  });
   app.useGlobalFilters(new HttpExceptionFilter());
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));

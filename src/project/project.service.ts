@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import {
   CreateEpisodeDto,
   CreateProjectInputDto,
@@ -30,10 +36,19 @@ import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
 import { StandardInfo } from 'src/common/entities/standard-info.entity';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger as WinstonLogger } from 'winston';
+
+import { winstonLogger } from '../util/winston.config';
 
 @Injectable()
 export class ProjectService {
+  // private readonly logger = new Logger('Project');
+
   constructor(
+    // @Inject(WINSTON_MODULE_PROVIDER)
+    // private readonly logger: WinstonLogger,
+
     private readonly dataSource: DataSource,
     @InjectRepository(Project) private readonly repProject: Repository<Project>,
     @InjectRepository(ProjectDetail)
@@ -126,8 +141,25 @@ export class ProjectService {
 
   // * 단일 에피소드 업데이트
   async updateSingleEpisode(episode: Episode) {
-    console.log(`extension check : `, episode.extension);
-    console.log(`detail check : `, episode.details);
+    winstonLogger.debug({ message: 'update', episode }, 'updateSingleEpisode');
+
+    const project = await this.repProject.findOneBy({
+      project_id: episode.project_id,
+    });
+    if (!project) {
+      throw new HttpException(
+        '프로젝트 ID에 연결된 프로젝트가 없습니다.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const default_lang = project.default_lang; // 기본언어의 타이틀이 변경되는 경우는 에피소드의 타이틀도 변경.
+
+    episode.details.forEach((item) => {
+      if (item.lang == default_lang) {
+        episode.title = item.title;
+      }
+    });
 
     try {
       const savedEpisode = await this.repEpisode.save(episode);
@@ -258,6 +290,9 @@ export class ProjectService {
 
   // * 스토리 에피소드 리스트 조회
   async getEpisodeList(project_id: number) {
+    // this.logger.debug(`getEpisodeList : ${project_id}`);
+    winstonLogger.debug(`getEpisodeList with ${project_id}`);
+
     const organized: Episode[] = [];
 
     const chapters: Episode[] = [];

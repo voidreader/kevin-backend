@@ -46,6 +46,7 @@ import { ItemModule } from './item/item.module';
       // envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.prod',
       envFilePath: '.env.dev',
     }),
+
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQL_HOST,
