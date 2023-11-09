@@ -376,6 +376,10 @@ export class ResourceManagerService {
     const list: StoryStaticImage[] = [];
 
     files.forEach((file) => {
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString(
+        'utf8',
+      );
+
       const item = this.repStaticImage.create({
         project_id,
         image_type,
@@ -1161,6 +1165,9 @@ export class ResourceManagerService {
     }
 
     files.forEach((file) => {
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString(
+        'utf8',
+      );
       const item = this.repEmoticonSlave.create({
         image_url: file.location,
         image_key: file.key,
@@ -1501,6 +1508,9 @@ export class ResourceManagerService {
     const insertList: Loading[] = [];
 
     files.forEach((file) => {
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString(
+        'utf8',
+      );
       const loading = this.repLoading.create({
         project_id,
         image_url: file.location,

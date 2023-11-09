@@ -37,7 +37,10 @@ export class AssetStockService {
     }
 
     files.forEach((file) => {
-      console.log(file);
+      // console.log(file);
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString(
+        'utf8',
+      );
 
       const item = this.repStaticImage.create({
         project_id: 0, // 0 으로 고정
