@@ -1326,7 +1326,7 @@ export class ResourceManagerService {
     sound_type: string,
     speaker: string,
   ) {
-    // winstonLogger.debug({ files, sound_type }, 'uploadSounds');
+    winstonLogger.debug({ sound_type, project_id, speaker }, 'uploadSounds');
 
     const list: SoundResource[] = [];
 
