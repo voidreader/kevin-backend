@@ -1326,12 +1326,17 @@ export class ResourceManagerService {
     sound_type: string,
     speaker: string,
   ) {
-    winstonLogger.debug({ files, sound_type }, 'uploadSounds');
+    // winstonLogger.debug({ files, sound_type }, 'uploadSounds');
 
     const list: SoundResource[] = [];
 
     files.forEach((file) => {
-      file.originalname = Buffer.from(file.originalname).toString('utf8');
+      file.originalname = Buffer.from(file.originalname, 'latin1').toString(
+        'utf8',
+      );
+
+      console.log(file);
+
       const sound = this.repSoundResource.create({
         sound_name: path.basename(
           file.originalname,
