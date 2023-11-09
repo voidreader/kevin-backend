@@ -69,6 +69,7 @@ import { SoundResource } from 'src/database/produce_entity/sound-resource.entity
 import { LiveLocalization } from 'src/database/produce_entity/live-localization.entity';
 import { Loading } from 'src/database/produce_entity/loading.entity';
 import { LoadingDetail } from 'src/database/produce_entity/loading-detail.entity';
+import { winstonLogger } from '../util/winston.config';
 
 @Injectable()
 export class ResourceManagerService {
@@ -1325,9 +1326,12 @@ export class ResourceManagerService {
     sound_type: string,
     speaker: string,
   ) {
+    winstonLogger.debug({ files, sound_type }, 'uploadSounds');
+
     const list: SoundResource[] = [];
 
     files.forEach((file) => {
+      file.originalname = Buffer.from(file.originalname).toString('utf8');
       const sound = this.repSoundResource.create({
         sound_name: path.basename(
           file.originalname,
