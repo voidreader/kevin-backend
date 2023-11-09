@@ -1338,9 +1338,9 @@ export class ResourceManagerService {
     const list: SoundResource[] = [];
 
     files.forEach((file) => {
-      file.originalname = Buffer.from(file.originalname, 'latin1').toString(
-        'utf8',
-      );
+      // file.originalname = Buffer.from(file.originalname, 'latin1').toString(
+      //   'utf8',
+      // );
 
       console.log(file);
 
