@@ -4,6 +4,8 @@ import {
   Episode,
   EpisodeTypeEnum,
 } from 'src/database/produce_entity/episode.entity';
+import { Notice } from 'src/database/produce_entity/notice.entity';
+import { Product } from 'src/database/produce_entity/product.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
@@ -48,4 +50,10 @@ export class UpdateEpisodeSortingInputDto {
 
 export class SaveScriptDto {
   script: Script[];
+}
+
+export class productDto extends PartialType(Product) {}
+export class NoticeImageDto {
+  lang: string;
+  type: string;
 }

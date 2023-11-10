@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { NoticeModule } from './notice/notice.module';
+
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountModule } from './account/account.module';
@@ -97,8 +97,6 @@ import { ItemModule } from './item/item.module';
     //   synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
     //   logging: false,
     // }),
-
-    NoticeModule,
 
     AccountModule,
 

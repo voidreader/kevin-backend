@@ -18,12 +18,14 @@ import {
   CreateEpisodeDto,
   CreateProjectInputDto,
   EpisodeListOutputDto,
+  NoticeImageDto,
   ProjectOutputDto,
   SaveScriptDto,
   SingleProjectOutputDto,
   UpdateEpisodeDto,
   UpdateEpisodeSortingInputDto,
   UpdateProjectInputDto,
+  productDto,
 } from './dto/project.dto';
 
 import { Account } from 'src/database/produce_entity/account.entity';
@@ -32,20 +34,14 @@ import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { Episode } from 'src/database/produce_entity/episode.entity';
+import { ProjectOperationService } from './project-operation.service';
 
 @Controller('story')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
-
-  // @Post()
-  // create(@Body() createStoryDto: CreateStoryDto) {
-  //   return this.storyService.create(createStoryDto);
-  // }
-
-  // @Get()
-  // findAll() {
-  //   return this.storyService.findAll();
-  // }
+  constructor(
+    private readonly projectService: ProjectService,
+    private readonly opService: ProjectOperationService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Get('/:id')
@@ -171,6 +167,7 @@ export class ProjectController {
     return this.projectService.getScript(project_id, episode_id, lang);
   }
 
+  // * 스크립트 저장
   @Post(`/:project_id/script/:episode_id`)
   saveScript(
     @Param('project_id') project_id: number,
@@ -179,5 +176,53 @@ export class ProjectController {
     @Body() dto: SaveScriptDto,
   ) {
     return this.projectService.saveScript(project_id, episode_id, lang, dto);
+  }
+
+  @Get(`/:project_id/product`)
+  getProductList(@Param('project_id') project_id: number) {
+    return this.opService.getProductList(project_id);
+  }
+
+  @Patch(`/:project_id/product/:master_id`)
+  updateProduct(
+    @Param('project_id') project_id: number,
+    @Param('master_id') master_id: number,
+    @Body() dto: productDto,
+  ) {
+    return this.opService.updateProduct(project_id, master_id, dto);
+  }
+
+  // * 인앱상품 배너 이미지 변경
+  @Put(`/:project_id/product/:master_id`)
+  @UseInterceptors(FileInterceptor('file'))
+  changeProductBanner(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('master_id') master_id: number,
+    @Body('lang') lang: string,
+  ) {
+    return this.opService.changeProductBanner(
+      project_id,
+      master_id,
+      file,
+      lang,
+    );
+  }
+
+  // * 공지사항....!!
+  @Get(`/:project_id/notice`)
+  getNoticeList(@Param('project_id') project_id: number) {
+    return this.opService.getNoticeList(project_id);
+  }
+
+  @Put(`/:project_id/notice/:notice_id`)
+  @UseInterceptors(FileInterceptor('file'))
+  changeNoticeImage(
+    @UploadedFile() file: Express.MulterS3.File,
+    @Param('project_id') project_id: number,
+    @Param('notice_id') notice_id: number,
+    @Body() dto: NoticeImageDto,
+  ) {
+    return this.opService.changeNoticeImage(project_id, notice_id, dto, file);
   }
 }

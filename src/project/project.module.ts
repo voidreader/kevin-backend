@@ -20,6 +20,12 @@ import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
 import { StandardInfo } from 'src/common/entities/standard-info.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
+import { ProjectOperationService } from './project-operation.service';
+import { Product } from 'src/database/produce_entity/product.entity';
+import { ProductDetail } from 'src/database/produce_entity/product-detail.entity';
+import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
+import { Notice } from 'src/database/produce_entity/notice.entity';
+import { NoticeDetail } from 'src/database/produce_entity/notice-detail.entity';
 
 @Module({
   //imports: [DatabaseModule],
@@ -34,6 +40,11 @@ import { Script } from 'src/database/produce_entity/script.entity';
       EpisodeExtension,
       DiscardResource,
       StandardInfo,
+      Product,
+      ProductDetail,
+      ProductLang,
+      Notice,
+      NoticeDetail,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],
@@ -42,6 +53,6 @@ import { Script } from 'src/database/produce_entity/script.entity';
     }),
   ],
   controllers: [ProjectController],
-  providers: [ProjectService],
+  providers: [ProjectService, ProjectOperationService],
 })
 export class ProjectModule {}
