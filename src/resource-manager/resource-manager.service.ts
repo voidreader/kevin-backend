@@ -653,6 +653,7 @@ export class ResourceManagerService {
     }
 
     if (!model.slaves) {
+      await this.repModelSlave.remove(model.slaves);
       model.slaves = [];
     }
 
