@@ -1170,7 +1170,7 @@ export class ResourceManagerService {
     files.forEach((file) => {
       console.log(file);
 
-      if (file.originalname.includes('í')) {
+      if (file.originalname.includes('í') || file.originalname.includes('ë')) {
         file.originalname = Buffer.from(file.originalname, 'latin1').toString(
           'utf8',
         );
@@ -1345,7 +1345,7 @@ export class ResourceManagerService {
     const list: SoundResource[] = [];
 
     files.forEach((file) => {
-      if (file.originalname.includes('í')) {
+      if (file.originalname.includes('í') || file.originalname.includes('ë')) {
         winstonLogger.debug('Converting file name');
         file.originalname = Buffer.from(file.originalname, 'latin1').toString(
           'utf8',
