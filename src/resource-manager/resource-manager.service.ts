@@ -376,7 +376,7 @@ export class ResourceManagerService {
     const list: StoryStaticImage[] = [];
 
     files.forEach((file) => {
-      if (file.originalname.includes('í')) {
+      if (file.originalname.includes('í') || file.originalname.includes('ë')) {
         file.originalname = Buffer.from(file.originalname, 'latin1').toString(
           'utf8',
         );
@@ -1518,7 +1518,7 @@ export class ResourceManagerService {
     const insertList: Loading[] = [];
 
     files.forEach((file) => {
-      if (file.originalname.includes('í')) {
+      if (file.originalname.includes('í') || file.originalname.includes('ë')) {
         file.originalname = Buffer.from(file.originalname, 'latin1').toString(
           'utf8',
         );

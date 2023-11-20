@@ -38,7 +38,7 @@ export class AssetStockService {
 
     files.forEach((file) => {
       // console.log(file);
-      if (file.originalname.includes('í')) {
+      if (file.originalname.includes('í') || file.originalname.includes('ë')) {
         file.originalname = Buffer.from(file.originalname, 'latin1').toString(
           'utf8',
         );
