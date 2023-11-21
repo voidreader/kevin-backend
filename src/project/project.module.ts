@@ -26,6 +26,7 @@ import { ProductDetail } from 'src/database/produce_entity/product-detail.entity
 import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
 import { Notice } from 'src/database/produce_entity/notice.entity';
 import { NoticeDetail } from 'src/database/produce_entity/notice-detail.entity';
+import { Selection } from 'src/database/produce_entity/selection.entity';
 
 @Module({
   //imports: [DatabaseModule],
@@ -45,6 +46,7 @@ import { NoticeDetail } from 'src/database/produce_entity/notice-detail.entity';
       ProductLang,
       Notice,
       NoticeDetail,
+      Selection,
     ]),
     MulterModule.registerAsync({
       imports: [ConfigModule],

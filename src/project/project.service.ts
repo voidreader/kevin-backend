@@ -40,6 +40,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
 
 import { winstonLogger } from '../util/winston.config';
+import { Selection } from 'src/database/produce_entity/selection.entity';
 
 @Injectable()
 export class ProjectService {
@@ -67,6 +68,8 @@ export class ProjectService {
     private readonly repDiscard: Repository<DiscardResource>,
     @InjectRepository(StandardInfo)
     private readonly repStandardInfo: Repository<StandardInfo>,
+    @InjectRepository(Selection)
+    private readonly repSelection: Repository<Selection>,
   ) {}
 
   // * 신규 에피소드 생성
@@ -622,6 +625,12 @@ export class ProjectService {
     dto: SaveScriptDto,
   ) {
     console.log(`saveScript : ${project_id} / ${episode_id} / ${lang}`);
+
+    // 선택지 식별자용도
+    let selectionGroup = 0;
+    let selectionNo = 0;
+    let isSelectionContinue = false;
+
     const queryRunner = await this.dataSource.createQueryRunner();
     const saveScripts: Script[] = [];
 
@@ -640,20 +649,15 @@ export class ProjectService {
 
     // forEach..
     dto.script.forEach((row) => {
+      // 기본값 재설정
       row.project_id = project_id;
       row.episode_id = episode_id;
       row.lang = lang;
-
-      // 기본값 재설정
       // in & out effect
       if (!row.in_effect) row.in_effect = '';
       if (!row.out_effect) row.out_effect = '';
 
-      // if (isNaN(row.bubble_size)) row.bubble_size = null;
-      // if (isNaN(row.bubble_pos)) row.bubble_pos = null;
-      // if (isNaN(row.bubble_hold)) row.bubble_hold = null;
-
-      // template
+      // template (코드명 => 코드로 변경)
       for (let i = 0; i < templateList.length; i++) {
         if (row.template == templateList[i].code_name) {
           row.template = templateList[i].code;
@@ -661,6 +665,7 @@ export class ProjectService {
         }
       }
 
+      // 등장효과 값 입력 (코드명 => 코드)
       if (row.in_effect) {
         // in_effect
         for (let i = 0; i < inEffectList.length; i++) {
@@ -671,6 +676,7 @@ export class ProjectService {
         }
       }
 
+      // 퇴장효과 값 입력(코드명 => 코드)
       if (row.out_effect) {
         // out_effect
         for (let i = 0; i < outEffectList.length; i++) {
@@ -680,6 +686,23 @@ export class ProjectService {
           }
         }
       }
+
+      // ! selection group, no 처리
+
+      if (row.template == 'selection' || row.template == 'image_selection') {
+        // 처음 선택지가 시작된 경우
+        if (!isSelectionContinue) {
+          selectionGroup++;
+          selectionNo = 1; // 1부터 시작
+        }
+
+        row.selection_group = selectionGroup;
+        row.selection_no = selectionNo++;
+
+        isSelectionContinue = true;
+      } else {
+        isSelectionContinue = false; // 선택지 연속 끊김
+      } // ? END 선택지 처리
 
       saveScripts.push(this.repScript.create(row));
     }); // ? end forEach
@@ -698,6 +721,60 @@ export class ProjectService {
 
       await queryRunner.commitTransaction();
 
+      //  TODO 저장 완료 후 selection entity에 입력하기 필요.
+      const updateSelections: Selection[] = [];
+
+      // 기존에 저장된
+      const originSelections = await this.repSelection.find({
+        where: { project_id, episode_id },
+      });
+
+      dto.script.forEach((row) => {
+        if (row.selection_group > 0 && row.selection_no > 0) {
+          let updateData: Selection = null;
+
+          // originSelections에서 대상 group, no가 있는지 찾는다.
+          // 있으면 해당 selection에 수정을 하고, 없으면 create
+          for (let i = 0; i < originSelections.length; i++) {
+            if (
+              originSelections[i].selection_group == row.selection_group &&
+              originSelections[i].selection_no == row.selection_no
+            ) {
+              updateData = originSelections[i];
+              break;
+            }
+          }
+
+          // updateData 데이터 있는지 없는지 체크
+          if (!updateData) {
+            updateData = this.repSelection.create({
+              project_id,
+              episode_id,
+              selection_group: row.selection_group,
+              selection_no: row.selection_no,
+            });
+          }
+
+          updateData = this.updateSelectionInfo(
+            updateData,
+            lang,
+            row.script_data,
+          );
+          updateSelections.push(updateData); // push push
+        }
+      }); // ? END selection foreach
+
+      // 선택지 정보 저장
+      if (updateSelections.length > 0) {
+        try {
+          await this.repSelection.save(updateSelections);
+        } catch (error) {
+          winstonLogger.error(error);
+          new HttpException(error, HttpStatus.BAD_REQUEST);
+        }
+      }
+
+      // * RETURN!!
       return this.getScript(project_id, episode_id, lang);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -710,5 +787,29 @@ export class ProjectService {
     } finally {
       await queryRunner.release();
     }
-  }
+  } // ? END save script
+
+  // 언어별 선택지 정보 업데이트
+  updateSelectionInfo(
+    target: Selection,
+    lang: string,
+    selectionText: string,
+  ): Selection {
+    switch (lang) {
+      case 'KO':
+        target.KO = selectionText;
+        break;
+      case 'EN':
+        target.EN = selectionText;
+        break;
+      case 'JA':
+        target.JA = selectionText;
+        break;
+      case 'AR':
+        target.AR = selectionText;
+        break;
+    }
+
+    return target;
+  } // ? END updateSelectionInfo
 }
