@@ -657,6 +657,14 @@ export class ProjectService {
       if (!row.in_effect) row.in_effect = '';
       if (!row.out_effect) row.out_effect = '';
 
+      // ! 템플릿 값 없으면 throw
+      if (row.template == null || row.template == '') {
+        throw new HttpException(
+          '템플릿이 입력되지 않은 라인이 있습니다.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       // template (코드명 => 코드로 변경)
       for (let i = 0; i < templateList.length; i++) {
         if (row.template == templateList[i].code_name) {
