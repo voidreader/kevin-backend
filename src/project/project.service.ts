@@ -713,7 +713,7 @@ export class ProjectService {
       await queryRunner.startTransaction();
 
       console.log(`save script with ${saveScripts.length} rows`);
-      console.log(saveScripts);
+      // console.log(saveScripts);
       // await this.repScript.save(saveScripts);
 
       await queryRunner.manager.delete(Script, { episode_id, lang });
