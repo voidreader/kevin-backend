@@ -10,7 +10,7 @@ export class JwtMiddleware implements NestMiddleware {
   ) {}
 
   async use(req: any, res: any, next: () => void) {
-    console.log(`###### JWT Middleware`);
+    // console.log(`###### JWT Middleware`);
 
     if ('x-jwt' in req.headers) {
       const token = req.headers['x-jwt'];
