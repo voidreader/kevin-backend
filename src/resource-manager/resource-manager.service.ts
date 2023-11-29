@@ -5,7 +5,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, MoreThan, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import {
@@ -37,7 +37,6 @@ import { StoryStaticImage } from './entities/story-static-image.entity';
 import * as unzipper from 'unzipper';
 import * as S3 from 'aws-sdk/clients/s3';
 
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { ConfigService } from '@nestjs/config';
 import { PublicExtension } from './entities/public-extension.entity';
@@ -598,7 +597,7 @@ export class ResourceManagerService {
     let unzipCount: number = 0;
     let resultUnzip: any = null;
 
-    console.log(`zip file info : ${location}/${key}/${bucket}`);
+    winstonLogger.debug(`zip file info : ${location}/${key}/${bucket}`);
 
     const s3 = new S3({
       region: this.configService.get('AWS_REGION'),
@@ -639,22 +638,34 @@ export class ResourceManagerService {
     await Promise.all(promises)
       .then((values) => {
         resultUnzip = values;
-        console.log(`unzip done! : ${unzipCount} :: `, values);
+        // console.log(`unzip done! : ${unzipCount} :: `, values);
       })
       .catch((error) => {
         throw new HttpException(error, HttpStatus.BAD_REQUEST);
       });
 
     // 업로드가 완료되었으면, slave로 입력한다.
-    const model = await this.repModel.findOneBy({ model_id });
+    let model = await this.repModel.findOneBy({ model_id });
 
     if (!model) {
       throw new HttpException('Invalid model ID', HttpStatus.BAD_REQUEST);
     }
 
-    if (!model.slaves) {
+    winstonLogger.log(
+      `타겟 모델 조회 완료 , slave 개수 : ${model.slaves.length}}`,
+    );
+
+    if (model.slaves && model.slaves.length > 0) {
+      winstonLogger.log('모델의 기존 slave 정보 삭제 시작');
+
+      model.slaves.forEach((item) => {
+        this.saveDiscardImage(item.file_url, item.file_key);
+      });
+
       await this.repModelSlave.remove(model.slaves);
-      model.slaves = [];
+
+      // 다시 최신정보를 불러온다.
+      model = await this.repModel.findOneBy({ model_id });
     }
 
     // 압축 풀린 파일들의 정보를 slave로 저장.
@@ -679,6 +690,13 @@ export class ResourceManagerService {
         { description: error },
       );
     }
+
+    // zip 파일 삭제하기
+    s3.deleteObject({ Bucket: 'carpestore', Key: key }, function (err, data) {
+      if (err) {
+        winstonLogger.error(err);
+      }
+    });
 
     return this.getModelList(project_id);
   } // ? END uploadModelZip
@@ -808,7 +826,9 @@ export class ResourceManagerService {
     let unzipCount: number = 0;
     let resultUnzip: any = null;
 
-    console.log(`live resource zip file info : ${location}/${key}/${bucket}`);
+    winstonLogger.debug(
+      `live resource zip file info : ${location}/${key}/${bucket}`,
+    );
 
     const s3 = new S3({
       region: this.configService.get('AWS_REGION'),
@@ -849,13 +869,13 @@ export class ResourceManagerService {
     await Promise.all(promises)
       .then((values) => {
         resultUnzip = values;
-        console.log(`unzip done! : ${unzipCount} :: `, values);
+        // console.log(`unzip done! : ${unzipCount} :: `, values);
       })
       .catch((error) => {
         throw new HttpException(error, HttpStatus.BAD_REQUEST);
       });
 
-    const liveResource = await this.repLiveResource.findOneBy({ id });
+    let liveResource = await this.repLiveResource.findOneBy({ id });
     if (!liveResource) {
       throw new HttpException(
         'Invalid live resource ID',
@@ -863,8 +883,22 @@ export class ResourceManagerService {
       );
     }
 
-    if (!liveResource.details) {
-      liveResource.details = [];
+    winstonLogger.log(
+      `타겟 리소스 조회 완료 , detail 개수 : ${liveResource.details.length}}`,
+    );
+
+    // * 기존 데이터 삭제하고 진행.
+    if (liveResource.details && liveResource.details.length > 0) {
+      winstonLogger.log('LiveResource의 기존 detail 정보 삭제 시작');
+
+      liveResource.details.forEach((item) => {
+        this.saveDiscardImage(item.file_url, item.file_key);
+      });
+
+      await this.repLiveResourceDetail.remove(liveResource.details);
+
+      // 다시 최신정보를 불러온다.
+      liveResource = await this.repLiveResource.findOneBy({ id });
     }
 
     // 압축풀린 파일 정보를 저장
@@ -889,16 +923,25 @@ export class ResourceManagerService {
     });
 
     try {
-      console.log(liveResource);
+      // console.log(liveResource);
 
       await this.repLiveResource.save(liveResource);
     } catch (error) {
+      winstonLogger.error(error);
+
       throw new HttpException(
         'Failed to save live files',
         HttpStatus.BAD_REQUEST,
         { description: error },
       );
     }
+
+    // zip 파일 삭제하기
+    s3.deleteObject({ Bucket: 'carpestore', Key: key }, function (err, data) {
+      if (err) {
+        winstonLogger.error(err);
+      }
+    });
 
     // 리턴!
     return this.getLiveResourceList(project_id, live_type);
@@ -1616,4 +1659,48 @@ export class ResourceManagerService {
     await this.repLoading.delete({ id });
     return this.getLoadingList(project_id);
   }
-}
+
+  // * discard 테이블에 있는 리소스 삭제
+  async deleteDiscardResource() {
+    const targets: DiscardResource[] = await this.repDiscard.find({
+      where: { id: MoreThan(0) },
+    });
+
+    const s3 = new S3({
+      region: this.configService.get('AWS_REGION'),
+      credentials: {
+        accessKeyId: this.configService.get('AWS_KEY'),
+        secretAccessKey: this.configService.get('AWS_SECRET_KEY'),
+      },
+    });
+
+    winstonLogger.log(`삭제 대상 리소스 개수 : ${targets.length}`);
+
+    // const params: S3.Types.DeleteObjectsRequest = {
+    //   Bucket: 'carpestore',
+    //   Delete: Delete,
+    //   Objects: [],
+    // };
+
+    targets.forEach((item) => {
+      const res = {
+        Bucket: 'carpestore',
+        Key: item.key,
+      };
+
+      // params.Objects.push(res);
+      s3.deleteObject(res, function (err, data) {
+        if (err) console.log(err, err.stack);
+        else {
+          // console.log(data);
+
+          this.repDiscard.delete(item);
+        }
+      });
+    });
+
+    // s3.deleteObjects(params, function (err, data) {});
+
+    return { isSuccess: true };
+  }
+} // ? END CLASS

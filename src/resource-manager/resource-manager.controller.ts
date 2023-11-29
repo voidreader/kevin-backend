@@ -531,4 +531,9 @@ export class ResourceManagerController {
   ) {
     return this.resourceManagerService.deleteLoaindg(project_id, id);
   }
+
+  @Delete(`/discard`)
+  deleteDiscardResource() {
+    return this.resourceManagerService.deleteDiscardResource();
+  }
 }
