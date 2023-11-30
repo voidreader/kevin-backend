@@ -1,17 +1,10 @@
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Column, Entity, Index } from 'typeorm';
 
-@Entity({ database: 'game' })
-@Index(['userkey', 'project_id', 'profile_id', 'ability_id'])
-@Index(['project_id', 'item_id'])
-@Index(['project_id', 'profile_id'])
-export class UserGiftHist extends CoreEntity {
-  @Column()
-  userkey: number;
-
-  @Column()
-  project_id: number;
-
+@Entity()
+@Index(['item_id', 'profile_id', 'ability_id'])
+@Index(['profile_id', 'ability_id'])
+export class ItemGift extends CoreEntity {
   @Column({ comment: '사용된 아이템 식별자' })
   item_id: number;
 
