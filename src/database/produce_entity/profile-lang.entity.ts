@@ -23,8 +23,11 @@ export class ProfileLang extends CoreEntity {
   @Column({ length: 20, comment: '텍스트 타입' })
   text_type: string;
 
-  @Column({ length: 120 })
+  @Column({ length: 120, comment: '내용' })
   profile_text: string;
+
+  @Column({ length: 120, comment: '레이블 텍스트' })
+  label_text: string;
 
   @ManyToOne((type) => Profile, (p) => p.localizations, {
     onDelete: 'CASCADE',

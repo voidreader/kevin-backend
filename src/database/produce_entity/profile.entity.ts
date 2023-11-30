@@ -50,19 +50,19 @@ export class Profile extends CoreDeployEntity {
 
   @OneToMany((type) => Ability, (ability) => ability.profile, {
     eager: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
   })
   abilities: Ability[];
 
   @OneToMany((type) => ProfileLine, (line) => line.profile, {
     eager: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
   })
   lines: ProfileLine[];
 
   @OneToMany((type) => ProfileLang, (p) => p.profile, {
     eager: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
   })
   localizations: ProfileLang[];
 }
