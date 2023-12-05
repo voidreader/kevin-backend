@@ -20,6 +20,9 @@ export class UserProperty extends CoreEntity {
   @Column()
   item_id: number;
 
+  @Column()
+  project_id: number;
+
   @Column({ default: 1 })
   quantity: number;
 

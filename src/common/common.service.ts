@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StandardInfo } from './entities/standard-info.entity';
 import { DataSource, Repository } from 'typeorm';
+import { winstonLogger } from '../util/winston.config';
 
 @Injectable()
 export class CommonService {
@@ -11,8 +12,8 @@ export class CommonService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async getStandard(standard_class: string): Promise<StandardInfo[]> {
-    return this.dataSource
+  async getStandard(standard_class: string) {
+    return await this.dataSource
       .createQueryBuilder(StandardInfo, 'std')
       .select()
       .where(`standard_class = '${standard_class}'`)
@@ -22,11 +23,8 @@ export class CommonService {
     // return this.repStandard.find({ where: { standard_class } });
   }
 
-  getLocalizedStandard(
-    standard_class: string,
-    lang: string = 'EN',
-  ): Promise<any> {
-    return this.dataSource.query(`
+  async getLocalizedStandard(standard_class: string, lang: string = 'EN') {
+    return await this.dataSource.query(`
     SELECT si.code 
         , produce.fn_get_localize_text(si.text_id, '${lang}') code_name
     FROM produce.standard_info si
@@ -35,9 +33,11 @@ export class CommonService {
   }
 
   // * 말풍선 세트 dropdown
-  getAvailableBubbleSet(lang: string = 'EN'): Promise<any> {
+  async getAvailableBubbleSet(lang: string = 'EN') {
+    winstonLogger.debug(`getAvailableBubbleSet called`);
+
     // 구 버전 데이터베이스 그대로 사용. 나중에 이관
-    return this.dataSource.query(`
+    return await this.dataSource.query(`
      SELECT a.set_id code
           , a.set_name code_name
         FROM pier.com_bubble_master a
@@ -228,4 +228,16 @@ WHERE ssi.project_id = ${project_id}
 
     return { speakers, emoticons, motions, images };
   } // ? END getScriptResourceInfo
+
+  async getKevinStandards(lang: string = 'KO') {
+    console.log(`getKevinStandards :: `, lang);
+
+    return {
+      bubbleSet: await this.getAvailableBubbleSet(lang),
+      primeCurrency: await this.getLocalizedStandard('prime_currency', lang),
+      projectType: await this.getStandard('project_type'),
+      supportLang: await this.getStandard('produce-lang'),
+      appLang: await this.getStandard('app-lang'),
+    };
+  }
 }

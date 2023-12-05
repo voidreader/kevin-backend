@@ -5,7 +5,7 @@ import { Column, Entity, Index } from 'typeorm';
 @Index(['userkey', 'project_id', 'profile_id', 'ability_id'])
 @Index(['project_id', 'item_id'])
 @Index(['project_id', 'profile_id'])
-export class UserGiftHist extends CoreEntity {
+export class UserGiftAbility extends CoreEntity {
   @Column()
   userkey: number;
 

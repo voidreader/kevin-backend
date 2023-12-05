@@ -95,4 +95,9 @@ export class CommonController {
   getScriptResources(@Param('project_id') project_id: number) {
     return this.commonService.getScriptResourceInfo(project_id);
   }
+
+  @Get(`/kevin/standards`)
+  getKevinStandards(@Query('lang') lang: string) {
+    return this.commonService.getKevinStandards(lang);
+  }
 }
