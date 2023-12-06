@@ -30,7 +30,7 @@ export class UserAdventure extends CoreEntity {
   })
   end_time: Date;
 
-  @Column({ comment: '현재 유저의 모험 상태' })
+  @Column({ comment: '현재 유저의 모험 상태', length: 20 })
   state: string;
   @Column({ comment: '시간을 줄이기 위해 광고를 시청한 횟수', default: 0 })
   ad_count: number;
