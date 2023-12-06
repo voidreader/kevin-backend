@@ -19,13 +19,13 @@ export class UserAdventure extends CoreEntity {
 
   @Column({
     default: () => 'CURRENT_TIMESTAMP',
-    comment: '모험이 끝나는 시간 (서버시간 기준)',
+    comment: '모험을 시작한 시간 (서버시간 기준)',
     transformer: new LocalDateTimeTransformer(),
   })
   start_time: Date;
 
   @Column({
-    comment: '모험을 시작한 시간 (서버시간 기준)',
+    comment: '모험을 끝나는 시간 (서버시간 기준)',
     transformer: new LocalDateTimeTransformer(),
   })
   end_time: Date;
