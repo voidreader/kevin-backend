@@ -30,7 +30,7 @@ export class CommonImageResourceEntity extends CoreDeployEntity {
   @Column({ length: 30 })
   bucket: string;
 
-  @Column({ default: 1 })
+  @Column({ default: 1, type: 'float' })
   game_scale: number;
 
   @Column({ default: 0, type: 'float', comment: '위치 오프셋 X좌표' })
