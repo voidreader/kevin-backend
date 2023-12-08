@@ -4,13 +4,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryColumn,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ database: 'game' })
-@Unique(['userkey', 'project_id'])
+@Index(['userkey', 'project_id'])
 export class UserAdventureReward extends CoreEntity {
   @Column()
   userkey: number;
