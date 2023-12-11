@@ -1105,11 +1105,21 @@ export class ResourceManagerService {
 
       await this.repDress.save(dto);
     } catch (error) {
-      throw new HttpException(
-        'fail to create new costume info',
-        HttpStatus.BAD_REQUEST,
-        { description: error },
-      );
+      winstonLogger.error({ ...error });
+
+      if (error.code.includes('DUP_ENTRY')) {
+        throw new HttpException(
+          '대상 캐릭터에 같은 이름의 의상이 있습니다. 저장 정보를 확인해주세요.',
+          HttpStatus.BAD_REQUEST,
+        );
+      } else {
+        // 일반 오류
+        throw new HttpException(
+          `다음의 오류가 발생했습니다. [${error.code}]/[${error.sqlMessage}]`,
+          HttpStatus.BAD_REQUEST,
+          { description: error },
+        );
+      }
     }
 
     return this.getCostumeList(project_id);
@@ -1121,16 +1131,29 @@ export class ResourceManagerService {
     dto: DressUpdateInputDto,
   ): Promise<DressUpdateOutputDto> {
     try {
+      winstonLogger.debug({ ...dto }, 'updateCostume');
+
       const dress = await this.repDress.save(dto);
       return { isSuccess: true, update: dress };
     } catch (error) {
-      throw new HttpException(
-        'fail to save costume info',
-        HttpStatus.BAD_REQUEST,
-        { description: error },
-      );
+      winstonLogger.error({ ...error });
+
+      if (error.code.includes('DUP_ENTRY')) {
+        throw new HttpException(
+          '한명의 캐릭터 의상정보에 의상이름, 모델은 중복될 수 없습니다. 저장 정보를 확인해주세요.',
+          HttpStatus.BAD_REQUEST,
+          { description: '데이터 중복 이슈' },
+        );
+      } else {
+        // 일반 오류
+        throw new HttpException(
+          `다음의 오류가 발생했습니다. [${error.code}]/[${error.sqlMessage}]`,
+          HttpStatus.BAD_REQUEST,
+          { description: error },
+        );
+      }
     }
-  }
+  } // ?  END updateCostume
 
   // ? 복장(Costume Service 로직) 끝! ///////////////////////////////////////////
 
