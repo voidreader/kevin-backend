@@ -163,6 +163,21 @@ WHERE p.project_id = ${project_id}
     `);
   }
 
+  getProjectAbilityListCode(project_id: number) {
+    return this.dataSource.query(`
+    SELECT 0 code
+     , '선택되지 않음' code_name
+    FROM DUAL
+  UNION ALL
+      SELECT a.ability_id code
+    , CONCAT('[', p.speaker, '] ', a.ability_name) AS code_name
+  FROM ability a
+    , profile p 
+  WHERE p.project_id = ${project_id}
+  AND a.profile_id = p.id;
+    `);
+  }
+
   getProjectMinicutList(project_id: number) {
     return this.dataSource.query(`
     SELECT ssi.id code

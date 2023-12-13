@@ -17,13 +17,19 @@ export class CommonController {
 
   // 기본 코드 정보(언어값에 따라 번역)
   @Get('/localize/:standard_class')
-  getLocalizedStandard(
+  async getLocalizedStandard(
     @Param('standard_class') standard_class: string,
     @Query('lang') lang: string = 'EN',
   ) {
-    console.log('getLocalizedStandard ', standard_class, lang);
+    const result = await this.commonService.getLocalizedStandard(
+      standard_class,
+      lang,
+    );
+    console.log(`getLocalizedStandard ${standard_class}/${lang}`, result);
 
-    return this.commonService.getLocalizedStandard(standard_class, lang);
+    return result;
+
+    // return this.commonService.getLocalizedStandard(standard_class, lang);
   }
 
   // 말풍선세트 dropdown
@@ -50,6 +56,8 @@ export class CommonController {
       return this.commonService.getProjectBackgroundDropdown(project_id);
     } else if (data_type == 'coupon') {
       return [];
+    } else if (data_type == 'ability') {
+      return this.commonService.getProjectAbilityListCode(project_id);
     }
   }
 
@@ -65,7 +73,7 @@ export class CommonController {
         arg,
       );
     } else if (data_type == 'ability') {
-      return this.commonService.getProjectAbilityList(project_id);
+      return this.commonService.getProjectAbilityListCode(project_id);
     } else {
       return [];
     }
