@@ -5,6 +5,7 @@ import { DataSource, Repository } from 'typeorm';
 import { ItemListDto, ItemCreateDto } from './dto/item.dto';
 import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
 import { ItemExtension } from 'src/database/produce_entity/item-extension.entity';
+import { winstonLogger } from '../util/winston.config';
 
 @Injectable()
 export class ItemService {
@@ -24,6 +25,8 @@ export class ItemService {
       where: { project_id },
       order: { origin_name: 'ASC' },
     });
+
+    winstonLogger.debug(list, `getItemList(${project_id})`);
 
     return { isSuccess: true, list };
   }

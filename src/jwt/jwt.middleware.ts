@@ -15,9 +15,9 @@ export class JwtMiddleware implements NestMiddleware {
     if ('x-jwt' in req.headers) {
       const token = req.headers['x-jwt'];
 
-      console.log(`token : `, token);
+      // console.log(`token : `, token);
       const decoded = this.jwtService.verify(token.toString());
-      console.log(`decoded : `, decoded);
+      // console.log(`decoded : `, decoded);
       if (
         decoded != null &&
         typeof decoded === 'object' &&
@@ -30,7 +30,7 @@ export class JwtMiddleware implements NestMiddleware {
 
           if (isSuccess) {
             req['account'] = account;
-            console.log(`jwt middleware :: `, account);
+            // console.log(`jwt middleware :: `, account);
           }
 
           // console.log(user);
