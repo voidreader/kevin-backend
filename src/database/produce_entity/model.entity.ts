@@ -27,14 +27,23 @@ export class Model {
   @Column({ length: 20, default: 'live2d' })
   model_type: string;
 
-  @Column({ default: 0, type: 'float', comment: '위치 오프셋 X좌표' })
+  @Column({ default: 0, type: 'float', comment: '인게임 위치 오프셋 X좌표' })
   offset_x: number;
 
-  @Column({ default: 0, type: 'float', comment: '위치 오프셋 X좌표' })
+  @Column({ default: 0, type: 'float', comment: '인게임 위치 오프셋 y좌표' })
   offset_y: number;
 
-  @Column({ default: 1 })
+  @Column({ default: 1, type: 'float', comment: '인게임 게임스케일' })
   game_scale: number;
+
+  @Column({ default: 0, type: 'float', comment: '로비 위치 오프셋 X좌표' })
+  lobby_offset_x: number;
+
+  @Column({ default: 0, type: 'float', comment: '로비 위치 오프셋 y좌표' })
+  lobby_offset_y: number;
+
+  @Column({ default: 1, type: 'float', comment: '로비 게임스케일' })
+  lobby_game_scale: number;
 
   @Column({ default: 0 })
   sortkey: number;
