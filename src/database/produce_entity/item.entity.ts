@@ -26,7 +26,7 @@ export class Item extends CoreDeployEntity {
   origin_name: string;
 
   @Column({ length: 30, comment: '아이템 타입' })
-  @IsIn(['consumable', 'nonconsumable', 'standing', 'gift'])
+  @IsIn(['consumable', 'nonconsumable', 'standing', 'gift', 'key'])
   item_type: string;
 
   @Column({ default: -1 })
