@@ -27,6 +27,10 @@ export class Ability {
 
   @Column({ default: 100, comment: '대상 능력 최대값' })
   max_value: number;
+
+  @Column({ default: 20, comment: '선물 획득 상한값' })
+  gift_limit_value: number;
+
   @Column({ type: 'boolean', default: true, comment: '메인 능력 여부' })
   is_main: boolean;
 
