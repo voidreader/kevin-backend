@@ -180,6 +180,7 @@ export class ProfileService {
   async updateAbility(
     project_id: number,
     profile_id: number,
+    ability_id: number,
     dto: AbilityUpdateInputDto,
   ) {
     try {
@@ -205,7 +206,13 @@ export class ProfileService {
         if (profile.id == profile_id) targetProfile = profile;
       });
 
-      return { isSuccess: true, list, update: targetProfile };
+      let targetAbility: Ability;
+
+      targetProfile.abilities.forEach((ability) => {
+        if (ability.ability_id == ability_id) targetAbility = ability;
+      });
+
+      return { isSuccess: true, list, update: targetAbility };
     } catch (error) {
       console.log(error);
       throw new HttpException(

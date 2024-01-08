@@ -67,7 +67,12 @@ export class ProfileController {
     @Param('ability_id') ability_id: number,
     @Body() dto: AbilityUpdateInputDto,
   ) {
-    return this.profileService.updateAbility(project_id, profile_id, dto);
+    return this.profileService.updateAbility(
+      project_id,
+      profile_id,
+      ability_id,
+      dto,
+    );
   }
 
   @Put(`/:project_id/:profile_id/ability/:ability_id`)
