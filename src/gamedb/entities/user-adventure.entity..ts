@@ -31,6 +31,7 @@ export class UserAdventure extends CoreEntity {
   end_time: Date;
 
   @Column({
+    default: null,
     comment: '실제 모험을 끝나는 시간(광고 보기를 통해 단축되는)',
     transformer: new LocalDateTimeTransformer(),
   })
