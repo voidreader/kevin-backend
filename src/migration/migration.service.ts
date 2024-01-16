@@ -390,9 +390,10 @@ export class MigrationService {
     let totalEpisode: number = 0;
     let totalScriptRow: number = 0;
 
+    // 새 DB에 이미 episode_id가 있을수도 있어서, 구 데이터는 old_episode_id로 받는다.
     const originEpisodes: Episode[] = await this.dataSource.query(
       `
-    SELECT a.episode_id 
+    SELECT a.episode_id old_episode_id
         , a.project_id 
         , a.episode_type 
         , a.title
@@ -404,7 +405,8 @@ export class MigrationService {
         , a.speaker 
         , a.dlc_id 
       FROM pier.list_episode a
-    WHERE a.project_id = ?;
+    WHERE a.project_id = ?
+    ORDER by a.episode_id;
     `,
       [project_id],
     );
@@ -422,7 +424,7 @@ export class MigrationService {
         FROM pier.list_episode_detail a
       WHERE a.episode_id  = ?;
       `,
-        [episode.episode_id],
+        [episode.old_episode_id],
       );
 
       // extension
@@ -435,7 +437,7 @@ export class MigrationService {
       WHERE a.episode_id = ?
         AND a.popup_image_id > 0;
       `,
-        [episode.episode_id],
+        [episode.old_episode_id],
       );
 
       if (exts.length > 0) {
@@ -444,21 +446,30 @@ export class MigrationService {
     } // end for
 
     // 에피소드 저장
+    let savedEpisodes: Episode[] = null;
     try {
       console.log('에피소드 복사 시작!');
       await this.repEpisode.save(originEpisodes);
+
+      // 갱신된거 가져오기
+      savedEpisodes = await this.repEpisode.find({
+        where: { project_id },
+      });
+
       console.log('에피소드 복사 종료!');
     } catch (error) {
       return { isSuccess: false, error };
     }
 
     // 스크립트 진행
-    for (const episode of originEpisodes) {
+    for (const episode of savedEpisodes) {
+      console.log(episode);
+
       const scripts: Script[] = await this.dataSource.query(
         `
         SELECT a.script_no 
         , a.project_id 
-        , a.episode_id 
+        , ? episode_id
         , CASE WHEN a.scene_id IS NULL THEN NULL
                WHEN a.scene_id = '' THEN NULL
                ELSE a.scene_id END scene_id 
@@ -484,9 +495,10 @@ export class MigrationService {
         , a.dev_comment 
         , a.target_scene_id 
      FROM pier.list_script a
-    WHERE a.episode_id = ?;
+    WHERE a.episode_id = ?
+    ORDER BY a.script_no;
       `,
-        [episode.episode_id],
+        [episode.episode_id, episode.old_episode_id],
       );
 
       try {
@@ -499,11 +511,28 @@ export class MigrationService {
       console.log(`${episode.title} script is done!`);
     }
 
+    console.log(`스크립트 복사 작업 완료`);
+
     const selections: Selection[] = await this.dataSource.query(
       `
-    SELECT a.*
-      FROM pier.list_selection a
-    WHERE a.project_id = ?;
+      SELECT e.episode_id
+      , a.selection_group
+      , a.project_id 
+      , a.episode_id old_episode_id
+      , a.selection_no 
+      , a.selection_order
+      , a.KO 
+      , a.EN 
+      , a.JA 
+      , a.AR
+      , a.MS 
+      , a.ES 
+      , a.RU 
+   FROM produce.episode e 
+      , pier.list_selection a 
+  WHERE e.project_id = ?
+    AND a.episode_id = e.old_episode_id
+    ;
     `,
       [project_id],
     );
@@ -513,6 +542,8 @@ export class MigrationService {
     } catch (error) {
       return { isSuccess: false, error };
     }
+
+    console.log(`작업 완료`);
 
     // 리턴
     return {

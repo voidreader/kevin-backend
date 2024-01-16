@@ -92,6 +92,9 @@ export class Episode extends DeployableEntity {
   @Column({ comment: '연결된 DLC ID', default: -1 })
   dlc_id: number;
 
+  @Column({ default: -1, comment: '구 제작시스템 ID' })
+  old_episode_id: number;
+
   @OneToMany(
     (type) => EpisodeDetail,
     (episodeDetail) => episodeDetail.episode,

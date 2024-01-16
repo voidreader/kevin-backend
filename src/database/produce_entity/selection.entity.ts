@@ -44,6 +44,9 @@ export class Selection {
   @Column({ length: 200, nullable: true })
   SC: string;
 
+  @Column({ default: -1 })
+  old_epipsode_id: number;
+
   // 생성된 시간
   @CreateDateColumn({ select: false })
   created_at: Date;

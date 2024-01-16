@@ -30,6 +30,12 @@ export class UserAdventure extends CoreEntity {
   })
   end_time: Date;
 
+  @Column({
+    comment: '실제 모험을 끝나는 시간(광고 보기를 통해 단축되는)',
+    transformer: new LocalDateTimeTransformer(),
+  })
+  changed_end_time: Date;
+
   @Column({ comment: '현재 유저의 모험 상태', length: 20 })
   state: string;
   @Column({ comment: '시간을 줄이기 위해 광고를 시청한 횟수', default: 0 })

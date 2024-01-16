@@ -26,7 +26,7 @@ export class ProfileLang extends CoreEntity {
   @Column({ length: 120, comment: '내용' })
   profile_text: string;
 
-  @Column({ length: 120, comment: '레이블 텍스트' })
+  @Column({ length: 120, comment: '레이블 텍스트', default: 'required' })
   label_text: string;
 
   @ManyToOne((type) => Profile, (p) => p.localizations, {
