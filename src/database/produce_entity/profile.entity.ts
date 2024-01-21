@@ -24,16 +24,16 @@ export class Profile extends CoreDeployEntity {
   profile_birth_date: Date;
 
   // 프로필 : 좋아하는것, 싫어하는것, 소개, 기타
-  profile_favorite: number; // 마이그레이션용 컬럼
-  profile_dislike: number;
-  profile_introduce: number;
-  profile_etc: number;
+  section1_text_id: number; // 마이그레이션용 컬럼
+  section2_text_id: number;
+  section3_text_id: number;
+  section4_text_id: number;
 
   // 프론트엔드를 위한 컬럼
-  favorite_localizations: ProfileLang[];
-  dislike_localizations: ProfileLang[];
-  introduce_localizations: ProfileLang[];
-  etc_localizations: ProfileLang[];
+  section1_localizations: ProfileLang[];
+  section2_localizations: ProfileLang[];
+  section3_localizations: ProfileLang[];
+  section4_localizations: ProfileLang[];
 
   @Column({
     type: 'boolean',

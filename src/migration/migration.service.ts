@@ -739,10 +739,10 @@ export class MigrationService {
         , 1 is_main
         , 1 use_standing
         , 1 use_emoticon
-        , a.profile_favorite_id profile_favorite_id
-        , a.profile_hate_id profile_dislike
-        , a.profile_line_id profile_introduce
-        , a.profile_introduce_id profile_etc
+        , a.profile_favorite_id section1_text_id
+        , a.profile_hate_id section2_text_id
+        , a.profile_line_id section3_text_id
+        , a.profile_introduce_id section4_text_id
     FROM pier.com_ability a
     WHERE a.project_id = ?;    
     `,
@@ -753,16 +753,16 @@ export class MigrationService {
     for (const profile of profiles) {
       // profile_lang 데이터 생성
       const favoriteText = await this.repTextLocalize.findOneBy({
-        text_id: profile.profile_favorite,
+        text_id: profile.section1_text_id,
       });
       const dislikeText = await this.repTextLocalize.findOneBy({
-        text_id: profile.profile_dislike,
+        text_id: profile.section2_text_id,
       });
       const introText = await this.repTextLocalize.findOneBy({
-        text_id: profile.profile_introduce,
+        text_id: profile.section3_text_id,
       });
       const etcText = await this.repTextLocalize.findOneBy({
-        text_id: profile.profile_etc,
+        text_id: profile.section4_text_id,
       });
 
       profile.localizations = [];
@@ -772,7 +772,7 @@ export class MigrationService {
           this.repProfileLang.create({
             lang: 'KO',
             profile_text: favoriteText.KO,
-            text_type: 'favorite',
+            text_type: 'section1',
           }),
         );
       }
@@ -782,7 +782,7 @@ export class MigrationService {
           this.repProfileLang.create({
             lang: 'KO',
             profile_text: dislikeText.KO,
-            text_type: 'dislike',
+            text_type: 'section2',
           }),
         );
       }
@@ -792,7 +792,7 @@ export class MigrationService {
           this.repProfileLang.create({
             lang: 'KO',
             profile_text: introText.KO,
-            text_type: 'introduce',
+            text_type: 'section3',
           }),
         );
       }
@@ -802,7 +802,7 @@ export class MigrationService {
           this.repProfileLang.create({
             lang: 'KO',
             profile_text: etcText.KO,
-            text_type: 'etc',
+            text_type: 'section4',
           }),
         );
       }
