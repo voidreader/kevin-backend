@@ -41,4 +41,7 @@ export class UserProperty extends CoreEntity {
 
   @Column({ length: 20, comment: '획득 경로', default: '-' })
   path_code: string;
+
+  @Column({ default: 0, comment: '획득한 에피소드 ID' })
+  episode_id: number;
 }
