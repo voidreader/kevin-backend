@@ -17,8 +17,8 @@ export enum osTypeEnum {
 }
 
 @Entity({ database: 'game' })
-@Index(['device_id'])
 @Unique(['thirdparty_id', 'project_id'])
+@Index(['device_id', 'project_id'])
 export class GameUser {
   @PrimaryGeneratedColumn()
   userkey: number;
@@ -43,7 +43,7 @@ export class GameUser {
   @Column({ length: 128, comment: 'Device 식별자', default: '-' })
   device_id: string; // 디바이스 ID
 
-  @Column({ length: 128, unique: true, comment: '타사 연결 id' })
+  @Column({ length: 128, comment: '타사 연결 id' })
   thirdparty_id: string; // 연결된 타사 인증 id (뒤끝)
 
   @Column({

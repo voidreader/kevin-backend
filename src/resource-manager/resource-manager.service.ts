@@ -651,6 +651,9 @@ export class ResourceManagerService {
       throw new HttpException('Invalid model ID', HttpStatus.BAD_REQUEST);
     }
 
+    // 이전의 Slave를 갖고있는다.
+    const oldSlaves: ModelSlave[] = model.slaves;
+
     winstonLogger.log(
       `타겟 모델 조회 완료 , slave 개수 : ${model.slaves.length}}`,
     );
@@ -682,6 +685,20 @@ export class ResourceManagerService {
     });
 
     try {
+      // 저장전에, oldSlave와 비교해서 등록된 모션은 카피해준다.
+      model.slaves.forEach((newSlave) => {
+        for (let i = 0; i < oldSlaves.length; i++) {
+          // 파일이름이 동일한 경우에 모션이름 복사하기
+          if (
+            newSlave.file_name == oldSlaves[i].file_name &&
+            oldSlaves[i].motion_name
+          ) {
+            newSlave.motion_name = oldSlaves[i].motion_name;
+          }
+        }
+      }); // end copy
+
+      // 저장
       await this.repModel.save(model);
     } catch (error) {
       throw new HttpException(
