@@ -28,7 +28,7 @@ import { Nametag } from 'src/database/produce_entity/nametag.entity';
 import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Profile } from 'src/database/produce_entity/profile.entity';
 import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
-import { GameUser } from 'src/gamedb/entities/game-user';
+import { GameUser } from 'src/gamedb/entities/game-user.entity';
 import { LiveResourceDetail } from 'src/resource-manager/entities/live-resource-detail.entity';
 import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
 
