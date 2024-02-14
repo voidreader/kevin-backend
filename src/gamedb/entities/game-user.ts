@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 
 export enum osTypeEnum {
@@ -44,7 +45,22 @@ export class GameUser {
   device_id: string; // 디바이스 ID
 
   @Column({ length: 128, comment: '타사 연결 id' })
-  thirdparty_id: string; // 연결된 타사 인증 id (뒤끝)
+  thirdparty_id: string; // 연결된 타사 인증 id (뒤끝 or 유니티)
+
+  @Column({
+    length: 128,
+    comment: '구글 계정 id',
+    nullable: true,
+    default: null,
+  })
+  google_id: string;
+  @Column({
+    length: 128,
+    comment: '애플 계정 id',
+    nullable: true,
+    default: null,
+  })
+  apple_id: string;
 
   @Column({
     type: 'enum',
@@ -76,4 +92,8 @@ export class GameUser {
 
   @UpdateDateColumn({ select: false })
   updated_at: Date;
+
+  // 탈퇴 일시
+  @DeleteDateColumn({ select: false })
+  deleted_at: Date;
 }
