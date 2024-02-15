@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { Item } from './item.entity';
 import { IsIn } from 'class-validator';
-import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
+import { StoryStaticImage } from 'src/database/produce_entity/story-static-image.entity';
 import { LocalDateTimeTransformer } from 'src/util/time-transformer';
 
 // * 아이템의 확장 정보 (판매 등의 정보)

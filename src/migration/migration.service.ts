@@ -29,8 +29,8 @@ import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Profile } from 'src/database/produce_entity/profile.entity';
 import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 import { GameUser } from 'src/gamedb/entities/game-user.entity';
-import { LiveResourceDetail } from 'src/resource-manager/entities/live-resource-detail.entity';
-import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
+import { LiveResourceDetail } from 'src/database/produce_entity/live-resource-detail.entity';
+import { LiveResource } from 'src/database/produce_entity/live-resource.entity';
 
 import { DataSource, Repository } from 'typeorm';
 import { Selection } from 'src/database/produce_entity/selection.entity';
@@ -43,15 +43,15 @@ import { ProductDetail } from 'src/database/produce_entity/product-detail.entity
 import { Loading } from 'src/database/produce_entity/loading.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
-import { TextLocalize } from 'src/common/entities/text-localize.entity';
+import { TextLocalize } from 'src/database/produce_entity/text-localize.entity';
 import { ProfileLineLang } from 'src/database/produce_entity/profile-line-lang.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
-import { AbilityLang } from 'src/database/ability-lang.entity';
+import { AbilityLang } from 'src/database/produce_entity/ability-lang.entity';
 import { ProfileLang } from 'src/database/produce_entity/profile-lang.entity';
-import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
-import { PublicExtension } from 'src/resource-manager/entities/public-extension.entity';
-import { ImageLocalization } from 'src/resource-manager/entities/image-localization.entity';
+import { StoryStaticImage } from 'src/database/produce_entity/story-static-image.entity';
+import { PublicExtension } from 'src/database/produce_entity/public-extension.entity';
+import { ImageLocalization } from 'src/database/produce_entity/image-localization.entity';
 
 @Injectable()
 export class MigrationService {

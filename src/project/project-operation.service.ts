@@ -4,7 +4,7 @@ import { Product } from 'src/database/produce_entity/product.entity';
 import { Repository } from 'typeorm';
 import { NoticeImageDto, productDto } from './dto/project.dto';
 import { winstonLogger } from 'src/util/winston.config';
-import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { DiscardResource } from 'src/database/produce_entity/discard-resource.entity';
 import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
 import { Notice } from 'src/database/produce_entity/notice.entity';
 import { NoticeDetail } from 'src/database/produce_entity/notice-detail.entity';

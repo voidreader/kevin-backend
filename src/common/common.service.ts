@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { StandardInfo } from './entities/standard-info.entity';
+import { StandardInfo } from '../database/produce_entity/standard-info.entity';
 import { DataSource, Repository } from 'typeorm';
 import { winstonLogger } from '../util/winston.config';
 

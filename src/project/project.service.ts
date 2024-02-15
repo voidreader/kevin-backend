@@ -23,7 +23,7 @@ import {
   Project,
   ProjectType,
 } from 'src/database/produce_entity/project.entity';
-import { ProjectAuth } from 'src/account/entities/projectAuth.entity';
+import { ProjectAuth } from 'src/database/produce_entity/projectAuth.entity';
 import { ProjectDetail } from 'src/database/produce_entity/project-detail.entity';
 import { error } from 'console';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -33,9 +33,9 @@ import {
 } from 'src/database/produce_entity/episode.entity';
 import { EpisodeDetail } from 'src/database/produce_entity/episode-detail.entity';
 import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
-import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { DiscardResource } from 'src/database/produce_entity/discard-resource.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
-import { StandardInfo } from 'src/common/entities/standard-info.entity';
+import { StandardInfo } from 'src/database/produce_entity/standard-info.entity';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger as WinstonLogger } from 'winston';
 

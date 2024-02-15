@@ -15,11 +15,19 @@ import {
 } from 'typeorm';
 import { ProductDetail } from './product-detail.entity';
 import { ProductLang } from './product-lang.entity';
+import { IsEnum } from 'class-validator';
+import { EpisodeTypeEnum } from './episode.entity';
 
 export enum ProductTypeEnum {
   base = 'base',
   limited = 'limited',
   premium_pass = 'premium_pass',
+}
+
+export enum productOsTypeEnum {
+  iOS = 'iOS',
+  Android = 'Android',
+  all = 'all',
 }
 
 @Entity()
@@ -55,6 +63,15 @@ export class Product extends DeployableEntity {
 
   @Column({ type: 'boolean', default: false })
   is_public: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: productOsTypeEnum,
+    default: productOsTypeEnum.all,
+    comment: 'os따라 다르게 보여질 수 있음',
+  })
+  @IsEnum(productOsTypeEnum)
+  os_type: productOsTypeEnum;
 
   @Column({ length: 30, default: '' })
   exception_culture: string;

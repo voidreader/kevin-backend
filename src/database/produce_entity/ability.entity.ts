@@ -9,7 +9,7 @@ import {
   Unique,
 } from 'typeorm';
 import { Profile } from './profile.entity';
-import { AbilityLang } from '../ability-lang.entity';
+import { AbilityLang } from './ability-lang.entity';
 
 // * 캐릭터별 능력치&호감도 Entity
 

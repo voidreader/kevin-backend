@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 
 import { VisualResourceType } from 'src/common/entities/common-image-resource.entity';
-import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
+import { LiveResource } from 'src/database/produce_entity/live-resource.entity';
 
 // * 라이브 오브젝트, 일러스트 리소스 로컬라이징 정보
 

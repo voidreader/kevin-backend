@@ -3,8 +3,8 @@ import { DataSource } from 'typeorm';
 import { Project } from './produce_entity/project.entity';
 import { Account } from './produce_entity/account.entity';
 import { ProjectDetail } from './produce_entity/project-detail.entity';
-import { Verification } from 'src/account/entities/verification.entity';
-import { ProjectAuth } from 'src/account/entities/projectAuth.entity';
+import { Verification } from 'src/database/produce_entity/verification.entity';
+import { ProjectAuth } from 'src/database/produce_entity/projectAuth.entity';
 
 export const databaseProviders = [
   {

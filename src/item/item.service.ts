@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Item } from 'src/database/produce_entity/item.entity';
 import { DataSource, Repository } from 'typeorm';
 import { ItemListDto, ItemCreateDto } from './dto/item.dto';
-import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { DiscardResource } from 'src/database/produce_entity/discard-resource.entity';
 import { ItemExtension } from 'src/database/produce_entity/item-extension.entity';
 import { winstonLogger } from '../util/winston.config';
 

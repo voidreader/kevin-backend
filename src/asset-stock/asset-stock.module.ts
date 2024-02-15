@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { AssetStockController } from './asset-stock.controller';
 import { AssetStockService } from './asset-stock.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
-import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { StoryStaticImage } from 'src/database/produce_entity/story-static-image.entity';
+import { DiscardResource } from 'src/database/produce_entity/discard-resource.entity';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {

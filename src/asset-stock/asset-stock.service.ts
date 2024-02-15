@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
+import { StoryStaticImage } from 'src/database/produce_entity/story-static-image.entity';
 import { DataSource, Repository } from 'typeorm';
 import { AssetStockListDto } from './dto/asset-stock.dto';
-import { DiscardResource } from 'src/resource-manager/entities/discard-resource.entity';
+import { DiscardResource } from 'src/database/produce_entity/discard-resource.entity';
 import * as path from 'path';
 import { UpdateStaticImageDto } from 'src/resource-manager/dto/resource-manager.dto';
 

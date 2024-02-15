@@ -1,6 +1,6 @@
 import { IntersectionType, OmitType, PartialType } from '@nestjs/mapped-types';
-import { CoreEntity } from './core.entity';
-import { DeployEntity } from './deploy.entity';
+import { CoreEntity } from '../../common/entities/core.entity';
+import { DeployEntity } from '../../common/entities/deploy.entity';
 import {
   Column,
   CreateDateColumn,

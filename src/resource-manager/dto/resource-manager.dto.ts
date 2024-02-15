@@ -6,11 +6,11 @@ import {
   PartialType,
   PickType,
 } from '@nestjs/mapped-types';
-import { StoryStaticImage } from '../entities/story-static-image.entity';
-import { PublicExtension } from '../entities/public-extension.entity';
+import { StoryStaticImage } from '../../database/produce_entity/story-static-image.entity';
+import { PublicExtension } from '../../database/produce_entity/public-extension.entity';
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Model } from 'src/database/produce_entity/model.entity';
-import { LiveResource } from '../entities/live-resource.entity';
+import { LiveResource } from '../../database/produce_entity/live-resource.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { EmoticonSlave } from 'src/database/produce_entity/emoticon-slave.entity';

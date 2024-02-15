@@ -4,10 +4,10 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from '../database/produce_entity/account.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Verification } from './entities/verification.entity';
+import { Verification } from '../database/produce_entity/verification.entity';
 import { CoreOutput } from 'src/common/dto/output.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
-import { ProjectAuth } from './entities/projectAuth.entity';
+import { ProjectAuth } from '../database/produce_entity/projectAuth.entity';
 import { PRODUCE_DATASOURCE } from 'src/common/common.const';
 import { JwtService } from 'src/jwt/jwt.service';
 

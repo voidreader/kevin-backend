@@ -1,6 +1,6 @@
 import { CoreEntity } from 'src/common/entities/core.entity';
 import { Column, Entity, ManyToOne, Unique } from 'typeorm';
-import { Account } from '../../database/produce_entity/account.entity';
+import { Account } from './account.entity';
 
 // * 사용자 계정별 프로젝트 권한
 

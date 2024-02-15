@@ -3,7 +3,7 @@ import { CoreEntity } from 'src/common/entities/core.entity';
 import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
-import { ProjectAuth } from '../../account/entities/projectAuth.entity';
+import { ProjectAuth } from './projectAuth.entity';
 
 export enum UserRole {
   Admin = 'Admin',

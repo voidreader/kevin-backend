@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { CommonService } from './common.service';
-import { StandardInfo } from './entities/standard-info.entity';
+import { StandardInfo } from '../database/produce_entity/standard-info.entity';
 import { get } from 'http';
 
 @Controller('common')

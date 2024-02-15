@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Ability } from './produce_entity/ability.entity';
+import { Ability } from './ability.entity';
 
 // * 능력 다국어 테이블
 

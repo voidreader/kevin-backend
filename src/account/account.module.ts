@@ -3,8 +3,8 @@ import { AccountService } from './account.service';
 import { AccountController } from './account.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from '../database/produce_entity/account.entity';
-import { Verification } from './entities/verification.entity';
-import { ProjectAuth } from './entities/projectAuth.entity';
+import { Verification } from '../database/produce_entity/verification.entity';
+import { ProjectAuth } from '../database/produce_entity/projectAuth.entity';
 import { DatabaseModule } from 'src/database/database.module';
 
 @Module({

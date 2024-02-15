@@ -10,7 +10,7 @@ import { ItemExtension } from 'src/database/produce_entity/item-extension.entity
 import { ItemLang } from 'src/database/produce_entity/item-lang.entity';
 import { Model } from 'src/database/produce_entity/model.entity';
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
-import { LiveResource } from 'src/resource-manager/entities/live-resource.entity';
+import { LiveResource } from 'src/database/produce_entity/live-resource.entity';
 import { Nametag } from 'src/database/produce_entity/nametag.entity';
 import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 import { Episode } from 'src/database/produce_entity/episode.entity';
@@ -24,15 +24,15 @@ import { ProductLang } from 'src/database/produce_entity/product-lang.entity';
 import { Loading } from 'src/database/produce_entity/loading.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
-import { TextLocalize } from 'src/common/entities/text-localize.entity';
+import { TextLocalize } from 'src/database/produce_entity/text-localize.entity';
 import { ProfileLineLang } from 'src/database/produce_entity/profile-line-lang.entity';
 import { ProfileLine } from 'src/database/produce_entity/profile-line.entity';
 import { Project } from 'src/database/produce_entity/project.entity';
 import { ProfileLang } from 'src/database/produce_entity/profile-lang.entity';
-import { AbilityLang } from 'src/database/ability-lang.entity';
-import { StoryStaticImage } from 'src/resource-manager/entities/story-static-image.entity';
-import { PublicExtension } from 'src/resource-manager/entities/public-extension.entity';
-import { ImageLocalization } from 'src/resource-manager/entities/image-localization.entity';
+import { AbilityLang } from 'src/database/produce_entity/ability-lang.entity';
+import { StoryStaticImage } from 'src/database/produce_entity/story-static-image.entity';
+import { PublicExtension } from 'src/database/produce_entity/public-extension.entity';
+import { ImageLocalization } from 'src/database/produce_entity/image-localization.entity';
 
 @Module({
   imports: [

@@ -30,16 +30,16 @@ import {
   UpdateStaticImageDto,
   unzipFile,
 } from './dto/resource-manager.dto';
-import { DiscardResource } from './entities/discard-resource.entity';
-import { ImageLocalization } from './entities/image-localization.entity';
-import { StoryStaticImage } from './entities/story-static-image.entity';
+import { DiscardResource } from '../database/produce_entity/discard-resource.entity';
+import { ImageLocalization } from '../database/produce_entity/image-localization.entity';
+import { StoryStaticImage } from '../database/produce_entity/story-static-image.entity';
 
 import * as unzipper from 'unzipper';
 import * as S3 from 'aws-sdk/clients/s3';
 
 import { Project } from 'src/database/produce_entity/project.entity';
 import { ConfigService } from '@nestjs/config';
-import { PublicExtension } from './entities/public-extension.entity';
+import { PublicExtension } from '../database/produce_entity/public-extension.entity';
 import {
   OLD_Q_COPY_LIST_BG,
   OLD_Q_COPY_LIST_ILLUST,
@@ -58,8 +58,8 @@ import {
 import { Model } from 'src/database/produce_entity/model.entity';
 
 import { ModelSlave } from 'src/database/produce_entity/model-slave.entity';
-import { LiveResource } from './entities/live-resource.entity';
-import { LiveResourceDetail } from './entities/live-resource-detail.entity';
+import { LiveResource } from '../database/produce_entity/live-resource.entity';
+import { LiveResourceDetail } from '../database/produce_entity/live-resource-detail.entity';
 import { Dress } from 'src/database/produce_entity/dress.entity';
 import { Nametag } from 'src/database/produce_entity/nametag.entity';
 import { Emoticon } from 'src/database/produce_entity/emoticon.entity';
