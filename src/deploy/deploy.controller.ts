@@ -9,5 +9,9 @@ export class DeployController {
   deployEach(
     @Param('project_id') project_id: number,
     @Param('data_type') data_type: string,
-  ) {}
+  ) {
+    if (data_type == 'coupon') {
+      return this.deployService.deployAllCoupon(project_id);
+    }
+  }
 }

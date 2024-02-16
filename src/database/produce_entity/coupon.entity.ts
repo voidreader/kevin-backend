@@ -74,11 +74,13 @@ export class Coupon extends CoreDeployEntity {
 
   @OneToMany((type) => CouponSerial, (couponSerial) => couponSerial.coupon, {
     eager: true,
+    cascade: true,
   })
   serials: CouponSerial[];
 
   @OneToMany((type) => CouponReward, (couponReward) => couponReward.coupon, {
     eager: true,
+    cascade: true,
   })
   rewards: CouponReward[];
 }
