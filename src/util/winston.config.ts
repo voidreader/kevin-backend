@@ -23,7 +23,7 @@ const dailyOptions = (
     handleExceptions: true,
     format: winston.format.combine(
       winston.format.timestamp(),
-      winston.format.json(),
+      // winston.format.json(),
       //   winston.format.printf((info) => JSON.stringify(info.message)),
       utilities.format.nestLike('Kevin', { prettyPrint: true }),
     ),
@@ -36,7 +36,7 @@ export const winstonLogger = WinstonModule.createLogger({
       level: 'debug',
       format: winston.format.combine(
         winston.format.timestamp(),
-        winston.format.json(),
+        // winston.format.json(),
         utilities.format.nestLike('Kevin', { prettyPrint: true, colors: true }),
       ),
     }),

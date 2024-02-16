@@ -4,41 +4,31 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
+import * as winston from 'winston';
+import {
+  WinstonModule,
+  utilities as nestWinstonModuleUtilities,
+} from 'nest-winston';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountModule } from './account/account.module';
-import { Account } from './database/produce_entity/account.entity';
-import { Verification } from './database/produce_entity/verification.entity';
-import { ProjectAuth } from './database/produce_entity/projectAuth.entity';
-import { DatabaseModule } from './database/database.module';
+
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { ProjectModule } from './project/project.module';
-import { Project } from './database/produce_entity/project.entity';
-import { ProjectDetail } from './database/produce_entity/project-detail.entity';
+
 import { FileModule } from './file/file.module';
 import { CommonModule } from './common/common.module';
-import { TextLocalize } from './database/produce_entity/text-localize.entity';
-import { StandardInfo } from './database/produce_entity/standard-info.entity';
+
 import { ResourceUploaderModule } from './resource-uploader/resource-uploader.module';
 import { ResourceManagerModule } from './resource-manager/resource-manager.module';
-
-import { ResourceManagerService } from './resource-manager/resource-manager.service';
-import { DiscardResource } from './database/produce_entity/discard-resource.entity';
-
-import { ImageLocalization } from './database/produce_entity/image-localization.entity';
-import { StoryStaticImage } from './database/produce_entity/story-static-image.entity';
-import { PublicExtension } from './database/produce_entity/public-extension.entity';
-import { LiveResource } from './database/produce_entity/live-resource.entity';
 import { MigrationModule } from './migration/migration.module';
-import { LiveResourceDetail } from './database/produce_entity/live-resource-detail.entity';
 import { ProfileModule } from './profile/profile.module';
 import { AssetStockModule } from './asset-stock/asset-stock.module';
 import { ItemModule } from './item/item.module';
-import { DeployService } from './deploy/deploy.service';
 import { DeployModule } from './deploy/deploy.module';
 
 @Module({
@@ -87,6 +77,21 @@ import { DeployModule } from './deploy/deploy.module';
       synchronize: false,
       logging: false,
       timezone: 'local',
+    }),
+
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          level: 'debug',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonModuleUtilities.format.nestLike('Kevin', {
+              prettyPrint: true,
+              colors: true,
+            }),
+          ),
+        }),
+      ],
     }),
 
     AccountModule,
