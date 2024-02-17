@@ -5,6 +5,7 @@ import { MoreThan, MoreThanOrEqual, Repository } from 'typeorm';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston/dist/winston.constants';
 import { Logger as WinstonLogger } from 'winston';
 import { DeployHistory } from 'src/database/produce_entity/deploy-history.entity';
+import { DeploySimpleOutputDto } from './dto/deploy.dto';
 
 @Injectable()
 export class DeployService {
@@ -30,7 +31,7 @@ export class DeployService {
   }
 
   // 모든 쿠폰
-  async deployAllCoupon(project_id: number) {
+  async deployAllCoupon(project_id: number): Promise<DeploySimpleOutputDto> {
     // 히스토리 조회
     const lastDeployDate: Date = await this.getLastHistory(
       project_id,
@@ -62,5 +63,5 @@ export class DeployService {
     } else {
       return { isSuccess: true, message: '배포할 신규 항목 없음' };
     }
-  }
+  } // ? 쿠폰 처리 종료
 }
