@@ -1,5 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { DeployService } from './deploy.service';
+import { DeploySimpleOutputDto } from './dto/deploy.dto';
 
 @Controller('deploy')
 export class DeployController {
@@ -9,9 +10,16 @@ export class DeployController {
   deployEach(
     @Param('project_id') project_id: number,
     @Param('data_type') data_type: string,
-  ) {
-    if (data_type == 'coupon') {
-      return this.deployService.deployAllCoupon(project_id);
-    }
+  ): Promise<DeploySimpleOutputDto> {
+    return this.deployService.deployOperateData(project_id, data_type);
+
+    // switch (data_type) {
+    //   case 'coupon':
+    //     return this.deployService.deployAllCoupon(project_id);
+    //   case 'notice':
+    //     return this.deployService.deployAllNotice(project_id);
+    //   default:
+    //     return;
+    // }
   }
 }
