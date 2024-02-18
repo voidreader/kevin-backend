@@ -6,20 +6,18 @@ import { DeploySimpleOutputDto } from './dto/deploy.dto';
 export class DeployController {
   constructor(private readonly deployService: DeployService) {}
 
-  @Get(`/:project_id/:data_type`)
-  deployEach(
+  @Get(`/project/:project_id/:data_type`)
+  deployProjectData(
     @Param('project_id') project_id: number,
     @Param('data_type') data_type: string,
   ): Promise<DeploySimpleOutputDto> {
-    return this.deployService.deployOperateData(project_id, data_type);
+    return this.deployService.deployProjectData(project_id, data_type);
+  }
 
-    // switch (data_type) {
-    //   case 'coupon':
-    //     return this.deployService.deployAllCoupon(project_id);
-    //   case 'notice':
-    //     return this.deployService.deployAllNotice(project_id);
-    //   default:
-    //     return;
-    // }
+  @Get(`/common/:data_type`)
+  deployCommonData(
+    @Param('data_type') data_type: string,
+  ): Promise<DeploySimpleOutputDto> {
+    return this.deployService.deployCommonData(data_type);
   }
 }

@@ -15,6 +15,15 @@ import { Item } from 'src/database/produce_entity/item.entity';
 import { ItemLang } from 'src/database/produce_entity/item-lang.entity';
 import { ItemGift } from 'src/database/produce_entity/item-gift.entity';
 
+import { TextLocalize } from 'src/database/produce_entity/text-localize.entity';
+import { StandardInfo } from 'src/database/produce_entity/standard-info.entity';
+import { Script } from 'src/database/produce_entity/script.entity';
+import { AdventureReward } from 'src/database/produce_entity/adventure-reward.entity';
+import { Selection } from 'src/database/produce_entity/selection.entity';
+import { Episode } from 'src/database/produce_entity/episode.entity';
+import { EpisodeDetail } from 'src/database/produce_entity/episode-detail.entity';
+import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -30,6 +39,14 @@ import { ItemGift } from 'src/database/produce_entity/item-gift.entity';
       ItemLang,
       ItemGift,
       DeployHistory,
+      Script,
+      Selection,
+      TextLocalize,
+      StandardInfo,
+      AdventureReward,
+      Episode,
+      EpisodeDetail,
+      EpisodeExtension,
     ]),
     TypeOrmModule.forFeature(
       [
@@ -44,6 +61,14 @@ import { ItemGift } from 'src/database/produce_entity/item-gift.entity';
         Item,
         ItemLang,
         ItemGift,
+        Script,
+        Selection,
+        TextLocalize,
+        StandardInfo,
+        AdventureReward,
+        Episode,
+        EpisodeDetail,
+        EpisodeExtension,
       ],
       'live-produce',
     ),
