@@ -16,6 +16,13 @@ import { ItemGift } from 'src/database/produce_entity/item-gift.entity';
 import { AdventureReward } from 'src/database/produce_entity/adventure-reward.entity';
 import { Selection } from 'src/database/produce_entity/selection.entity';
 import { Episode } from 'src/database/produce_entity/episode.entity';
+import { Project } from 'src/database/produce_entity/project.entity';
+import { Profile } from 'src/database/produce_entity/profile.entity';
+import { Ability } from 'src/database/produce_entity/ability.entity';
+import { Model } from 'src/database/produce_entity/model.entity';
+import { LiveResource } from 'src/database/produce_entity/live-resource.entity';
+import { StoryStaticImage } from 'src/database/produce_entity/story-static-image.entity';
+import { SoundResource } from 'src/database/produce_entity/sound-resource.entity';
 
 @Injectable()
 export class DeployService {
@@ -80,6 +87,36 @@ export class DeployService {
     private readonly liveEpisodeRep: Repository<Episode>,
     @InjectRepository(Episode)
     private readonly devEpisodeRep: Repository<Episode>,
+
+    @InjectRepository(Project, 'live-produce')
+    private readonly liveProjectRep: Repository<Project>,
+    @InjectRepository(Project)
+    private readonly devProjectRep: Repository<Project>,
+
+    @InjectRepository(Profile, 'live-produce')
+    private readonly liveProfileRep: Repository<Profile>,
+    @InjectRepository(Profile)
+    private readonly devProfileRep: Repository<Profile>,
+
+    @InjectRepository(Model, 'live-produce')
+    private readonly liveModelRep: Repository<Model>,
+    @InjectRepository(Model)
+    private readonly devModelRep: Repository<Model>,
+
+    @InjectRepository(LiveResource, 'live-produce')
+    private readonly liveLiveResourceRep: Repository<LiveResource>,
+    @InjectRepository(LiveResource)
+    private readonly devLiveResourceRep: Repository<LiveResource>,
+
+    @InjectRepository(StoryStaticImage, 'live-produce')
+    private readonly liveStoryStaticImageRep: Repository<StoryStaticImage>,
+    @InjectRepository(StoryStaticImage)
+    private readonly devStoryStaticImageRep: Repository<StoryStaticImage>,
+
+    @InjectRepository(SoundResource, 'live-produce')
+    private readonly liveSoundResourceRep: Repository<SoundResource>,
+    @InjectRepository(SoundResource)
+    private readonly devSoundResourceRep: Repository<SoundResource>,
   ) {}
 
   // * 프로젝트별 데이터 배포 히스토리
@@ -92,8 +129,10 @@ export class DeployService {
       where: { project_id, data_type },
     });
 
+    console.log(hist);
+
     if (hist.length == 0) return new Date('2020-01-01 00:00:00');
-    else hist[0].last_deploy_at;
+    else return hist[0].last_deploy_at;
   } // ? END getLastDeployHistory
 
   // * 모든 에피소드 및 스크립트
@@ -206,6 +245,7 @@ export class DeployService {
 
     // 히스토리 조회
     const lastDeployDate: Date = await this.getLastDeployHistory(0, data_type);
+    this.logger.info(`last deploy date : ${lastDeployDate}`);
 
     const devRep = this.getDevRepository(data_type);
     const liveRep = this.getLiveRepository(data_type);
