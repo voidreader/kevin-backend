@@ -136,7 +136,9 @@ export class DeployService {
   } // ? END getLastDeployHistory
 
   // * 모든 에피소드 및 스크립트
-  async deployAllEpisodeScript(project_id: number, episode_id: number) {
+  async deployAllEpisodeScript(
+    project_id: number,
+  ): Promise<DeploySimpleOutputDto> {
     const episodes = await this.devEpisodeRep.find({ where: { project_id } });
 
     for await (const episode of episodes) {
@@ -148,8 +150,14 @@ export class DeployService {
 
       if (!result) {
         this.logger.error(`${episode.episode_id} 에피소드 배포에 실패했습니다`);
+        return {
+          isSuccess: false,
+          error: '모든 에피소드, 스크립트 배포에 실패했습니다',
+        };
       }
     }
+
+    return { isSuccess: true };
   } // ? END deployAllEpisodeScript
 
   // * 에피소드별 배포
@@ -172,6 +180,8 @@ export class DeployService {
 
     try {
       await this.liveEpisodeRep.save(episode); // 에피소드 저장
+
+      // 스크립트 저장 요청
       const scriptResult = await this.deployScript(project_id, episode_id);
 
       if (!scriptResult) {
@@ -341,6 +351,26 @@ export class DeployService {
       return { isSuccess: true, message: '배포할 신규 항목 없음' };
     }
   } // ? END 운영 데이터 배포
+
+  async compareDeployObject(project_id: number, data_type: string) {
+    const devRep = this.getDevRepository(data_type);
+    const liveRep = this.getLiveRepository(data_type);
+
+    const devResult = await devRep.find({ where: { project_id } });
+    const liveResult = await liveRep.find({ where: { project_id } });
+
+    // 이건 값이 똑같아도 true로 인식하지 않음.
+    this.logger.info(`Check Object.is :: ${Object.is(devResult, liveResult)}`);
+
+    // 이게 정확함
+    this.logger.info(
+      `Check JSON Stringfy :: ${
+        JSON.stringify(devResult) == JSON.stringify(liveResult)
+      }`,
+    );
+
+    return true;
+  }
 
   // 개발 서버 Repository 주세요.
   getDevRepository(

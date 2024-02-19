@@ -39,6 +39,7 @@ import { DeployModule } from './deploy/deploy.module';
       envFilePath: '.env.dev',
     }),
 
+    // 개발서버 produce(디폴트)
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.MYSQL_HOST,
@@ -51,6 +52,8 @@ import { DeployModule } from './deploy/deploy.module';
       logging: false,
       timezone: 'local',
     }),
+
+    // 개발서버 game
     TypeOrmModule.forRoot({
       name: 'game',
       type: 'mysql',
@@ -65,6 +68,37 @@ import { DeployModule } from './deploy/deploy.module';
       timezone: 'local',
     }),
 
+    // 개발서버 log
+    TypeOrmModule.forRoot({
+      name: 'log',
+      type: 'mysql',
+      host: process.env.MYSQL_HOST,
+      port: +process.env.MYSQL_PORT,
+      username: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PWD,
+      database: 'gamelog',
+      entities: [__dirname + '/logdb/*.entity.*'],
+      synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..
+      logging: process.env.NODE_ENV !== 'prod',
+      timezone: 'local',
+    }),
+
+    // 라이브 서버 game
+    TypeOrmModule.forRoot({
+      name: 'live-game',
+      type: 'mysql',
+      host: process.env.LIVE_MYSQL_HOST,
+      port: +process.env.LIVE_MYSQL_PORT,
+      username: process.env.LIVE_MYSQL_USER,
+      password: process.env.LIVE_MYSQL_PWD,
+      database: 'game',
+      entities: [__dirname + '/gamedb/**/*.entity.*'],
+      synchronize: false,
+      logging: false,
+      timezone: 'local',
+    }),
+
+    // 라이브 Produce
     TypeOrmModule.forRoot({
       name: 'live-produce',
       type: 'mysql',
