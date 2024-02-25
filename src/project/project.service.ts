@@ -343,8 +343,12 @@ export class ProjectService {
       organized.push(side);
     });
 
+    if (chapters.length > 0) {
+      throw new HttpException('삭제하다 에러남!', HttpStatus.BAD_REQUEST);
+    }
+
     return { isSuccess: true, episodes: organized };
-  }
+  } // ? END
 
   // * 유저와 연계된 프로젝트 리스트 조회
   async getAlternativeStoryList(account: Account) {

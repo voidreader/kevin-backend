@@ -68,14 +68,14 @@ import { DeployModule } from './deploy/deploy.module';
       timezone: 'local',
     }),
 
-    // 개발서버 log
+    // 로그 서버 (로그DB로 설정)
     TypeOrmModule.forRoot({
       name: 'log',
       type: 'mysql',
-      host: process.env.MYSQL_HOST,
-      port: +process.env.MYSQL_PORT,
-      username: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PWD,
+      host: process.env.LIVE_LOG_MYSQL_HOST,
+      port: +process.env.LIVE_LOG_MYSQL_PORT,
+      username: process.env.LIVE_LOG_MYSQL_USER,
+      password: process.env.LIVE_LOG_MYSQL_PWD,
       database: 'gamelog',
       entities: [__dirname + '/logdb/*.entity.*'],
       synchronize: process.env.NODE_ENV !== 'prod', // 자동으로 entity를 읽어서 migration..

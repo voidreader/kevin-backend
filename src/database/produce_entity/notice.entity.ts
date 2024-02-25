@@ -9,6 +9,11 @@ import {
 } from 'typeorm';
 import { NoticeDetail } from './notice-detail.entity';
 
+export enum NoticeTypeEnum {
+  general = 'general',
+  cross = 'cross',
+}
+
 @Entity()
 @Unique(['project_id', 'notice_name'])
 export class Notice extends DeployableEntity {
@@ -40,6 +45,14 @@ export class Notice extends DeployableEntity {
 
   @Column({ length: 20, default: 'all' })
   os: string;
+
+  @Column({
+    type: 'enum',
+    enum: NoticeTypeEnum,
+    comment: '공지사항 타입',
+    default: NoticeTypeEnum.general,
+  })
+  notice_type: NoticeTypeEnum;
 
   @Column({ default: 0 })
   sortkey: number;

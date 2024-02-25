@@ -280,11 +280,11 @@ export class DeployService {
         });
 
         // 저장 후 히스토리 저장
-        const newHist = this.deployHistRep.create({
-          data_type,
-          project_id: 0,
-        });
-        this.deployHistRep.save(newHist);
+        // const newHist = this.deployHistRep.create({
+        //   data_type,
+        //   project_id: 0,
+        // });
+        // this.deployHistRep.save(newHist);
 
         return { isSuccess: true, message: '배포 완료' };
       } catch (error) {
