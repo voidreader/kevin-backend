@@ -343,9 +343,9 @@ export class ProjectService {
       organized.push(side);
     });
 
-    if (chapters.length > 0) {
-      throw new HttpException('삭제하다 에러남!', HttpStatus.BAD_REQUEST);
-    }
+    // if (chapters.length > 0) {
+    //   throw new HttpException('삭제하다 에러남!', HttpStatus.BAD_REQUEST);
+    // }
 
     return { isSuccess: true, episodes: organized };
   } // ? END
