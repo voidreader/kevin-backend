@@ -230,11 +230,11 @@ export class DeployService {
       }
       this.logger.info(`${episode_id}의 스크립트 배포 완료`);
 
-      const newHist = this.deployHistRep.create();
-      newHist.data_type = `script_${episode_id}`;
-      newHist.project_id = 148;
+      // const newHist = this.deployHistRep.create();
+      // newHist.data_type = `script_${episode_id}`;
+      // newHist.project_id = 148;
 
-      this.deployHistRep.save(newHist);
+      // this.deployHistRep.save(newHist);
 
       return true; // 종료
     } catch (error) {
