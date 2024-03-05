@@ -44,7 +44,7 @@ export class Project {
   @IsEnum(ProjectType)
   project_type: ProjectType; // 프로젝트 타입
 
-  @Column({ default: LangType.KO, length: 10 })
+  @Column({ default: 'KO', length: 10 })
   default_lang: string; // 대표 언어
 
   @Column({

@@ -6,7 +6,7 @@ import * as express from 'express';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as https from 'https';
 import * as http from 'http';
-import { urlencoded, json } from 'body-parser';
+import bodyParser, { urlencoded, json } from 'body-parser';
 import { HttpExceptionFilter } from './util/http-exception.filter';
 
 import { winstonLogger } from './util/winston.config';
@@ -27,6 +27,7 @@ async function bootstrap() {
     logger: winstonLogger,
   });
   app.useGlobalFilters(new HttpExceptionFilter());
+  // app.use(bodyParser.text({ type: 'text/html' }));
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ limit: '50mb', extended: true }));
 
@@ -35,7 +36,11 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  );
   await app.init();
 
   // await app.listen(3000);

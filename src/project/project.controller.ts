@@ -71,7 +71,10 @@ export class ProjectController {
   async createStory(
     @Req() request,
     @Body() createProjectInputDto: CreateProjectInputDto,
+    @Body('default_lang') default_lang: string,
   ) {
+    console.log(default_lang);
+
     return await this.projectService.create(
       request['account'],
       createProjectInputDto,

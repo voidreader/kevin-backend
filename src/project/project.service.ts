@@ -1,10 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Inject,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import {
   CreateEpisodeDto,
   CreateProjectInputDto,
@@ -36,10 +30,8 @@ import { EpisodeExtension } from 'src/database/produce_entity/episode-extension.
 import { DiscardResource } from 'src/database/produce_entity/discard-resource.entity';
 import { Script } from 'src/database/produce_entity/script.entity';
 import { StandardInfo } from 'src/database/produce_entity/standard-info.entity';
-import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston/dist/winston.constants';
 import { Logger as WinstonLogger } from 'winston';
-
-import { winstonLogger } from '../util/winston.config';
 import { Selection } from 'src/database/produce_entity/selection.entity';
 
 @Injectable()
@@ -70,6 +62,8 @@ export class ProjectService {
     private readonly repStandardInfo: Repository<StandardInfo>,
     @InjectRepository(Selection)
     private readonly repSelection: Repository<Selection>,
+
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: WinstonLogger,
   ) {}
 
   // * 신규 에피소드 생성
@@ -144,7 +138,7 @@ export class ProjectService {
 
   // * 단일 에피소드 업데이트
   async updateSingleEpisode(episode: Episode) {
-    winstonLogger.debug({ message: 'update', episode }, 'updateSingleEpisode');
+    this.logger.debug(`updateSingleEpisode : ${episode}`);
 
     const project = await this.repProject.findOneBy({
       project_id: episode.project_id,
@@ -294,7 +288,7 @@ export class ProjectService {
   // * 스토리 에피소드 리스트 조회
   async getEpisodeList(project_id: number) {
     // this.logger.debug(`getEpisodeList : ${project_id}`);
-    winstonLogger.debug(`getEpisodeList with ${project_id}`);
+    this.logger.debug(`getEpisodeList with ${project_id}`);
 
     const organized: Episode[] = [];
 
@@ -454,6 +448,10 @@ export class ProjectService {
   ): Promise<ProjectOutputDto> {
     // auth,
 
+    console.log(`Create Story : `, createStoryDto);
+    // console.log(`Create Story : `, createStoryDto.default_lang);
+    // console.log(`Create Story : `, createStoryDto.title);
+
     // repos
     const repProject = this.dataSource.getRepository(Project);
     const repProjectDetail = this.dataSource.getRepository(ProjectDetail);
@@ -461,8 +459,12 @@ export class ProjectService {
     // 신규 프로젝트 저장
     try {
       newProject = repProject.create(createStoryDto);
+      // newProject.default_lang = 'KO';
+      // console.log(newProject);
+
       // detail
       const newDetail = repProjectDetail.create();
+
       newDetail.lang = newProject.default_lang;
       newDetail.title = newProject.title;
       newDetail.project = newProject;
@@ -473,10 +475,15 @@ export class ProjectService {
 
       newProject = await repProject.save(newProject);
     } catch (error) {
-      return {
-        isSuccess: false,
-        error: `Failed to save new project : ${JSON.stringify(error)} `,
-      };
+      // console.log(error);
+
+      this.logger.error(`${error}`);
+
+      throw new HttpException(
+        `Failed to create a project [${error.sqlMessage}]`,
+        HttpStatus.BAD_REQUEST,
+        { cause: error },
+      );
     }
 
     try {
@@ -781,7 +788,8 @@ export class ProjectService {
         try {
           await this.repSelection.save(updateSelections);
         } catch (error) {
-          winstonLogger.error(error);
+          // winstonLogger.error(error);
+          this.logger.error(error);
           new HttpException(error, HttpStatus.BAD_REQUEST);
         }
       }

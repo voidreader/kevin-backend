@@ -86,6 +86,8 @@ export class CommonService {
 
   // * 프로젝트 에피소드 dropdown (DLC 제외)
   getProjectEpisodeDropdown(project_id: number, dlc_id: number): Promise<any> {
+    console.log(`getProjectEpisodeDropdown : ${project_id} / ${dlc_id}`);
+
     return this.dataSource.query(`
     SELECT e.episode_id code
         , CASE WHEN e.episode_type ='ending' THEN concat('Ending. ', e.title)
