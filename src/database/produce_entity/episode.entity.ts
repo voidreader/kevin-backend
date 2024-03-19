@@ -100,7 +100,7 @@ export class Episode extends DeployableEntity {
     (episodeDetail) => episodeDetail.episode,
     { eager: true, cascade: true },
   )
-  details: EpisodeDetail[];
+  localizations: EpisodeDetail[];
 
   @OneToOne(() => EpisodeExtension, {
     eager: true,

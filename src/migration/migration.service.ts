@@ -416,7 +416,7 @@ export class MigrationService {
     // * Episode 관련 로직 시작
     for (const episode of originEpisodes) {
       // console.log(episode.title);
-      episode.details = await this.dataSource.query(
+      episode.localizations = await this.dataSource.query(
         `
       SELECT a.lang 
           , a.title 

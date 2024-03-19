@@ -92,8 +92,8 @@ export class ProjectService {
       summary: '',
     });
 
-    if (!episode.details) episode.details = [];
-    episode.details.push(episodeDetail);
+    if (!episode.localizations) episode.localizations = [];
+    episode.localizations.push(episodeDetail);
     episode.extension = this.repEpisodeExtension.create();
 
     // chapter_number 부여  (chapter의 경우만)
@@ -138,7 +138,7 @@ export class ProjectService {
 
   // * 단일 에피소드 업데이트
   async updateSingleEpisode(episode: Episode) {
-    this.logger.debug(`updateSingleEpisode : ${episode}`);
+    this.logger.debug(`updateSingleEpisode : ${JSON.stringify(episode)}`);
 
     const project = await this.repProject.findOneBy({
       project_id: episode.project_id,
@@ -152,13 +152,16 @@ export class ProjectService {
 
     const default_lang = project.default_lang; // 기본언어의 타이틀이 변경되는 경우는 에피소드의 타이틀도 변경.
 
-    episode.details.forEach((item) => {
+    episode.localizations.forEach((item) => {
       if (item.lang == default_lang) {
         episode.title = item.title;
       }
     });
 
+    console.log(episode);
+
     try {
+      // await this.repEpisodeDetail.save(episode.localizations);
       const savedEpisode = await this.repEpisode.save(episode);
 
       return { isSuccess: true, episode: savedEpisode };
@@ -180,7 +183,7 @@ export class ProjectService {
   async uploadEpisodeBanner(file: Express.MulterS3.File, episode_id: number) {
     const episode = await this.repEpisode.findOne({ where: { episode_id } });
 
-    console.log(`uploadEpisodeBanner START : `, episode);
+    console.log(`uploadEpisodeBanner START : `, file);
 
     if (!episode.extension) {
       episode.extension = this.repEpisodeExtension.create();
@@ -203,6 +206,8 @@ export class ProjectService {
       episode.extension.banner_url = location;
       episode.extension.banner_key = key;
       episode.extension.bucket = bucket;
+    } else {
+      console.log(`file is invalid`);
     }
 
     console.log('Save Start');

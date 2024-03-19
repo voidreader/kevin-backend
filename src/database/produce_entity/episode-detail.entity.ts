@@ -23,7 +23,7 @@ export class EpisodeDetail extends CoreEntity {
   @Column({ nullable: true, length: 400, default: '-' })
   summary: string;
 
-  @ManyToOne((type) => Episode, (episode) => episode.details, {
+  @ManyToOne((type) => Episode, (episode) => episode.localizations, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'episode_id' })
